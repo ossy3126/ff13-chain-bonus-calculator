@@ -244,7 +244,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999" step="1" value="200"></label>
   <label>ブレイク予兆の位置<select id="omen"><option value="0.90">必要上昇量の0.90倍</option><option value="0.91" selected>0.91倍</option><option value="0.92">0.92倍</option></select></label>
   <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンが途切れた状態から始める（チェーンゲージが空）</label>
-  <p class="hint">チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
+  <p class="hint">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
   <p class="hint">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
 </fieldset>
 
@@ -763,7 +763,9 @@ function calc(){
   seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
 
   const lastBy=new Map(list.map(a=>[a,a.last]));
-  let brokeAt=null,brkBonus=0,firstPending=$("chainEmpty").checked&&!st.stag;const out=[];const per=new Map(list.map(a=>[a,0]));
+  let brokeAt=null,brkBonus=0,firstPending=$("chainEmpty").checked&&!st.stag&&start<=100;
+  // チェーンボーナスが100%より上ならチェーンゲージは残っているので、このチェックは関係ない
+  {const off=st.stag||start>100;$("chainEmpty").disabled=off;$("chainEmpty").closest("label").style.opacity=off?.5:1;}const out=[];const per=new Map(list.map(a=>[a,0]));
   seq.forEach((step,idx)=>{
     const {it,a,first}=step, sk=it.sk, role=a.role, isM=a.kind==="member";
     const hp=a.hp, cpos=a.cpos||0;
