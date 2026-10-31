@@ -173,7 +173,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン</label>
   <label class="chk mo" id="ovwWrap"><input type="checkbox" id="ovwOn">ジョイントレイド（ブラスター時）</label>
   <label class="chk mo" id="vigWrap"><input type="checkbox" id="vigor">ハイテンション（HP70%超）</label>
-  <label class="mo">武器「チェーンボーナス強化」<select id="cbb"><option value="0">なし</option><option value="1">通常 (+1.0)</option><option value="2">強化版 (+2.0)</option></select></label>
+  <label class="mo" id="cbbWrap">サッズの武器「チェーンボーナスUP」<select id="cbb"><option value="0">なし</option><option value="1">UP（アンタレス）+1.0</option><option value="2">UP改（フォーマルハウト、トータルエクリプス）+2.0</option></select></label>
 
   <div class="sub" id="atbLabel">ATB</div>
   <div class="atbbar" id="atbbar"></div>
@@ -485,10 +485,24 @@ const f=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
 const RAV_SELF=[0,1.0,1.5,2.0,2.5,3.0], RAV_PARTY=[0,0.1,0.1,0.2,0.2,0.3];
 const EL_MOD={abs:0.25,null:0.25,res:0.5,half:0.5,norm:1,weak:1};
 const RAV_CPOS=[0,.2,.3,.4,.5,.7,.8,.9,1.0], RAV_ENEG=[0,.3,.4,.5,.6,.7,.8,.9,1.0], SAB_ENEG=[.2,.3,.4,.5,.8,1.0,1.5,2.0,2.5];
+
+// 各キャラが修得できるアビリティ（l=ライトニング s=サッズ n=スノウ v=ヴァニラ h=ホープ f=ファング）
+const LEARN_SRC={
+ "たたかう":"lsnvhf","エリアブラスト":"lsnhf","ルイン":"lsnvhf","ルインガ":"lsnvhf",
+ "フレイムブロウ":"lsf","フロストブロウ":"lnf","スパークブロウ":"lsf","ウェーブブロウ":"lnf",
+ "ファイア":"lsvhf","ファイラ":"lsvhf","ファイガ":"svh","ブリザド":"lnvhf","ブリザラ":"lnvhf","ブリザガ":"nvh",
+ "サンダー":"lsvhf","サンダラ":"lsvhf","サンダガ":"lsh","ウォータ":"lnvhf","ウォタラ":"lnvhf","ウォタガ":"nhf",
+ "エアロ":"lsnvhf","エアロラ":"lsnvhf","エアロガ":"shf",
+ "挑発":"lsnvhf","挑戦状":"snf","リベンジモード":"snhf","リベンジチャージ":"nvhf","ライズガード":"snvf","リジェネガード":"nvf","残像回避":"lh","カウンター（オート）":"lnhf",
+ "デプロテ":"lsvf","デプロガ":"lvh","デシェル":"lsvf","デシェガ":"lvh","バイオ":"lsv","バイオガ":"lvh","ウィーク":"lsvf","ウィーガ":"lvh",
+ "スロウ":"snf","スロウガ":"nhf","フォーグ":"snvf","フォーガ":"nhf","ペイン":"snvf","ペインガ":"nhf","カーズ":"snf","カーズガ":"nhf","ダル":"snf","ダルガ":"nhf","デスペル":"svhf",
+ "ハイテンション":"lnhf","ジョイントレイド":"lsnvhf","ブレイクチェーン":"lsnvhf"};
+const CH1={l:"light",s:"sazh",n:"snow",v:"vanille",h:"hope",f:"fang"};
+const canLearn=(name,chr)=>{const src=LEARN_SRC[name];if(!src)return true;return [...src].some(c=>CH1[c]===chr)};
 const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
 
 const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,elem:"F",queue:[],last:null},o);
-const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"W",chr:"snow"})];
+const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"I",chr:"snow"})];
 const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング"};
 // キャラ専用コマンド：who=使えるキャラ、rep=置き換える通常コマンド
 const allowed=(sk,a,list)=>{if(a.kind!=="member")return true;if(sk.who)return sk.who===a.chr;return !list.some(x=>x.rep===sk.id&&x.who===a.chr)};
@@ -553,7 +567,8 @@ function syncVis(){
     $("onWrap").hidden=M.indexOf(a)===0;
     // 同じキャラは2人選べない（パーティにいる他のメンバーのキャラは選択不可）
     [...$("chr").options].forEach(op=>{const used=M.find(o=>o!==a&&o.on&&o.chr===op.value);op.disabled=false;op.textContent=CHR_JP[op.value]+(used?`（${used.label}と設定ごと入れ替え）`:"")});
-    $("rlvWrap").hidden=a.role!=="RAV";$("jeoWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("vigWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";
+    $("rlvWrap").hidden=a.role!=="RAV";$("jeoWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
+    $("vigWrap").hidden=(a.role!=="RAV"&&a.chr!=="sazh")||!canLearn("ハイテンション",a.chr);if(!canLearn("ハイテンション",a.chr))a.vigor=false;
   }
   $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";
   $("modeSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
@@ -584,6 +599,7 @@ function renderPalette(){
     const all=sk.cost==="ALL",c=all?cap(a):chainCost(a,sk);
     b.innerHTML=`<span></span><span class="c">${all?"全ATB":c}</span>`;
     b.firstChild.textContent=a.kind==="member"?nameOf(sk,a.elem):sk.n;
+    if(a.kind==="member"&&!canLearn(nameOf(sk,a.elem),a.chr))return;
     // ファング：ATB4本以上で残り1枚のときだけ「たたかう（連撃）」として選べる
     if(sk.fang&&a.kind==="member"&&a.atb>=4&&rem===1){b.firstChild.textContent="たたかう（連撃）";b.style.borderColor="var(--gauge)";b.title="ATBの最後の枠だけ連撃（0.0×2＋0.25×2）になります"}
     else if(sk.fang&&a.kind==="member"&&a.atb>=4)b.title="残り1枚になると連撃になります";
@@ -681,8 +697,8 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
       ["chr","role","rlv","atb","hp","cpos","cneg","diff","jeo","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
       loadActor();render();return}}a[key]=el.type==="checkbox"?el.checked:(conv?conv(el.value):el.value);
   if(key==="role")a.queue=[];
-  if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role]))}}
-  if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role]));
+  if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
+  if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr));
   if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all)return false;u+=q.cost;return u<=a.atb})}
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
@@ -968,7 +984,7 @@ document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",calc)
 const add=(i,sk,e)=>{const mm=M[i];mm.queue.push({sk,e:sk.e!==undefined?sk.e:(typeof sk.n==="string"?"":e),name:nameOf(sk,e),cost:sk.cost,all:false,land:true})};
 add(0,SK.RAV[0],"F");add(0,SK.RAV[0],"I");add(0,SK.RAV[0],"T");
 add(1,SK.COM[0]);add(1,SK.COM[0]);add(1,SK.COM[0]);
-add(2,SK.RAV[0],"W");add(2,SK.RAV[4],"A");add(2,SK.RAV[0],"F");
+add(2,SK.RAV[0],"W");add(2,SK.RAV[4],"A");add(2,SK.RAV[0],"I");
 const qe=(a,id)=>{const sk=a.skills.find(s=>s.id===id);a.queue.push({sk,e:"",name:sk.n,cost:sk.cost,all:false,land:true,ph:sk.parts.map(x=>x.h)})};
 ["o1","o2","o3","o1","o6"].forEach(id=>qe(EA.odin[0],id));
 ["st1","st1","st1"].forEach(id=>qe(EA.shiva[0],id));["nx1","nx1","nx1","nx3"].forEach(id=>qe(EA.shiva[1],id));
