@@ -49,6 +49,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 
 /* ATB */
 .atbbar{grid-column:1/-1;display:flex;gap:4px}
+.atbbar .slot{white-space:nowrap;text-overflow:ellipsis;padding:0 4px}
 .atbbar .slot{flex:1;height:26px;border-radius:3px;border:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden;font-size:.72rem;display:flex;align-items:center;justify-content:center;color:var(--muted);min-width:0}
 .atbbar .slot.on{background:var(--atb-soft);border-color:var(--atb);color:var(--ink)}
 .atbbar .slot.on.start{font-weight:700}
@@ -662,13 +663,14 @@ function renderQueue(){
   });
   if(!a.queue.length){const d=document.createElement("p");d.className="note";d.textContent=nonAtk(a.role)?"このメンバーはチェーン計算に入りません。":"コマンドが入っていません。上のボタンから追加してください。";q.append(d)}
   const bar=$("atbbar");bar.innerHTML="";
-  const owner=[];a.queue.forEach(it=>{for(let k=0;k<it.cost;k++)owner.push({start:k===0,name:it.name})});
   const n=cap(a);
   bar.style.display=n>12?"none":"flex";
-  for(let s=0;s<n&&n<=12;s++){
-    const d=document.createElement("div");d.className="slot";const o=owner[s];
-    if(o){d.classList.add("on");if(o.start){d.classList.add("start");d.textContent=o.name}}
-    bar.append(d);
+  if(n<=12){
+    // コマンドは消費ATBの数だけの幅で1つのブロックにまとめる（全ATBなら1本につながる）
+    let usedSlots=0;
+    a.queue.forEach(it=>{if(usedSlots>=n||it.cost<=0)return;const w=Math.min(it.cost,n-usedSlots);usedSlots+=w;
+      const d=document.createElement("div");d.className="slot on start";d.style.flex=String(w);d.textContent=it.name;bar.append(d)});
+    for(let s=usedSlots;s<n;s++){const d=document.createElement("div");d.className="slot";d.style.flex="1";bar.append(d)}
   }
   $("atbInfo").textContent=`使用 ${used(a)} / ${n}${a.kind==="eid"?"（ATB固定）":""}`;
   const last=a.queue[a.queue.length-1];
@@ -699,7 +701,7 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
   if(key==="role")a.queue=[];
   if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
   if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr));
-  if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all)return false;u+=q.cost;return u<=a.atb})}
+  if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all){q.cost=a.atb;return true}u+=q.cost;return u<=a.atb})}
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
 bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("diff","diff");
