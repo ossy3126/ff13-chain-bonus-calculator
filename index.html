@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>FFXIII チェーンボーナス計算機</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 左にATBコマンド組み立てと状況入力、右にチェーンゲージ風の結果パネル（スティッキー）。狭い画面では縦積み。 */
+:root{
+  --bg:#eef2f4; --panel:#ffffff; --ink:#16232b; --muted:#5b6b75; --line:#d3dce1;
+  --accent:#0e7c8c; --accent-soft:#d8eef1; --atb:#2f6fd0; --atb-soft:#dbe6f7;
+  --gauge:#e0832b; --gauge-hot:#d33b2c; --good:#2f8a4d;
+  --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d151a; --panel:#152129; --ink:#e3ecf0; --muted:#8fa1ab; --line:#26363f;
+  --accent:#4cc3d2; --accent-soft:#16343a; --atb:#6fa2f0; --atb-soft:#1a2c48;
+  --gauge:#f0a04b; --gauge-hot:#ff6a55; --good:#5cc17d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d151a; --panel:#152129; --ink:#e3ecf0; --muted:#8fa1ab; --line:#26363f;
+  --accent:#4cc3d2; --accent-soft:#16343a; --atb:#6fa2f0; --atb-soft:#1a2c48;
+  --gauge:#f0a04b; --gauge-hot:#ff6a55; --good:#5cc17d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font-size:1.6rem;margin:0;text-wrap:balance;letter-spacing:.02em}
+header p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.formula{font-family:var(--mono);font-size:.82rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.inputs{display:flex;flex-direction:column;gap:14px;min-width:0}
+fieldset{border:1px solid var(--line);background:var(--panel);border-radius:8px;margin:0;padding:12px 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px;min-width:0}
+legend{font-weight:700;font-size:.8rem;letter-spacing:.08em;color:var(--accent);padding:0 6px}
+label{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--muted)}
+label.chk{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:.85rem}
+select,input[type=number]{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:6px 8px;width:100%}
+input[type=number]{font-family:var(--mono)}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.full{grid-column:1/-1}
+.hint{grid-column:1/-1;font-size:.75rem;color:var(--muted);margin:0}
+.sub{grid-column:1/-1;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:4px 0 -4px}
+
+/* ATB */
+.atbbar{grid-column:1/-1;display:flex;gap:4px}
+.atbbar .slot{flex:1;height:26px;border-radius:3px;border:1px solid var(--line);background:var(--bg);position:relative;overflow:hidden;font-size:.72rem;display:flex;align-items:center;justify-content:center;color:var(--muted);min-width:0}
+.atbbar .slot.on{background:var(--atb-soft);border-color:var(--atb);color:var(--ink)}
+.atbbar .slot.on.start{font-weight:700}
+.palette{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.pbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
+.pbtn:hover:not(:disabled){border-color:var(--atb)}
+.pbtn:disabled{opacity:.4;cursor:not-allowed}
+.pbtn .c{font-family:var(--mono);font-size:.72rem;color:var(--atb)}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:5px;overflow:hidden;width:max-content}
+.seg button{font:inherit;font-size:.85rem;border:0;background:var(--bg);color:var(--ink);padding:5px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.queue{grid-column:1/-1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.qrow{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font-size:.88rem}
+.qrow .i{font-family:var(--mono);color:var(--muted);font-size:.75rem}
+.qrow .cost{font-family:var(--mono);font-size:.75rem;color:var(--atb)}
+.qrow label.chk{font-size:.75rem}
+.x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px}
+.x:hover{color:var(--gauge-hot)}
+.qtools{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lbtn{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:5px;padding:4px 10px;cursor:pointer}
+.lbtn:hover{border-color:var(--accent)}
+
+/* result */
+.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:900px){.result{position:static}}
+.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big .n{font-family:var(--mono);font-size:2.6rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.big .u{color:var(--muted)}
+.cap{font-size:.75rem;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.gauge{position:relative;height:18px;border-radius:3px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.gauge .cur,.gauge .add,.gauge .mark{position:absolute;top:0;bottom:0}
+.gauge .cur{left:0;background:var(--gauge);opacity:.5}
+.gauge .add{background:var(--gauge)}
+.gauge.hot .add{background:var(--gauge-hot)}
+.gauge .mark{width:1px;background:var(--panel);opacity:.9}
+.gline{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--gauge-hot);color:#fff}
+.carry{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:8px}
+.lbtn.primary{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.summary div{background:var(--bg);border-radius:6px;padding:6px 8px}
+.summary b{display:block;font-family:var(--mono);font-size:1rem;font-variant-numeric:tabular-nums}
+.summary span{font-size:.7rem;color:var(--muted)}
+.cmds{display:flex;flex-direction:column;gap:4px}
+details{border-bottom:1px solid var(--line);padding-bottom:4px}
+summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;cursor:pointer;font-size:.85rem;list-style:none;align-items:baseline}
+summary::-webkit-details-marker{display:none}
+summary .v{font-family:var(--mono);color:var(--good);font-variant-numeric:tabular-nums}
+summary .g{font-family:var(--mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;min-width:8.5em;text-align:right}
+summary .nm::before{content:"▸ ";color:var(--muted)}
+details[open] summary .nm::before{content:"▾ "}
+.brk{color:var(--gauge-hot);font-weight:700;font-size:.72rem;margin-left:4px}
+.det{font-size:.76rem;color:var(--muted);padding:4px 0 2px 14px;display:flex;flex-direction:column;gap:1px}
+.det .r{display:flex;justify-content:space-between;gap:10px}
+.det .r span:last-child{font-family:var(--mono)}
+.empty{color:var(--muted);font-size:.8rem}
+.note{font-size:.78rem;color:var(--muted);margin:0}
+.notes{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.notes h2{margin:0;font-size:1rem;letter-spacing:.04em}
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px 20px}
+.notes section{min-width:0}
+.notes h3{margin:0 0 4px;font-size:.8rem;color:var(--accent);letter-spacing:.06em}
+.notes ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px;font-size:.84rem;line-height:1.65;color:var(--ink)}
+.notes b{font-weight:700}
+@media (prefers-reduced-motion:no-preference){.gauge .add{transition:width .2s}}
+</style>
+</head>
+<body>
+<style>
+.tabs{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tab{font:inherit;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:6px 10px;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0}
+.tab b{font-size:.85rem}
+.tab span{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.tab.off{opacity:.5}
+.who{display:inline-block;font-family:var(--mono);font-size:.68rem;font-weight:600;padding:0 5px;border-radius:3px;margin-right:4px;vertical-align:1px}
+.who.m0{background:var(--atb-soft);color:var(--atb)}
+.who.m1{background:var(--accent-soft);color:var(--accent)}
+.who.m2{background:var(--bg);color:var(--gauge);outline:1px solid var(--gauge)}
+[hidden]{display:none!important}
+.summary.party{grid-template-columns:repeat(3,1fr)}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>FFXIII チェーンボーナス計算機</h1>
+  <p>パーティ3人のATBにコマンドを並べると、1ターンでチェーンボーナスが合計いくつ上がるかを計算します。式は『ファイナルファンタジーXIII バトルアルティマニア』によります。</p>
+</header>
+<div class="formula">1ヒットの上昇量 = [ (スキル基本値 + 基本値補正) × (100 − チェーン耐性)/100 + 条件補正 ] × 属性補正</div>
+
+<div class="grid">
+<div class="inputs">
+
+<fieldset>
+  <legend>パーティ</legend>
+  <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
+    <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
+  <label id="eidWrap">召喚獣<select id="eid">
+    <option value="odin">オーディン</option><option value="shiva">シヴァ</option><option value="bryn">ブリュンヒルデ</option>
+    <option value="baha">バハムート</option><option value="alex">アレキサンダー</option><option value="heca">ヘカトンケイル</option></select></label>
+  <label id="gcWrap">ドライビングモード開始時のゲージ（満タン30）<input type="number" id="gc" min="2" max="30" step="1" value="30"></label>
+  <label id="flWrap">フィニッシュ技のレベル<select id="finLvSel"><option value="1">Lv1</option><option value="2">Lv2</option><option value="3" selected>Lv3</option></select></label>
+
+  <p class="hint" id="modeHint"></p>
+  <p class="note full" id="bonusHint" style="padding:6px 10px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-soft);color:var(--ink)"></p>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <label class="chk mo" id="onWrap"><input type="checkbox" id="mOn">このメンバーがパーティにいる（外すと計算から完全に除外）</label>
+  <label class="mo">キャラ<select id="chr"><option value="light">ライトニング</option><option value="sazh">サッズ</option><option value="snow">スノウ</option><option value="hope">ホープ</option><option value="vanille">ヴァニラ</option><option value="fang">ファング</option></select></label>
+  <label class="mo">ロール<select id="role">
+    <option value="COM">アタッカー</option><option value="RAV">ブラスター</option>
+    <option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option>
+    <option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
+  <label class="mo" id="rlvWrap">ブラスターのロールレベル<select id="rlv"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+  <label class="mo">ATBゲージ数<select id="atb"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+  <label class="mo">HP<select id="hp">
+    <option value="full">満タン (100%)</option><option value="high">70%超</option>
+    <option value="mid">30〜70%</option><option value="low">30%未満</option></select></label>
+  <label class="mo">自分の強化数<input type="number" id="cpos" min="0" max="8" step="1"></label>
+  <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
+  <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド</label>
+  <div class="sub mo">オートアビリティ・武器</div>
+  <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン</label>
+  <label class="chk mo" id="ovwWrap"><input type="checkbox" id="ovwOn">ジョイントレイド（ブラスター時）</label>
+  <label class="chk mo" id="vigWrap"><input type="checkbox" id="vigor">ハイテンション（HP70%超）</label>
+  <label class="mo">武器「チェーンボーナス強化」<select id="cbb"><option value="0">なし</option><option value="1">通常 (+1.0)</option><option value="2">強化版 (+2.0)</option></select></label>
+
+  <div class="sub" id="atbLabel">ATB</div>
+  <div class="atbbar" id="atbbar"></div>
+  <div class="sub" id="elemWrapLabel">魔法・ブロウの属性</div>
+  <div class="seg full" id="elemSeg" role="group" aria-label="属性"></div>
+  <div class="sub" id="palLabel">コマンドを押すとATBに追加</div>
+  <div class="palette" id="palette"></div>
+  <div class="queue" id="queue"></div>
+  <div class="qtools">
+    <button class="lbtn" id="fill" type="button">最後のコマンドで残りを埋める</button>
+    <button class="lbtn" id="clear" type="button">すべて外す</button>
+    <span class="note" id="atbInfo"></span>
+  </div>
+  <details class="full" id="customBox">
+    <summary><span class="nm">カスタムコマンドを追加</span><span></span><span></span></summary>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding-top:8px">
+      <label>基本値<input type="number" id="cBase" step="0.1" min="0" value="10"></label>
+      <label>ヒット数<input type="number" id="cHits" step="1" min="1" max="30" value="1"></label>
+      <label>ATB消費<input type="number" id="cCost" step="1" min="1" max="6" value="1"></label>
+      <label>タイプ<select id="cType"><option value="M">魔法</option><option value="P">物理</option></select></label>
+      <label>属性<select id="cElem"><option value="">なし</option><option value="F">火</option><option value="I">氷</option><option value="T">雷</option><option value="W">水</option><option value="A">風</option><option value="E">土</option></select></label>
+      <button class="lbtn" id="cAdd" type="button" style="align-self:end">追加</button>
+    </div>
+  </details>
+</fieldset>
+
+<fieldset>
+  <legend>行動の順番</legend>
+  <label class="full">行動の順番<select id="order">
+    <option value="manual" selected>自分で並べる（右の内訳の ▲▼ で入れ替え）</option>
+    <option value="rr">交互（1人1コマンドずつ順番に）</option>
+    <option value="seq">メンバー順（1人目を全部→2人目→3人目）</option></select></label>
+  <p class="hint">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
+  <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
+  <label>クエイクの回数<select id="tpQ"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+  <label>使うタイミング<select id="tpWhen"><option value="before">全員のコマンドの前</option><option value="after">全員のコマンドの後</option></select></label>
+  <label>クエイクの基本値<input type="number" id="tpBase" step="0.1" min="0" value="10"></label>
+  <p class="hint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
+</fieldset>
+
+<fieldset>
+  <legend>敵の状態</legend>
+  <label>チェーン耐性<input type="number" id="cres" min="0" max="100" step="1" value="50"></label>
+  <label>物理耐性<select id="tresP">
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">激減</option><option value="null">無効</option></select></label>
+  <label>魔法耐性<select id="tresM">
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">激減</option><option value="null">無効</option></select></label>
+  <div class="sub">属性耐性</div>
+  <label>火<select class="eres" data-e="F"></select></label>
+  <label>氷<select class="eres" data-e="I"></select></label>
+  <label>雷<select class="eres" data-e="T"></select></label>
+  <label>水<select class="eres" data-e="W"></select></label>
+  <label>風<select class="eres" data-e="A"></select></label>
+  <label>土<select class="eres" data-e="E"></select></label>
+  <div class="sub">状態</div>
+  <label>現在の弱体数（挑発も1つと数える）<input type="number" id="eneg" min="0" max="8" step="1" value="0"></label>
+  <label class="chk"><input type="checkbox" id="imp">ウィークが入っている</label>
+  <label class="chk"><input type="checkbox" id="stag">ブレイク中</label>
+  <label class="chk"><input type="checkbox" id="launched">打ち上げ中</label>
+  <label class="chk"><input type="checkbox" id="epos">敵に強化がかかっている</label>
+  <label class="chk"><input type="checkbox" id="launchable" checked>召喚獣の攻撃で打ち上げられている（召喚獣の補正）</label>
+  <p class="hint">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
+</fieldset>
+
+<fieldset>
+  <legend>ゲージ</legend>
+  <label>現在のチェーンボーナス (%)<input type="number" id="cur" min="100" max="999.9" step="0.1" value="100"></label>
+  <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999" step="1" value="200"></label>
+  <label>ブレイク予兆の位置<select id="omen"><option value="0.90">必要上昇量の0.90倍</option><option value="0.91" selected>0.91倍</option><option value="0.92">0.92倍</option></select></label>
+  <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンが途切れた状態から始める（画面左上のCHAINが0.0）</label>
+  <p class="hint">CHAINが0.0のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません（ドレッドノート・プラウドクラッドの動画で確認）。</p>
+  <p class="hint">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
+</fieldset>
+
+</div>
+
+<aside class="result" aria-live="polite">
+  <div>
+    <div class="cap" id="totalCap">このターンの合計上昇量（パーティ全員）</div>
+    <div class="big"><span class="n" id="rTotal">0</span><span class="u">%</span> <span class="pill" id="rState" hidden></span></div>
+  </div>
+  <div>
+    <div class="gauge" id="gauge"><div class="cur" id="gCur"></div><div class="add" id="gAdd"></div></div>
+    <div class="gline"><span id="gFrom"></span><span id="gTo"></span></div>
+  </div>
+  <div class="summary party" id="perMember"></div>
+  <div class="carry">
+    <div class="cap" id="turnLabel">1ターン目</div>
+    <label class="chk"><input type="checkbox" id="keepQ" checked>コマンドを残す</label>
+    <div class="qtools" style="gap:6px">
+      <button class="lbtn primary" id="nextTurn" type="button">この結果を引き継いで次のターンへ</button>
+      <button class="lbtn" id="resetTurn" type="button">100%に戻す</button>
+    </div>
+    <p class="note" id="carryNote"></p>
+  </div>
+  <div>
+    <div class="cap">行動ごとの内訳（タップで詳細）</div>
+    <div class="cmds" id="cmds"></div>
+  </div>
+  <div>
+    <div class="cap">ブレイクまで</div>
+    <p class="note" id="toBreak"></p>
+  </div>
+</aside>
+</div>
+
+<footer class="notes" aria-label="計算の前提">
+  <h2>計算の前提</h2>
+  <div class="ngrid">
+    <section>
+      <h3>基本の計算</h3>
+      <ul>
+        <li>多段ヒットは、1ヒットごとに条件補正を含む式全体を計算して合計します。</li>
+        <li>「1つ目のストックコマンド」は各キャラのATBの先頭のコマンド、「違うコマンド」はそのキャラ自身の直前の行動と比べて判定します。</li>
+        <li>ブレイクした瞬間にチェーンが <b>+100%</b> されます。合計とゲージに含め、内訳ではブレイクした行動の詳細に出ます。</li>
+        <li>ブレイク前はブレイク値で止まり、超えた分は無駄になります。</li>
+        <li>チェーンが途切れている（左上のCHAINが0.0）ときは、最初の1ヒットで持続が始まるだけで%は上がりません。シーンドライブ・デスペラード・ラストリゾートなど持続0秒の技は、チェーンが途切れていると始めることもできず、まったく上がりません。</li>
+        <li>持続0秒の技を使うときは、ほかのメンバーの攻撃で持続を足し続ける必要があります。途中でCHAINが0になると、そこでチェーンが100%に戻ります。</li>
+        <li>この計算機は、全員の行動が予定どおり入る前提で計算しています。敵の攻撃で行動が中断された場合や、チェーン持続時間が切れた場合は計算に入らないので、結果は「うまくいったときの上限」と考えてください。</li>
+        <li>ルーラーフィスト・ハイウィンドは、攻撃後にチェーンボーナスを100.0%にもどします。ファングのリベンジモード/チャージは、地上の敵には4回攻撃（0＋0＋0.25＋0.25）になります。</li>
+        <li>エンハンサー/ヒーラーはチェーンを上げず、「狙う味方の数」にも数えません。</li>
+        <li>サッズのエリアブラストは、距離や敵の大きさで全弾当たるとは限りません。初期値は7ヒットで、ATB欄の行ごとに当たった数（1〜7）を入れられます。途中でブラスターにシフトした場合は「□hit目からブラスター」で指定します。</li>
+        <li>ファングのたたかうは、ATB4本以上のとき最後の枠だけ連撃（0.0×2＋0.25×2）になります。</li>
+      </ul>
+    </section>
+    <section>
+      <h3>ブラスターのボーナス</h3>
+      <ul>
+        <li>自分がブラスターなら自分のロールレベル分（+1.0〜+3.0）。</li>
+        <li>ほかのブラスターのメンバーから1人あたり <b>+0.1〜+0.3</b>。受け取る側もブラスターのときだけ付きます（アタッカーには付かないことを動画で確認）。</li>
+        <li>ジョイントレイドは、同じ敵を狙う<b>味方キャラ</b>1人につき+1.0。召喚獣は数えません（動画で確認）。</li>
+      </ul>
+    </section>
+    <section>
+      <h3>属性耐性・弱体・ウィーク</h3>
+      <ul>
+        <li>属性補正：吸収・無効 ×0.25、激減・半減 ×0.5、標準・弱点 ×1。物理/魔法耐性はチェーンの倍率には影響しません。</li>
+        <li>「弱点」の補正は、属性が弱点なら物理/魔法耐性に関係なく付き、物理/魔法が弱点のときも付きます（バトルアルティマニアの耐性掛け合わせ表）。</li>
+        <li>召喚獣の属性攻撃は敵の属性耐性で減りません（弱点は有効）。</li>
+        <li>ウィークが入ると属性耐性が1段階下がります（吸収→無効→激減→半減→標準→弱点）。ターン中に入った場合は、その後の行動から。</li>
+        <li>「ウィークが入っている」にチェックするときは、「現在の弱体数」にも1つ含めてください。</li>
+        <li>弱体が成功すると敵の弱体数が1つ増えます（デスペルは除く）。同じ弱体（単体版とガ版を含む）が入っていれば付与されず、+5.0も付きません。</li>
+      </ul>
+    </section>
+    <section>
+      <h3>行動の順番</h3>
+      <ul>
+        <li>モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初です。</li>
+        <li>ゲームで見た順に、内訳の ▲▼ で並べ替えてください。</li>
+      </ul>
+    </section>
+    <section>
+      <h3>召喚中（ドライビング前）</h3>
+      <ul>
+        <li>召喚獣の攻撃は <b>基本値 × (100−チェーン耐性)/100</b> だけ上がります（動画で確認）。ロールボーナス・違うコマンド・召喚獣用の補正は付けていません（弱点+0.1のみ。機甲兵ウーランで確認）。</li>
+        <li>召喚者は自分のロールボーナスで計算します。</li>
+      </ul>
+    </section>
+    <section>
+      <h3>ドライビングモード</h3>
+      <ul>
+        <li>召喚獣用の条件補正：違うコマンド・弱点・<b>打ち上げられている敵 +0.5</b>・ブレイク予兆 +0.5・ブレイク中 +0.1。</li>
+        <li>召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナスが付きます（「通常バトル」のメンバー設定を使用。動画から推定）。</li>
+        <li>技は物理/魔法耐性を無視するので、物理/魔法の弱点補正は付きません（アレキサンダーの鎧袖一触・苛烈なる制裁を除く）。</li>
+        <li>召喚中の初期のコマンドは、バトルアルティマニアの「通常の行動」に合わせています（例：オーディンは連閃・天臨・烈破を計4回→サンダガ）。</li>
+        <li>フィニッシュ技は、ダメージ前にレベルに応じた量をそのまま加算します（例：斬鉄剣Lv3で+136.00）。</li>
+        <li>ゲージが残り2以上ならどの技も使え、残りは1で止まります。終了後はチェーンがリセットされます。</li>
+        <li>幅のあるヒット数は最大値が初期値です（行ごとに変更可）。ブリュンヒルデのジェットは含めていません。</li>
+      </ul>
+    </section>
+  </div>
+</footer>
+</div>
+
+<script>
+const EN={F:"火",I:"氷",T:"雷",W:"水",A:"風",E:"土"};
+const ROLE_JP={COM:"アタッカー",RAV:"ブラスター",SEN:"ディフェンダー",SAB:"ジャマー",SYN:"エンハンサー",MED:"ヒーラー",SUM:"召喚獣"};
+const SK={
+ COM:[
+  {id:"atk",n:"たたかう",cost:1,b:0.5,t:"P"},
+  {id:"atkF",n:"たたかう",cost:1,b:0.5,t:"P",fang:true,who:"fang",rep:"atk"},
+  {id:"blz",n:"エリアブラスト",cost:2,b:0.5,t:"P"},
+  {id:"blzS",n:"エリアブラスト",cost:2,parts:[{h:7,b:0.2,e:"",t:"P",hr:[1,7]}],t:"P",who:"sazh",rep:"blz"},
+  {id:"ruin",n:"ルイン",cost:1,b:0.5,t:"M"},
+  {id:"ruinga",n:"ルインガ",cost:3,b:0.5,t:"M"},
+  {id:"sfist",n:"ルーラーフィスト",cost:"ALL",b:0,t:"P",who:"snow",reset:true},
+  {id:"hwind",n:"ハイウィンド",cost:"ALL",b:0,t:"P",who:"fang",reset:true},
+  {id:"gren",n:"手投げ弾（1・2章）",cost:2,b:0.5,t:"P",e:"F",who:"snow"}],
+ RAV:[
+  {id:"e1",n:{F:"ファイア",I:"ブリザド",T:"サンダー",W:"ウォータ"},cost:1,b:10,t:"M"},
+  {id:"e2",n:{F:"ファイラ",I:"ブリザラ",T:"サンダラ",W:"ウォタラ"},cost:2,b:18,sb:25,t:"M"},
+  {id:"e3",n:{F:"ファイガ",I:"ブリザガ",T:"サンダガ",W:"ウォタガ"},cost:3,b:26,t:"M"},
+  {id:"bl",n:{F:"フレイムブロウ",I:"フロストブロウ",T:"スパークブロウ",W:"ウェーブブロウ"},cost:1,b:10,t:"P"},
+  {id:"a1",n:"エアロ",cost:1,b:9,t:"M",e:"A"},
+  {id:"a2",n:"エアロラ",cost:3,b:24,sb:33,t:"M",e:"A"},
+  {id:"a3",n:"エアロガ",cost:5,bs:[1,40],t:"M",e:"A"},
+  {id:"aoo",n:"シーンドライブ",cost:"ALL",b:0,h:11,sb:12,t:"P",who:"light"},
+  {id:"cb",n:"デスペラード",cost:"ALL",b:0,h:17,sb:10,t:"P",who:"sazh"},
+  {id:"lr",n:"ラストリゾート",cost:"ALL",b:0,h:8,sb:20,t:"M",who:"hope"}],
+ SEN:[
+  {id:"prov",n:"挑発",cost:1,b:2,t:"-",prov:true},
+  {id:"ven",n:"リベンジモード",cost:1,b:0.5,t:"P",fangSen:true},
+  {id:"ent",n:"リベンジチャージ",cost:1,b:0.5,t:"P",fangSen:true},
+  {id:"chal",n:"挑戦状",cost:1,b:2,t:"-",prov:true},
+  {id:"ctr",n:"カウンター（オート）",cost:0,b:0.5,t:"P"},
+  {id:"rg",n:"ライズガード",cost:1,b:0,t:"-",noHit:true},
+  {id:"mg",n:"リジェネガード",cost:1,b:0,t:"-",noHit:true},
+  {id:"eld",n:"残像回避",cost:1,b:0,t:"-",noHit:true}],
+ SAB:[
+  ...[["デプロテ","デプロガ"],["デシェル","デシェガ"],["ウィーク","ウィーガ"],["バイオ","バイオガ"],["スロウ","スロウガ"],["フォーグ","フォーガ"],["ペイン","ペインガ"],["カーズ","カーズガ"],["ダル","ダルガ"]]
+    .flatMap(([a,g],i)=>[{id:"s"+i,n:a,cost:1,b:4,t:"M",sab:true,st:a},{id:"g"+i,n:g,cost:3,b:4,t:"M",sab:true,st:a}]),
+  {id:"dsp",n:"デスペル",cost:2,b:4,t:"M",sab:true,dispel:true},
+  {id:"death",n:"デス",cost:"ALL",b:4,t:"M",who:"vanille"}],
+ SYN:[
+  {id:"sy0",n:"ブレイブ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy1",n:"ブレイダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy2",n:"フェイス",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy3",n:"フェイダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy4",n:"ヘイスト",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy5",n:"ガッツ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy6",n:"エンファイ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy7",n:"エンブリザ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy8",n:"エンサンダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy9",n:"エンウォタ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy10",n:"プロテス",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy11",n:"プロテダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy12",n:"シェル",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy13",n:"シェルダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy14",n:"バファイ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy15",n:"バブリザ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy16",n:"バサンダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy17",n:"バウォタ",cost:2,b:0,t:"-",noHit:true},
+  {id:"sy18",n:"ベール",cost:2,b:0,t:"-",noHit:true}],
+ MED:[
+  {id:"md0",n:"ケアル",cost:1,b:0,t:"-",noHit:true},
+  {id:"md1",n:"ケアルラ",cost:2,b:0,t:"-",noHit:true},
+  {id:"md2",n:"ケアルア",cost:1,b:0,t:"-",noHit:true},
+  {id:"md3",n:"ケアルダ",cost:2,b:0,t:"-",noHit:true},
+  {id:"md4",n:"エスナ",cost:2,b:0,t:"-",noHit:true},
+  {id:"md5",n:"レイズ",cost:3,b:0,t:"-",noHit:true}]
+};
+// 召喚獣データ（ガイドのBonus値）。p=[ヒット数, 基本値, 属性, タイプ, [最小,最大]]
+const P=(h,b,e,t,hr)=>({h,b,e:e||"",t:t||"P",hr});
+const EID={
+ odin:{jp:"オーディン",actors:[{label:"オーディン",atb:5,sk:[
+   {id:"o1",n:"連閃",cost:1,parts:[P(4,2.50)]},{id:"o2",n:"天臨",cost:1,parts:[P(3,3.33)]},
+   {id:"o3",n:"烈破",cost:1,parts:[P(1,10)]},{id:"o4",n:"絶影",cost:1,parts:[P(1,10)]},
+   {id:"o5",n:"サンダラ",cost:1,parts:[P(1,10,"T","M")]},{id:"o6",n:"サンダガ",cost:1,parts:[P(1,14.66,"T","M")]}]}],
+  gs:[{id:"og1",n:"轟剣",cost:[2],parts:[P(1,6.66,"T")]},
+   {id:"og2",n:"雷光斬",cost:[3],parts:[P(2,3.75),P(5,3.75,"T")]},
+   {id:"og3",n:"真空破",cost:[3],parts:[P(4,5.00,"","P",[2,4]),P(3,10.00,"","P",[1,3])]},
+   {id:"og4",n:"天鳴万雷",cost:[4],parts:[P(3,8.88,"T","P",[2,3])]}],
+  fin:{n:"斬鉄剣",lv:[51,85,136],parts:[P(1,24)]}},
+ shiva:{jp:"シヴァ",actors:[
+  {label:"シヴァ・スティリア",atb:3,sk:[
+   {id:"st1",n:"ブリザド",cost:1,parts:[P(1,7.5,"I","M")]},{id:"st2",n:"ブリザラ",cost:2,parts:[P(1,11.25,"I","M")]},{id:"st3",n:"ブリザガ",cost:3,parts:[P(1,16.5,"I","M")]}]},
+  {label:"シヴァ・ニクス",atb:4,sk:[
+   {id:"nx1",n:"パワーホイール",cost:1,parts:[P(1,7.5)]},{id:"nx2",n:"フリッパーキック",cost:1,parts:[P(1,7.5)]},
+   {id:"nx3",n:"ダンシングホイール",cost:1,parts:[P(4,1.87)]},{id:"nx4",n:"ホイールスロー",cost:1,parts:[P(5,1.87,"","P",[3,5])]},
+   {id:"nx5",n:"トルネードレイヴ",cost:2,parts:[P(3,3.28)]},{id:"nx6",n:"ブリザラ",cost:2,parts:[P(1,11.25,"I","M")]}]}],
+  gs:[{id:"sg1",n:"ウィリーラッシュ",cost:[3],parts:[P(3,20,"","P",[2,3])]},
+   {id:"sg2",n:"スプラッシュ",cost:[3],parts:[P(5,4,"I")]},
+   {id:"sg3",n:"アイシクルターン",cost:[3],parts:[P(1,5),P(3,5)]},
+   {id:"sg4",n:"エアエッジ",cost:[3],parts:[P(2,2),P(1,20,"I"),P(1,10)]}],
+  fin:{n:"ダイヤモンドダスト",lv:[103,144,200],parts:[P(1,17,"I")]}},
+ bryn:{jp:"ブリュンヒルデ",actors:[{label:"ブリュンヒルデ",atb:4,sk:[
+   {id:"b1",n:"スラッシャー",cost:1,parts:[P(1,10)]},{id:"b2",n:"ヴァルキリーサイズ",cost:1,parts:[P(3,3.33),P(3,3.33,"","P",[1,3])]},
+   {id:"b3",n:"ガンショット",cost:1,parts:[P(3,3.33)]},
+   {id:"b4",n:"ヒートショット",cost:1,parts:[P(1,10,"F","M")]},{id:"b5",n:"アイスショット",cost:1,parts:[P(1,10,"I","M")]},
+   {id:"b6",n:"エレキショット",cost:1,parts:[P(1,10,"T","M")]},{id:"b7",n:"アクアショット",cost:1,parts:[P(1,10,"W","M")]},
+   {id:"b8",n:"ヒートバースト",cost:1,parts:[P(1,2.5),P(1,15,"F","M")]},{id:"b9",n:"アイスバースト",cost:1,parts:[P(1,2.5),P(1,15,"I","M")]},
+   {id:"b10",n:"エレキバースト",cost:1,parts:[P(1,2.5),P(1,15,"T","M")]},{id:"b11",n:"アクアバースト",cost:1,parts:[P(1,2.5),P(1,15,"W","M")]}]}],
+  gs:[{id:"bg1",n:"チョッパースピン",cost:[2],parts:[P(2,0.66,"","P",[1,2])]},
+   {id:"bg2",n:"カルトロップボム",cost:[3],parts:[P(1,2.0,"F")]},
+   {id:"bg3",n:"スイーピングターン",cost:[3,1,1],parts:[P(3,0.47,"","P",[2,3])]},
+   {id:"bg4",n:"ホットロッド",cost:[3,1,1],parts:[P(3,0.37,"F")]}],
+  fin:{n:"ムスペルフレイム",lv:[78,114,174],parts:[P(1,26,"F")]}},
+ baha:{jp:"バハムート",actors:[{label:"バハムート",atb:5,sk:[
+   {id:"h1",n:"ドラゴンクロー",cost:1,parts:[P(1,2.0)]},{id:"h2",n:"エアリアルレイヴ",cost:1,parts:[P(2,5),P(1,10)]},
+   {id:"h3",n:"ヘビーストライク",cost:1,parts:[P(1,30)]},{id:"h4",n:"インフェルノ",cost:1,parts:[P(1,40,"","M")]},
+   {id:"h5",n:"イグニス",cost:3,parts:[P(1,60,"","M")]}]}],
+  gs:[{id:"hg1",n:"ハンティングダイブ",cost:[2],parts:[P(2,6.66,"","P",[1,2]),P(1,13.33)]},
+   {id:"hg2",n:"スカイハイループ",cost:[2],parts:[P(2,6.66)]},
+   {id:"hg3",n:"デストロイブレス",cost:[3],parts:[P(5,13.33,"","P",[1,5])]},
+   {id:"hg4",n:"スプレッドパルサー",cost:[3],parts:[P(11,1.66,"","P",[1,11])]}],
+  fin:{n:"メガフレア",lv:[91,153,215],parts:[P(1,25)]}},
+ alex:{jp:"アレキサンダー",actors:[{label:"アレキサンダー",atb:4,sk:[
+   {id:"x1",n:"鉄砕掌",cost:1,parts:[P(1,30)]},{id:"x2",n:"金剛掌",cost:1,parts:[P(1,3),P(1,60)]},
+   {id:"x3",n:"翔天掌",cost:1,parts:[P(1,30)]},{id:"x4",n:"破壊の拳",cost:1,parts:[P(1,30)]},
+   {id:"x5",n:"爆轟の鉄拳",cost:3,parts:[P(1,7.5),P(1,90)]},{id:"x6",n:"誇り高き挑発",cost:1,parts:[P(1,2,"","-")]}]}],
+  gs:[{id:"xg1",n:"鎧袖一触",cost:[4],def:true,parts:[P(110,1.21,"","P",[1,110])]},
+   {id:"xg2",n:"アースクエイク（近い敵）",cost:[4,2,2],chain:"xg2",parts:[P(3,0.10,"","P",[2,3])]},
+   {id:"xg2f",n:"アースクエイク（遠い敵）",cost:[4,2,2],chain:"xg2",parts:[P(3,8.00,"","P",[2,3])]},
+   {id:"xg3",n:"苛烈なる制裁",cost:[4,2,2],def:true,parts:[P(18,1.48,"","M",[3,18])]},
+   {id:"xg4",n:"天罰",cost:[5],parts:[P(1,0.10),P(2,25)]}],
+  fin:{n:"聖なる審判",lv:[101,138,220],parts:[P(1,20)]}},
+ heca:{jp:"ヘカトンケイル",actors:[{label:"ヘカトンケイル",atb:6,sk:[
+   {id:"k1",n:"ラッシュ",cost:1,parts:[P(7,0.57)]},{id:"k2",n:"アサルトタックル",cost:1,parts:[P(1,2.0),P(1,4.0)]},
+   {id:"k3",n:"ハリケーンキック",cost:1,parts:[P(1,4.0)]},{id:"k4",n:"インパルス",cost:1,parts:[P(5,1.0,"","P",[3,5])]},
+   {id:"k5",n:"クエイク",cost:4,parts:[P(1,16.0,"E","M")]}]}],
+  gs:[{id:"kg1",n:"ガトリングキャノン",cost:[1,1,1],parts:[P(32,0.20,"","P",[1,32])]},
+   {id:"kg2",n:"テトラミサイル",cost:[2,1,1],parts:[P(4,3.33)]},
+   {id:"kg3",n:"ペネトレイトレイ",cost:[3,1],parts:[P(4,1.66)]},
+   {id:"kg4",n:"バスターフォース",cost:[4],parts:[P(1,26.66)]}],
+  fin:{n:"ガイアサルヴォー",lv:[54,108,162],parts:[P(1,38)]}}
+};
+const $=id=>document.getElementById(id);
+const f=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
+const RAV_SELF=[0,1.0,1.5,2.0,2.5,3.0], RAV_PARTY=[0,0.1,0.1,0.2,0.2,0.3];
+const EL_MOD={abs:0.25,null:0.25,res:0.5,half:0.5,norm:1,weak:1};
+const RAV_CPOS=[0,.2,.3,.4,.5,.7,.8,.9,1.0], RAV_ENEG=[0,.3,.4,.5,.6,.7,.8,.9,1.0], SAB_ENEG=[.2,.3,.4,.5,.8,1.0,1.5,2.0,2.5];
+const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
+
+const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,elem:"F",queue:[],last:null},o);
+const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"W",chr:"snow"})];
+const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング"};
+// キャラ専用コマンド：who=使えるキャラ、rep=置き換える通常コマンド
+const allowed=(sk,a,list)=>{if(a.kind!=="member")return true;if(sk.who)return sk.who===a.chr;return !list.some(x=>x.rep===sk.id&&x.who===a.chr)};
+M.forEach((mm,i)=>mm.label="メンバー"+(i+1));
+// 召喚獣アクター
+const EA={},DR={};
+Object.entries(EID).forEach(([k,d])=>{
+  EA[k]=d.actors.map(a=>({kind:"eid",label:a.label,role:"SUM",atb:a.atb,skills:a.sk,queue:[],last:null,diff:true,on:true}));
+  DR[k]={kind:"drive",label:d.jp+"（ドライビング）",role:"SUM",skills:d.gs,fin:d.fin,queue:[],last:null,diff:true,on:true};
+});
+let mode="normal", cur=0;
+
+function actors(){
+  const k=$("eid").value;
+  if(mode==="summon")return [M[0],...EA[k]];
+  if(mode==="drive")return [DR[k]];
+  return M;
+}
+const A=()=>actors()[Math.min(cur,actors().length-1)];
+const cap=a=>a.kind==="drive"?+$("gc").value:a.atb;
+const used=a=>a.queue.reduce((s,q)=>s+q.cost,0);
+const nonAtk=r=>r==="SYN"||r==="MED";
+const isActive=a=>a.on&&!nonAtk(a.role)&&a.queue.length>0;
+
+document.querySelectorAll(".eres").forEach(s=>{
+  s.innerHTML='<option value="abs">吸収</option><option value="null">無効</option><option value="res">激減</option><option value="half">半減</option><option value="norm" selected>標準</option><option value="weak">弱点</option>';
+});
+["F","I","T","W"].forEach(e=>{const b=document.createElement("button");b.type="button";b.textContent=EN[e];b.dataset.e=e;
+  b.onclick=()=>{A().elem=e;renderPalette()};$("elemSeg").append(b)});
+$("modeSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;cur=0;loadActor();render()});
+
+function renderTabs(){
+  const t=$("tabs");t.innerHTML="";
+  const list=actors();
+  t.style.gridTemplateColumns=`repeat(${list.length},minmax(0,1fr))`;
+  list.forEach((a,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="tab"+(a.on?"":" off");b.setAttribute("role","tab");b.setAttribute("aria-selected",a===A());
+    const cmds=a.on?(a.queue.length?a.queue.map(q=>q.name).join("・"):"コマンドなし"):"パーティにいない";
+    const title=a.kind==="member"?`${a.label}${mode==="summon"?"（召喚者）":""}・${CHR_JP[a.chr]}・${ROLE_JP[a.role]}`:a.label;
+    b.innerHTML=`<b></b><span></span>`;b.querySelector("b").textContent=title;b.querySelector("span").textContent=cmds;
+    b.onclick=()=>{cur=i;loadActor();render()};
+    t.append(b);
+  });
+}
+function loadActor(){
+  const a=A();
+  if(a.kind==="member"){
+    $("mOn").checked=a.on;
+    $("chr").value=a.chr;$("role").value=a.role;$("rlv").value=a.rlv;$("atb").value=a.atb;$("hp").value=a.hp;
+    $("cpos").value=a.cpos;$("cneg").checked=a.cneg;
+    $("jeo").checked=a.jeo;$("ovwOn").checked=a.ovwOn;$("vigor").checked=a.vigor;$("cbb").value=a.cbb;
+  }
+  $("diff").checked=a.diff;
+}
+function syncVis(){
+  const a=A(),isM=a.kind==="member";
+  document.querySelectorAll(".mo").forEach(el=>el.hidden=!isM);
+  if(isM){
+    $("onWrap").hidden=M.indexOf(a)===0;
+    // 同じキャラは2人選べない（パーティにいる他のメンバーのキャラは選択不可）
+    [...$("chr").options].forEach(op=>{const used=M.find(o=>o!==a&&o.on&&o.chr===op.value);op.disabled=false;op.textContent=CHR_JP[op.value]+(used?`（${used.label}と設定ごと入れ替え）`:"")});
+    $("rlvWrap").hidden=a.role!=="RAV";$("jeoWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("vigWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";
+  }
+  $("eidWrap").hidden=mode==="normal";$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";
+  $("modeSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
+  $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣のATBは固定です。ドライビング前の召喚獣の攻撃は、基本値×(100−チェーン耐性)/100 だけ上がります（実プレイ動画より）。"
+    :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナス（1人あたり+0.1〜+0.3）が召喚獣の攻撃に付きます。「通常バトル」のタブで3人のロールとロールレベルを設定してください。":"";
+  $("atbLabel").textContent=a.kind==="drive"?"ドライビングゲージ":"ATB";
+  $("tpLabel").hidden=mode!=="normal";["tpQ","tpWhen","tpBase"].forEach(id=>$(id).closest("label").hidden=mode!=="normal");
+  $("tpLabel").nextElementSibling;document.querySelector("#tpBase").closest("fieldset").querySelector(".hint").hidden=mode!=="normal";
+  $("totalCap").textContent=mode==="normal"?"このターンの合計上昇量（パーティ全員）":mode==="summon"?"このターンの合計上昇量（召喚者＋召喚獣）":"ドライビングモードの合計上昇量";
+}
+function chainCost(a,sk){
+  if(!Array.isArray(sk.cost))return sk.cost;
+  const key=sk.chain||sk.id;let k=0;
+  for(let i=a.queue.length-1;i>=0;i--){const q=a.queue[i];if((q.sk.chain||q.sk.id)===key)k++;else break}
+  return sk.cost[k%sk.cost.length];
+}
+function renderPalette(){
+  const a=A(),rem=cap(a)-used(a);
+  const list=a.kind==="member"?SK[a.role].filter(sk=>allowed(sk,a,SK[a.role])):a.skills;
+  const hasGroup=a.kind==="member"&&list.some(s=>typeof s.n!=="string");
+  $("elemSeg").hidden=!hasGroup;$("elemWrapLabel").hidden=!hasGroup;
+  $("elemSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.e===a.elem));
+  const p=$("palette");p.innerHTML="";
+  const finDone=a.queue.some(q=>q.sk.fin);
+  $("palLabel").textContent=nonAtk(a.role)?"エンハンサー/ヒーラーのコマンドは敵のチェーンゲージを上げません（ATBの確認用）":a.kind==="drive"?"技を押すとゲージを消費して追加（連続使用でコストが下がる技あり）":"コマンドを押すとATBに追加";
+  list.forEach(sk=>{
+    const b=document.createElement("button");b.type="button";b.className="pbtn";
+    const all=sk.cost==="ALL",c=all?cap(a):chainCost(a,sk);
+    b.innerHTML=`<span></span><span class="c">${all?"全ATB":c}</span>`;
+    b.firstChild.textContent=a.kind==="member"?nameOf(sk,a.elem):sk.n;
+    // ファング：ATB4本以上で残り1枚のときだけ「たたかう（連撃）」として選べる
+    if(sk.fang&&a.kind==="member"&&a.atb>=4&&rem===1){b.firstChild.textContent="たたかう（連撃）";b.style.borderColor="var(--gauge)";b.title="ATBの最後の枠だけ連撃（0.0×2＋0.25×2）になります"}
+    else if(sk.fang&&a.kind==="member"&&a.atb>=4)b.title="残り1枚になると連撃になります";
+    b.disabled=finDone||(a.kind==="drive"?rem<2:(all?a.queue.length>0:c>rem));
+    if(a.kind==="drive"&&rem>=2&&c>=rem)b.title=`残り${rem}なので、使うと残り1になります`;
+    b.onclick=()=>addCmd(sk);
+    p.append(b);
+  });
+  if(a.kind==="drive"){
+    const lvl=finLv();
+    const b=document.createElement("button");b.type="button";b.className="pbtn";
+    b.innerHTML=`<span></span><span class="c">残り全部・Lv${lvl}</span>`;b.firstChild.textContent="フィニッシュ："+a.fin.n;
+    b.disabled=finDone;
+    b.onclick=()=>{a.queue.push({sk:{id:"fin",n:a.fin.n,fin:true,parts:a.fin.parts},name:a.fin.n+" Lv"+lvl,cost:0,all:true,land:true,ph:a.fin.parts.map(x=>x.h)});render()};
+    p.append(b);
+  }
+}
+const finLv=()=>+$("finLvSel").value;
+function addCmd(sk,custom){
+  const a=A(),all=sk.cost==="ALL";
+  const isM=a.kind==="member";
+  const e=sk.e!==undefined?sk.e:(isM&&typeof sk.n!=="string"?a.elem:"");
+  a.queue.push({sk,e,name:custom||!isM?sk.n:nameOf(sk,a.elem),cost:all?cap(a):chainCost(a,sk),all,land:true,ph:sk.parts?sk.parts.map(x=>x.h):null});
+  render();
+}
+function renderQueue(){
+  const a=A(),q=$("queue");q.innerHTML="";
+  a.queue.forEach((it,i)=>{
+    const r=document.createElement("div");r.className="qrow";
+    r.innerHTML=`<span class="i">${i+1}</span><span class="nm"></span><span></span><span class="cost">${it.sk.fin?"残り全部":it.all?"全ATB":(a.kind==="drive"?"ゲージ "+(it.nom&&it.nom!==it.cost?it.nom+"（実際は"+it.cost+"消費）":it.cost):"ATB "+it.cost)}</span><span style="display:inline-flex;gap:2px"><button class="x mvU" type="button" aria-label="前へ" style="font-size:.8rem">▲</button><button class="x mvD" type="button" aria-label="後ろへ" style="font-size:.8rem">▼</button><button class="x del" type="button" aria-label="外す">×</button></span>`;
+    r.querySelector(".nm").textContent=it.name;
+    const extra=r.children[2];
+    if(it.sk.sab||it.sk.prov){
+      const l=document.createElement("label");l.className="chk";
+      l.innerHTML=`<input type="checkbox" ${it.land?"checked":""}><span>成功</span>`;
+      l.querySelector("input").onchange=ev=>{it.land=ev.target.checked;calc()};
+      extra.append(l);
+    }
+    if(it.sk.id==="blzS"){
+      const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
+      l.innerHTML=`<input type="number" min="0" max="7" step="1" value="${it.swAt||0}" style="width:3.6em;padding:2px 4px" aria-label="ブラスターに切り替えるヒット">hit目からブラスター Lv<select style="width:auto;padding:2px 4px" aria-label="ブラスターのロールレベル">${[1,2,3,4,5].map(v=>`<option${(it.swLv||5)==v?" selected":""}>${v}</option>`).join("")}</select>`;
+      l.querySelector("input").oninput=ev=>{it.swAt=Math.min(7,Math.max(0,+ev.target.value|0));calc()};
+      l.querySelector("select").oninput=ev=>{it.swLv=+ev.target.value;calc()};
+      extra.append(l);
+    }
+    if(it.sk.parts)it.sk.parts.forEach((p,pi)=>{if(!p.hr)return;
+      const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
+      l.innerHTML=`<input type="number" min="${p.hr[0]}" max="${p.hr[1]}" step="1" value="${it.ph[pi]}" style="width:4.2em;padding:2px 4px" aria-label="ヒット数">hit`;
+      l.querySelector("input").oninput=ev=>{it.ph[pi]=Math.min(p.hr[1],Math.max(p.hr[0],+ev.target.value|0));calc()};
+      extra.append(l)});
+    r.querySelector(".del").onclick=()=>{a.queue.splice(i,1);render()};
+    const mv=d=>{const j=i+d;if(j<0||j>=a.queue.length)return;const x=a.queue[i],y=a.queue[j];[a.queue[i],a.queue[j]]=[y,x];
+      // 行動順（自分で並べる）でも同じキャラの順番を入れ替える
+      const ki=manualOrder.indexOf(x),kj=manualOrder.indexOf(y);if(ki>=0&&kj>=0){manualOrder[ki]=y;manualOrder[kj]=x}
+      // 連続使用でコストが変わる技（ドライビング）や全ATB技の位置を考え直す
+      render()};
+    const bu=r.querySelector(".mvU"),bd=r.querySelector(".mvD");bu.disabled=i===0;bd.disabled=i===a.queue.length-1;
+    bu.onclick=()=>mv(-1);bd.onclick=()=>mv(1);
+    q.append(r);
+  });
+  if(!a.queue.length){const d=document.createElement("p");d.className="note";d.textContent=nonAtk(a.role)?"このメンバーはチェーン計算に入りません。":"コマンドが入っていません。上のボタンから追加してください。";q.append(d)}
+  const bar=$("atbbar");bar.innerHTML="";
+  const owner=[];a.queue.forEach(it=>{for(let k=0;k<it.cost;k++)owner.push({start:k===0,name:it.name})});
+  const n=cap(a);
+  bar.style.display=n>12?"none":"flex";
+  for(let s=0;s<n&&n<=12;s++){
+    const d=document.createElement("div");d.className="slot";const o=owner[s];
+    if(o){d.classList.add("on");if(o.start){d.classList.add("start");d.textContent=o.name}}
+    bar.append(d);
+  }
+  $("atbInfo").textContent=`使用 ${used(a)} / ${n}${a.kind==="eid"?"（ATB固定）":""}`;
+  const last=a.queue[a.queue.length-1];
+  $("fill").disabled=!last||last.all||(a.kind==="drive"?n-used(a)<2:last.cost>n-used(a));
+  if(a.kind==="drive")$("atbInfo").textContent=`使用 ${used(a)} / ${n}・残り ${n-used(a)}${n-used(a)<2?"（フィニッシュのみ）":""}`;
+}
+// ドライビング：残り2以上ならどの技も使える。コスト以上を消費する場合は残り1で止まる。残り1ではフィニッシュのみ
+function fixDrive(a){
+  let rem=+$("gc").value,run=0,prevKey=null;const keep=[];
+  for(const q of a.queue){
+    if(q.sk.fin){keep.push(q);break}
+    const key=q.sk.chain||q.sk.id;run=key===prevKey?run+1:0;prevKey=key;
+    const nom=Array.isArray(q.sk.cost)?q.sk.cost[run%q.sk.cost.length]:(q.nom||q.cost);
+    if(rem<2)continue;
+    q.nom=nom;q.cost=Math.min(nom,rem-1);rem-=q.cost;keep.push(q);
+  }
+  a.queue=keep;
+}
+function render(){if(cur>=actors().length)cur=0;if(mode==="drive")fixDrive(DR[$("eid").value]);syncVis();renderPalette();renderQueue();calc();renderTabs()}
+
+const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.kind!=="member"&&key!=="diff")return;const el=$(id);
+  if(key==="chr"){const other=M.find(o=>o!==a&&o.on&&o.chr===el.value);
+    // 他のメンバーが使っているキャラを選んだら、2人のキャラを入れ替える
+    if(other){
+      // 他のメンバーが使っているキャラを選んだら、キャラと設定（ロール・ATB・コマンドなど）をまとめて入れ替える
+      ["chr","role","rlv","atb","hp","cpos","cneg","diff","jeo","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
+      loadActor();render();return}}a[key]=el.type==="checkbox"?el.checked:(conv?conv(el.value):el.value);
+  if(key==="role")a.queue=[];
+  if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role]))}}
+  if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role]));
+  if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all)return false;u+=q.cost;return u<=a.atb})}
+  render()});
+bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
+bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("diff","diff");
+bind("jeo","jeo");bind("ovwOn","ovwOn");bind("vigor","vigor");bind("cbb","cbb",Number);
+$("eid").addEventListener("input",()=>{cur=0;loadActor();render()});
+$("finLvSel").addEventListener("input",()=>{const a=DR[$("eid").value];a.queue.forEach(q=>{if(q.sk.fin)q.name=q.sk.n+" Lv"+finLv()});render()});
+$("gc").addEventListener("input",()=>{const a=DR[$("eid").value];const g=+$("gc").value;$("finLvSel").value=g>=30?3:g>=25?2:1;
+  a.queue.forEach(q=>{if(q.sk.fin)q.name=q.sk.n+" Lv"+finLv()});render()});
+
+$("fill").onclick=()=>{const a=A(),last=a.queue[a.queue.length-1];if(!last||last.all)return;
+  for(let g=0;g<200;g++){const c=chainCost(a,last.sk);if(a.kind==="drive"){if(cap(a)-used(a)<2)break}else if(used(a)+c>cap(a))break;a.queue.push({...last,cost:c,land:true,ph:last.ph?last.ph.slice():null})}render()};
+$("clear").onclick=()=>{A().queue=[];render()};
+$("cAdd").onclick=()=>{
+  const a=A(),c=Math.min(cap(a),Math.max(1,+$("cCost").value|0));
+  if(c>cap(a)-used(a))return;
+  const h=Math.max(1,+$("cHits").value|0);
+  addCmd({id:"custom",n:"カスタム（"+f(+$("cBase").value||0,1)+"×"+h+"）",cost:c,b:+$("cBase").value||0,h,t:$("cType").value,e:$("cElem").value},true);
+};
+
+let carried={applied:[]}, endState=null, turn=1, manualOrder=[];
+$("nextTurn").onclick=()=>{
+  if(!endState)return;
+  $("chainEmpty").checked=mode==="drive";
+  if(mode==="drive"){$("cur").value=100;$("stag").checked=false}
+  else{$("cur").value=f(endState.cur,1);$("stag").checked=endState.stag}
+  $("eneg").value=endState.eneg;
+  $("imp").checked=endState.applied.includes("ウィーク");
+  carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
+  endState.last.forEach((v,a)=>a.last=v);
+  actors().forEach(a=>{if(!$("keepQ").checked)a.queue=[];a.queue.forEach(q=>q.land=true)});
+  turn++;$("turnLabel").textContent=turn+"ターン目（前ターンから引き継ぎ）"+(mode==="drive"?"・ドライビング終了でチェーンはリセット":"");
+  render();
+};
+$("resetTurn").onclick=()=>{
+  $("cur").value=100;$("stag").checked=false;$("eneg").value=0;$("imp").checked=false;$("chainEmpty").checked=true;
+  carried={applied:[]};[...M,...Object.values(EA).flat(),...Object.values(DR)].forEach(a=>a.last=null);
+  turn=1;$("turnLabel").textContent="1ターン目";render();
+};
+
+function hitsOf(sk,it,a){
+  // ファングのリベンジモード/チャージ：地上の敵には4回攻撃（0＋0＋0.25＋0.25）（バトルアルティマニア）
+  if(sk.fangSen&&a&&a.chr==="fang"&&!$("launched").checked){it.fangCombo=true;return [0,0,0.25,0.25].map(b=>({b,e:"",t:"P"}))}
+  if(sk.fang&&a&&a.kind==="member"&&a.atb>=4){
+    // ファング：ATB4以上でATBの最後のコマンドになると4ヒットの連撃（0.0×2＋0.25×2）
+    let pos=0;for(const q of a.queue){pos+=q.cost;if(q===it)break}
+    if(pos===a.atb){it.fangCombo=true;return [0,0,0.25,0.25].map(b=>({b,e:"",t:"P"}))}
+  }
+  if(it)it.fangCombo=false;
+  if(sk.parts)return sk.parts.flatMap((p,i)=>Array((it.ph&&it.ph[i])||p.h).fill({b:p.b,e:p.e,t:p.t}));
+  if(sk.bs)return sk.bs.map(b=>({b,e:it.e,t:sk.t}));
+  return Array(sk.h||1).fill({b:sk.b,sb:sk.sb,e:it.e,t:sk.t});
+}
+
+function calc(){
+  const lim=Math.max(100,+$("lim").value||200);
+  const start=Math.min(999.9,Math.max(100,+$("cur").value||100));
+  const st={stag:$("stag").checked,cur:start,eneg:Math.min(8,Math.max(0,+$("eneg").value|0)),applied:new Set([...carried.applied,...($("imp").checked?["ウィーク"]:[])])};
+  const SHIFT={abs:"null",null:"res",res:"half",half:"norm",norm:"weak",weak:"weak"},JN={abs:"吸収",null:"無効",res:"激減",half:"半減",norm:"標準",weak:"弱点"};
+  const resOf={};document.querySelectorAll(".eres").forEach(s=>resOf[s.dataset.e]=s.value);
+  const imp=()=>st.applied.has("ウィーク"), er=e=>imp()?SHIFT[resOf[e]]:resOf[e];
+  const cres0=Math.min(100,Math.max(0,+$("cres").value||0));
+  const tres={P:$("tresP").value,M:$("tresM").value};
+  const list=actors();
+  const attackers=list.filter(isActive);
+
+  const lanes=list.map(a=>isActive(a)?a.queue.map((it,k)=>({it,a,first:k===0})):[]);
+  let seq=[];
+  const ord=$("order").value;
+  if(ord==="seq"||mode==="drive")lanes.forEach(l=>seq.push(...l));
+  else{const n=Math.max(0,...lanes.map(l=>l.length));for(let k=0;k<n;k++)lanes.forEach(l=>{if(l[k])seq.push(l[k])})}
+  if(ord==="manual"&&mode!=="drive"){
+    const present=new Set(seq.map(x=>x.it));
+    manualOrder=manualOrder.filter(it=>present.has(it));
+    seq.forEach(x=>{if(!manualOrder.includes(x.it))manualOrder.push(x.it)});
+    seq.sort((x,y)=>manualOrder.indexOf(x.it)-manualOrder.indexOf(y.it));
+    // 各キャラの「1つ目のストックコマンド」は、そのキャラのキューの先頭のまま
+  }
+  const qn=mode==="normal"?+$("tpQ").value:0,QK={id:"quake",n:"クエイク",b:+$("tpBase").value||0,t:"M",e:"E"};
+  const qs=[...Array(qn)].map(()=>({it:{sk:QK,e:"E",name:"クエイク（TP）",cost:0,tp:true,land:true},a:M[0],first:false}));
+  seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
+
+  const lastBy=new Map(list.map(a=>[a,a.last]));
+  let brokeAt=null,brkBonus=0,firstPending=$("chainEmpty").checked&&!st.stag;const out=[];const per=new Map(list.map(a=>[a,0]));
+  seq.forEach((step,idx)=>{
+    const {it,a,first}=step, sk=it.sk, role=a.role, isM=a.kind==="member";
+    const hp=a.hp, cpos=a.cpos||0;
+    const prev=lastBy.get(a);
+    const diff=prev?!(prev.id===sk.id&&prev.e===it.e&&prev.name===it.name):a.diff;
+    const provFail=(sk.prov&&!it.land)||!!sk.noHit;
+    it.dup=!!(sk.sab&&!sk.dispel&&st.applied.has(sk.st));
+    const landed=it.land&&!it.dup;
+    // 同じ敵を狙う味方：攻撃ロール（エンハンサー/ヒーラー以外）でパーティにいるメンバー。そのターンに行動しなくても数える
+    const others=list.filter(x=>x!==a&&x.kind==="member"&&x.on&&!nonAtk(x.role)).length;
+    // 「他に狙う味方なし」はヒーラーなど攻撃していない味方がいても付かない（動画で確認）
+    const partyOthers=list.filter(x=>x!==a&&x.on).length;
+    const hl=hitsOf(sk,it,a);
+    let sum=0,det=null,detSw=null,swFrom=0,finAdd=0,finReal=0,brkIdx=false,lost=0;const g0=st.cur;
+    if(sk.fin){const lv=finLv();finAdd=EID[$("eid").value].fin.lv[lv-1];const f0=st.cur;st.cur=Math.min(st.stag?999.9:lim,st.cur+finAdd);finReal=st.cur-f0;
+      sum+=finReal;if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h:-1,hits:hl.length,a,name:it.name}}}
+    hl.forEach((hit,h)=>{
+      // サッズのエリアブラスト：途中でブラスターに切り替えた場合、そのヒットからブラスター扱い
+      const swRav=!!(it.swAt&&h+1>=it.swAt);
+      const role=swRav?"RAV":a.role, rlvH=swRav?(it.swLv||5):a.rlv;
+      const stag=st.stag;
+      let b=stag&&hit.sb!=null?hit.sb:hit.b;
+      if(sk.sab&&landed)b+=5;
+      const e=hit.e, t=hit.t;
+      // 弱点判定（バトルアルティマニアの耐性掛け合わせ表）：属性が弱点なら物理/魔法耐性に関係なく「増加」、物理/魔法が弱点でも「増加」
+      const typeWeak=t!=="-"&&tres[t]==="weak"&&!(a.kind==="drive"&&!sk.def);
+      const weak=(e&&er(e)==="weak")||typeWeak;
+      const elK=!e?1:(isM?EL_MOD[er(e)]:1);
+      const mods=[];
+      if(isM){
+        if(role==="RAV"){const v=RAV_SELF[rlvH];if(v)mods.push([`ブラスターロールボーナス（自分 Lv${rlvH}）`,v])}
+        // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（実測：アタッカーのサッズには付かない）
+        if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&o.on&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
+        if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
+        if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
+        if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
+        if(a.cbb)mods.push(["チェーンボーナス強化",a.cbb]);
+      }else{
+        // 召喚獣：召喚時のオプティマでブラスターだったメンバー全員のパーティボーナスが付く（動画の実測と一致）
+        // 召喚中（ドライビング前）の召喚獣は実測で上乗せなし。ドライビングのみパーティボーナスが付く
+        if(a.kind==="drive")M.forEach(o=>{if(o.on&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
+      }
+      const modSum=mods.reduce((s,x)=>s+x[1],0);
+      const cres=stag?0:cres0,resK=(100-cres)/100;
+      // ブレイク予兆：ブレイク値まで上げるのに必要な上昇量の0.90〜0.92倍（バトルアルティマニア）
+      const near=!stag&&(st.cur-100)>=(lim-100)*(+$("omen").value),launched=$("launched").checked,eneg=st.eneg;
+      const C=[];const add=(ok,tx,v)=>{if(ok)C.push([tx,v])};
+      if(!sk.fin&&a.kind!=="eid"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
+      add(weak,"弱点を突く",0.1);
+      if(role==="COM"){
+        add(diff&&hp==="mid","違うコマンド＋HP30〜70%",0.2);
+        add(stag&&hp==="mid","ブレイク中の敵＋HP30〜70%",0.3);
+        add(hp==="low","HP30%未満で攻撃",0.3);
+        add(stag&&hp==="low","ブレイク中の敵＋HP30%未満",0.9);
+        add(first&&stag&&t==="P","ブレイク中に1つ目＋物理",0.3);
+        add(launched,"打ち上げ中の敵",0.1);
+        add(diff&&launched,"違うコマンド＋打ち上げ中",0.3);
+        add(first&&$("epos").checked,"1つ目＋敵に強化",0.5);
+        add(diff&&partyOthers===0,"違うコマンド＋同じ敵を狙う仲間なし",0.3);
+      }
+      if(role==="RAV"){
+        add(first&&hp==="full","1つ目＋HP満タン",0.3);
+        add(diff&&!a.cneg,"違うコマンド＋自分に弱体なし",0.1);
+        add(diff&&cpos>0,"違うコマンド＋自分の強化"+cpos+"個",RAV_CPOS[cpos]);
+        add(diff&&eneg>0,"違うコマンド＋敵の弱体"+eneg+"個",RAV_ENEG[eneg]);
+        add(first&&near&&weak,"ブレイク予兆＋1つ目＋弱点",1.0);
+        add(first&&!$("epos").checked,"1つ目＋敵に強化なし",0.1);
+      }
+      if(role==="SEN"&&t==="P"){
+        add(hp==="full","物理攻撃＋HP100%",0.5);
+        add(hp==="mid","物理攻撃＋HP30〜70%",1.0);
+        add(hp==="low","物理攻撃＋HP30%未満",1.5);
+        add(cpos>0,"物理攻撃＋自分に強化",0.5);
+      }
+      if(role==="SAB")add(first,"1つ目＋敵の弱体"+eneg+"個",SAB_ENEG[eneg]);
+      if(role==="SUM"&&a.kind==="drive"){
+        add($("launchable").checked,"打ち上げられている敵",0.5);
+        add(near,"ブレイク予兆の敵",0.5);
+        add(stag,"ブレイク中の敵",0.1);
+      }
+      const condSum=C.reduce((s,c)=>s+c[1],0);
+      // バトルアルティマニア：掛け算のたびに小数第3位以下を切り捨て
+      const tr2=x=>Math.floor(x*100+1e-6)/100;
+      let v=provFail?0:Math.max(0,tr2((tr2((b+modSum)*resK)+condSum)*elK));
+      let starter=false;
+      // チェーン持続0秒の技（ブレイク前の専用技など）は、チェーンが途切れているとチェーンを始められず上がらない
+      const dur0=["aoo","cb","lr","sfist","hwind"].includes(sk.id)&&!stag;
+      if(firstPending&&dur0){v=0;it.noStart=true}
+      else if(firstPending&&!provFail&&!sk.noHit){firstPending=false;starter=v>0;v=0}
+      const capV=stag?999.9:lim;
+      const h0=st.cur;st.cur=Math.min(capV,st.cur+v);const real=st.cur-h0;
+      if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h,hits:hl.length,a,name:it.name}}
+      sum+=real;if(real<v-1e-9)lost+=v-real;
+      if(h===0&&!(firstPending&&dur0))it.noStart=false;
+      if(starter)it.starter=true;else if(h===0)it.starter=false;
+      if(!det)det={b,mods,resK,C,elK,v,stag,eidEl:!isM&&e&&resOf[e]!=="weak"};
+      if(swRav&&!detSw&&h>0){detSw={b,mods,resK,C,elK,v,stag};swFrom=h+1}
+    });
+    // ルーラーフィスト・ハイウィンド：チェーンボーナスを100.0%にもどす
+    if(sk.reset){st.cur=100;st.stag=false;it.resetDone=true}
+    if(sk.sab&&!sk.dispel&&landed){st.applied.add(sk.st);st.eneg=Math.min(8,st.eneg+1)}
+    lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
+    per.set(a,per.get(a)+sum);
+    out.push({it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:""});
+  });
+
+  const total=out.reduce((s,o)=>s+o.sum,0)+brkBonus;
+  $("rTotal").textContent=f(total);
+  const pill=$("rState");
+  if($("stag").checked){pill.hidden=false;pill.textContent="ブレイク中"}
+  else if(brokeAt){pill.hidden=false;pill.textContent=`${brokeAt.a.label}の「${brokeAt.name}」${brokeAt.h<0?"の加算":brokeAt.hits>1?(brokeAt.h+1)+"ヒット目":""}でブレイク！`}
+  else pill.hidden=true;
+
+  const scale=st.stag?999.9:lim;
+  $("gCur").style.width=(start/scale*100)+"%";
+  $("gAdd").style.left=(start/scale*100)+"%";
+  $("gAdd").style.width=((st.cur-start)/scale*100)+"%";
+  $("gauge").classList.toggle("hot",st.stag);
+  $("gFrom").textContent=f(start,1)+"% → "+f(st.cur,1)+"%";
+  $("gTo").textContent=st.stag?"上限 999.9%":"ブレイク "+lim+"%";
+
+  const pm=$("perMember");pm.innerHTML="";
+  pm.style.gridTemplateColumns=`repeat(${list.length},1fr)`;
+  list.forEach((a,i)=>{const d=document.createElement("div");
+    const capTxt=!a.on?"パーティにいない":nonAtk(a.role)?"攻撃しない":a.kind==="drive"?`ゲージ ${used(a)}/${cap(a)}`:`ATB ${used(a)}/${cap(a)}`;
+    d.innerHTML=`<b>+${f(per.get(a))}</b><span></span>`;d.querySelector("span").textContent=`${a.label}・${capTxt}${a===M[0]&&qn?"＋クエイク":""}`;pm.append(d)});
+
+  const box=$("cmds");box.innerHTML="";
+  if(!out.length)box.innerHTML='<span class="empty">コマンドを追加すると表示されます。</span>';
+  out.forEach((o,i)=>{
+    const d=document.createElement("details"),s=document.createElement("summary");
+    s.innerHTML=`<span class="nm"></span><span class="v">+${f(o.sum)}</span><span class="g">${f(o.g0,1)}→${f(o.g1,1)}</span>`;
+    const nm=s.querySelector(".nm");nm.textContent="";
+    if($("order").value==="manual"&&mode!=="drive"&&!o.it.tp){
+      const mv=(dir)=>{const k=manualOrder.indexOf(o.it),j=k+dir;if(k<0||j<0||j>=manualOrder.length)return;[manualOrder[k],manualOrder[j]]=[manualOrder[j],manualOrder[k]];calc()};
+      [["▲",-1],["▼",1]].forEach(([t,dd])=>{const bt=document.createElement("button");bt.type="button";bt.className="x";bt.style.cssText="font-size:.8rem;padding:0 3px";bt.textContent=t;bt.setAttribute("aria-label",dd<0?"前へ":"後ろへ");
+        bt.onclick=ev=>{ev.preventDefault();ev.stopPropagation();mv(dd)};nm.append(bt)});
+    }
+    nm.append(`${i+1}. `);
+    const li=list.indexOf(o.a);
+    const w=document.createElement("span");w.className="who m"+(li%3);w.textContent=o.a.kind==="member"?"M"+(M.indexOf(o.a)+1):"召";nm.append(w,o.it.name+(o.it.fangCombo?"（連撃）":"")+(o.hits>1?` ×${o.hits}hit`:""));
+    if(brokeAt&&brokeAt.idx===i){const b=document.createElement("span");b.className="brk";b.textContent="BREAK";nm.append(b)}
+    d.append(s);
+    const t=o.det,det=document.createElement("div");det.className="det";
+    const row=(x,y)=>{const r=document.createElement("div");r.className="r";r.innerHTML="<span></span><span></span>";r.children[0].textContent=x;r.children[1].textContent=y;det.append(r)};
+    row("行動",`${o.a.label}（${ROLE_JP[o.a.role]}）`);
+    if(o.it.swAt)row("途中でブラスターに切り替え",`${o.it.swAt}ヒット目から（Lv${o.it.swLv||5}）`);
+    if(o.lost)row("ブレイク値で止まって無駄になった分","−"+f(o.lost));
+    if(o.brk)row("ブレイク時のボーナス（合計に含む）","+100.00");
+    if(o.it.noStart)row("チェーン持続0秒の技で、チェーンが途切れているため上がらない","0.00");
+    if(o.it.starter)row("チェーン開始の1ヒット（%は上がらない）","0.00");
+    if(o.it.resetDone)row("チェーンボーナスを100.0%にもどす","（ブレイクも終了）");
+    if(o.finAdd)row("フィニッシュの加算（Lv"+finLv()+"）","+"+f(o.finAdd));
+    if(o.it.dup)row("同じ弱体が付与済み","成功ボーナス(+5.0)なし");
+    if(o.it.sk.sab&&!o.it.dup&&o.it.land)row("弱体成功ボーナス","基本値に+5.0");
+    if(o.provFail)row(o.it.sk.noHit?"敵に攻撃しない行動":"挑発が失敗","上昇なし");
+    else if(t){
+      row("（1ヒット目）スキル基本値",f(t.b));
+      t.mods.forEach(x=>row("　基本値補正："+x[0],"+"+f(x[1])));
+      row("チェーン耐性係数",t.stag?"×1.00（ブレイク中）":"×"+f(t.resK));
+      if(!t.C.length)row("条件補正","なし");
+      t.C.forEach(c=>row("　条件補正："+c[0],"+"+f(c[1])));
+      row("属性補正","×"+f(t.elK)+(t.eidEl?"（召喚獣は属性耐性を無視）":""));
+      row("1ヒット目の上昇量",f(t.v));
+      if(o.detSw){const u=o.detSw;
+        row(`── ${o.swFrom}ヒット目以降（ブラスター）──`,"");
+        u.mods.forEach(x=>row("　基本値補正："+x[0],"+"+f(x[1])));
+        u.C.forEach(c=>row("　条件補正："+c[0],"+"+f(c[1])));
+        row(`${o.swFrom}ヒット目の上昇量`,f(u.v));}
+      if(o.hits>1)row("全ヒット合計（実際の上昇）",f(o.sum-o.finReal));
+    }
+    d.append(det);box.append(d);
+  });
+
+  [...$("queue").querySelectorAll(".qrow")].forEach((r,i)=>{const it=A().queue[i];if(!it)return;const cb=r.querySelector("input[type=checkbox]");if(!cb)return;
+    cb.disabled=!!it.dup;const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"付与済み":"成功";lab.style.opacity=it.dup?.55:1});
+
+  {const bh=$("bonusHint");bh.hidden=mode!=="drive";
+   if(mode==="drive"){const rv=M.filter(o=>o.on&&o.role==="RAV");const tot=rv.reduce((s2,o)=>s2+RAV_PARTY[o.rlv],0);
+    bh.textContent=`召喚獣に付くブラスターボーナス：+${f(tot,1)}（${rv.length?rv.map(o=>o.label+" Lv"+o.rlv).join("・"):"ブラスターなし"}）。変えるときは「通常バトル」の各メンバーで設定してください。`}}
+  endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy};
+  $("diff").disabled=!!A().last;
+  $("carryNote").textContent=list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
+  $("nextTurn").disabled=!seq.length;
+  const tb=$("toBreak");
+  if($("stag").checked)tb.textContent="すでにブレイク中です。";
+  else if(brokeAt)tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":"このターンでブレイクします。";
+  else if(total<=0)tb.textContent="ゲージが上がりません。";
+  else if(mode==="drive")tb.textContent=`残り ${f(lim-st.cur,1)}%。ドライビングモード終了後はチェーンがリセットされます。`;
+  else{const need=lim-st.cur;tb.textContent=`このターン後の残り ${f(need,1)}%。同じ並びならあと約 ${Math.ceil(need/total-1e-9)} ターン（2ターン目以降は条件補正が変わる場合あり）。`}
+}
+
+["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","epos","launchable","cur","lim"].forEach(id=>$(id).addEventListener("input",calc));
+document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",calc));
+
+// 例：通常バトル＝ブラスター/アタッカー/ブラスター、召喚中＝各召喚獣のAIの基本行動、ドライビング＝空
+const add=(i,sk,e)=>{const mm=M[i];mm.queue.push({sk,e:sk.e!==undefined?sk.e:(typeof sk.n==="string"?"":e),name:nameOf(sk,e),cost:sk.cost,all:false,land:true})};
+add(0,SK.RAV[0],"F");add(0,SK.RAV[0],"I");add(0,SK.RAV[0],"T");
+add(1,SK.COM[0]);add(1,SK.COM[0]);add(1,SK.COM[0]);
+add(2,SK.RAV[0],"W");add(2,SK.RAV[4],"A");add(2,SK.RAV[0],"F");
+const qe=(a,id)=>{const sk=a.skills.find(s=>s.id===id);a.queue.push({sk,e:"",name:sk.n,cost:sk.cost,all:false,land:true,ph:sk.parts.map(x=>x.h)})};
+["o1","o2","o3","o1","o6"].forEach(id=>qe(EA.odin[0],id));
+["st1","st1","st1"].forEach(id=>qe(EA.shiva[0],id));["nx1","nx1","nx1","nx3"].forEach(id=>qe(EA.shiva[1],id));
+["b1","b1","b2","b8"].forEach(id=>qe(EA.bryn[0],id));
+["h1","h1","h1","h2","h4"].forEach(id=>qe(EA.baha[0],id));
+["x1","x1","x3","x4"].forEach(id=>qe(EA.alex[0],id));
+["k1","k2","k3","k4","k1","k3"].forEach(id=>qe(EA.heca[0],id));
+loadActor();render();
+</script>
+</body>
+</html>
