@@ -146,7 +146,7 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>パーティ</legend>
   <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
     <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
-  <label id="eidWrap">召喚獣<select id="eid">
+  <label id="eidWrap">召喚獣（メンバー1のキャラで決まる）<select id="eid" disabled>
     <option value="odin">オーディン</option><option value="shiva">シヴァ</option><option value="bryn">ブリュンヒルデ</option>
     <option value="baha">バハムート</option><option value="alex">アレキサンダー</option><option value="heca">ヘカトンケイル</option></select></label>
   <label id="gcWrap">ドライビングモード開始時のゲージ（満タン30）<input type="number" id="gc" min="2" max="30" step="1" value="30"></label>
@@ -501,7 +501,10 @@ Object.entries(EID).forEach(([k,d])=>{
 });
 let mode="normal", cur=0;
 
+// 各キャラが召喚できる召喚獣
+const EID_OF={light:"odin",sazh:"bryn",snow:"shiva",hope:"alex",vanille:"heca",fang:"baha"};
 function actors(){
+  $("eid").value=EID_OF[M[0].chr];
   const k=$("eid").value;
   if(mode==="summon")return [M[0],...EA[k]];
   if(mode==="drive")return [DR[k]];
@@ -552,10 +555,10 @@ function syncVis(){
     [...$("chr").options].forEach(op=>{const used=M.find(o=>o!==a&&o.on&&o.chr===op.value);op.disabled=false;op.textContent=CHR_JP[op.value]+(used?`（${used.label}と設定ごと入れ替え）`:"")});
     $("rlvWrap").hidden=a.role!=="RAV";$("jeoWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("vigWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";
   }
-  $("eidWrap").hidden=mode==="normal";$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";
+  $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";
   $("modeSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
-  $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣のATBは固定です。ドライビング前の召喚獣の攻撃は、基本値×(100−チェーン耐性)/100 だけ上がります。"
-    :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナス（1人あたり+0.1〜+0.3）が召喚獣の攻撃に付きます。「通常バトル」のタブで3人のロールとロールレベルを設定してください。":"";
+  $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣はメンバー1のキャラで決まります（ライトニング＝オーディン、サッズ＝ブリュンヒルデ、スノウ＝シヴァ、ホープ＝アレキサンダー、ヴァニラ＝ヘカトンケイル、ファング＝バハムート）。召喚獣のATBは固定です。ドライビング前の召喚獣の攻撃は、基本値×(100−チェーン耐性)/100 だけ上がります。"
+    :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。召喚獣はメンバー1のキャラで決まります。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナス（1人あたり+0.1〜+0.3）が召喚獣の攻撃に付きます。「通常バトル」のタブで3人のロールとロールレベルを設定してください。":"";
   $("atbLabel").textContent=a.kind==="drive"?"ドライビングゲージ":"ATB";
   $("tpLabel").hidden=mode!=="normal";["tpQ","tpWhen","tpBase"].forEach(id=>$(id).closest("label").hidden=mode!=="normal");
   $("tpLabel").nextElementSibling;document.querySelector("#tpBase").closest("fieldset").querySelector(".hint").hidden=mode!=="normal";
