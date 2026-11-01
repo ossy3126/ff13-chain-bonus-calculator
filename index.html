@@ -228,8 +228,9 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>行動の順番</legend>
   <label class="full">行動の順番<select id="order">
     <option value="manual" selected>自分で並べる（右の内訳の ▲▼ で入れ替え）</option>
-    <option value="rr">交互（1人1コマンドずつ順番に）</option>
-    <option value="seq">メンバー順（1人目を全部→2人目→3人目）</option></select></label>
+    <optgroup label="交互（1人1コマンドずつ順番に）"><option value="rr:012">交互 M1→M2→M3（1人1コマンドずつ）</option><option value="rr:021">交互 M1→M3→M2（1人1コマンドずつ）</option><option value="rr:102">交互 M2→M1→M3（1人1コマンドずつ）</option><option value="rr:120">交互 M2→M3→M1（1人1コマンドずつ）</option><option value="rr:201">交互 M3→M1→M2（1人1コマンドずつ）</option><option value="rr:210">交互 M3→M2→M1（1人1コマンドずつ）</option></optgroup>
+    <optgroup label="メンバーごとにまとめて（1人目を全部→2人目→3人目）"><option value="seq:012">まとめて M1→M2→M3（1人ずつ全部）</option><option value="seq:021">まとめて M1→M3→M2（1人ずつ全部）</option><option value="seq:102">まとめて M2→M1→M3（1人ずつ全部）</option><option value="seq:120">まとめて M2→M3→M1（1人ずつ全部）</option><option value="seq:201">まとめて M3→M1→M2（1人ずつ全部）</option><option value="seq:210">まとめて M3→M2→M1（1人ずつ全部）</option></optgroup></select></label>
+  <p class="hint">M1〜M3はパーティのタブの順（召喚中はM1＝召喚者、M2・M3＝召喚獣）です。</p>
   <p class="hint">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
   <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
   <label>クエイクの回数<select id="tpQ"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
@@ -847,9 +848,12 @@ function calc(){
 
   const lanes=list.map(a=>isActive(a)?a.queue.map((it,k)=>({it,a,first:k===0})):[]);
   let seq=[];
-  const ord=$("order").value;
-  if(ord==="seq"||mode==="drive")lanes.forEach(l=>seq.push(...l));
-  else{const n=Math.max(0,...lanes.map(l=>l.length));for(let k=0;k<n;k++)lanes.forEach(l=>{if(l[k])seq.push(l[k])})}
+  const ordV=$("order").value,ord=ordV.split(":")[0];
+  // 並び順（M1〜M3の順番）。指定がなければタブの順
+  const ordP=(ordV.split(":")[1]||"012").split("").map(Number).filter(i=>i<lanes.length);lanes.forEach((l,i)=>{if(!ordP.includes(i))ordP.push(i)});
+  const ln=ordP.map(i=>lanes[i]);
+  if(ord==="seq"||mode==="drive")(mode==="drive"?lanes:ln).forEach(l=>seq.push(...l));
+  else{const n=Math.max(0,...ln.map(l=>l.length));for(let k=0;k<n;k++)ln.forEach(l=>{if(l[k])seq.push(l[k])})}
   if(ord==="manual"&&mode!=="drive"){
     const present=new Set(seq.map(x=>x.it));
     manualOrder=manualOrder.filter(it=>present.has(it));
