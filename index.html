@@ -138,6 +138,7 @@ details[open] summary .nm::before{content:"▾ "}
   <h1>FFXIII チェーンボーナス計算機</h1>
   <p>パーティ3人のATBにコマンドを並べると、1ターンでチェーンボーナスが合計いくつ上がるかを計算します。式は『ファイナルファンタジーXIII バトルアルティマニア』によります。</p>
 </header>
+<p class="note" style="margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px"><b>チェーンボーナスだけ知りたいときに必要な入力</b>：戦闘モード／各メンバーのキャラ・ロール・ロールレベル（ブラスター／アタッカー）・ATBゲージ数・HP・コマンド（とロールのアビリティ）／敵のチェーン耐性・ブレイク値・物理耐性・魔法耐性・属性耐性／現在のチェーンボーナス。<br>「ダメージ用」の項目（攻撃力・補正）と敵の最大HP、召喚獣ランクは、ダメージと残りHPを出したいときだけ入れてください。</p>
 <div class="formula">1ヒットの上昇量 = [ (スキル基本値 + 基本値補正) × (100 − チェーン耐性)/100 + 条件補正 ] × 属性補正</div>
 
 <div class="grid">
@@ -152,6 +153,7 @@ details[open] summary .nm::before{content:"▾ "}
     <option value="baha">バハムート</option><option value="alex">アレキサンダー</option><option value="heca">ヘカトンケイル</option></select></label>
   <label id="gcWrap">ドライビングモード開始時のゲージ（満タン30）<input type="number" id="gc" min="2" max="30" step="1" value="30"></label>
   <label id="flWrap">フィニッシュ技のレベル<select id="finLvSel"><option value="1">Lv1</option><option value="2">Lv2</option><option value="3" selected>Lv3</option></select></label>
+  <label id="paWrap">召喚獣ランク（ダメージと斬鉄剣の一撃判定に使用。ランク＝召喚者のクリスタリウムのレベル＋レベル5のロールの数）<select id="eRank"><option value="0">選ばない</option><option value="16">ランク16</option><option value="15">ランク15</option><option value="14">ランク14</option><option value="13">ランク13</option><option value="12">ランク12</option><option value="11">ランク11</option><option value="10">ランク10</option><option value="9">ランク9</option><option value="8">ランク8</option><option value="7">ランク7</option><option value="6">ランク6</option><option value="5">ランク5</option><option value="4">ランク4</option><option value="3">ランク3</option></select></label>
 
   <p class="hint" id="modeHint"></p>
   <p class="note full" id="bonusHint" style="padding:6px 10px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-soft);color:var(--ink)"></p>
@@ -162,19 +164,40 @@ details[open] summary .nm::before{content:"▾ "}
     <option value="COM">アタッカー</option><option value="RAV">ブラスター</option>
     <option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option>
     <option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
-  <label class="mo" id="rlvWrap">ブラスターのロールレベル<select id="rlv"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+  <label class="mo" id="rlvWrap"><span id="rlvTx">ブラスターのロールレベル</span><select id="rlv"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
   <label class="mo">ATBゲージ数<select id="atb"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
   <label class="mo">HP<select id="hp">
     <option value="full">満タン (100%)</option><option value="high">70%超</option>
     <option value="mid">30〜70%</option><option value="low">30%未満</option></select></label>
   <label class="mo">自分の強化数<input type="number" id="cpos" min="0" max="8" step="1"></label>
   <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
+  <label class="mo">戦闘不能になるタイミング<select id="ko"><option value="0">ならない</option><option value="-1">最初から戦闘不能</option><option value="1">内訳の1番目の行動の後</option><option value="2">内訳の2番目の行動の後</option><option value="3">内訳の3番目の行動の後</option><option value="4">内訳の4番目の行動の後</option><option value="5">内訳の5番目の行動の後</option><option value="6">内訳の6番目の行動の後</option><option value="7">内訳の7番目の行動の後</option><option value="8">内訳の8番目の行動の後</option><option value="9">内訳の9番目の行動の後</option><option value="10">内訳の10番目の行動の後</option><option value="11">内訳の11番目の行動の後</option><option value="12">内訳の12番目の行動の後</option><option value="13">内訳の13番目の行動の後</option><option value="14">内訳の14番目の行動の後</option><option value="15">内訳の15番目の行動の後</option><option value="16">内訳の16番目の行動の後</option><option value="17">内訳の17番目の行動の後</option><option value="18">内訳の18番目の行動の後</option><option value="19">内訳の19番目の行動の後</option><option value="20">内訳の20番目の行動の後</option><option value="21">内訳の21番目の行動の後</option><option value="22">内訳の22番目の行動の後</option><option value="23">内訳の23番目の行動の後</option><option value="24">内訳の24番目の行動の後</option></select></label>
   <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド</label>
-  <div class="sub mo">オートアビリティ・武器</div>
-  <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン</label>
-  <label class="chk mo" id="ovwWrap"><input type="checkbox" id="ovwOn">ジョイントレイド（ブラスター時）</label>
-  <label class="chk mo" id="vigWrap"><input type="checkbox" id="vigor">ハイテンション（HP70%超）</label>
+  <div class="sub mo">ロールのアビリティ（クリスタリウムで習得）</div>
+  <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン（アタッカー）</label>
+  <label class="chk mo" id="hvWrap"><input type="checkbox" id="hv">ハイボルテージ（アタッカー・攻撃力+20%、ダメージ用）</label>
+  <label class="chk mo" id="ovwWrap"><input type="checkbox" id="ovwOn">ジョイントレイド（ブラスター）</label>
+  <label class="chk mo" id="vigWrap"><input type="checkbox" id="vigor">ハイテンション（ブラスター・HP70%超）</label>
+  <div class="sub mo" id="cbbSub">武器</div>
   <label class="mo" id="cbbWrap">サッズの武器「チェーンボーナスUP」<select id="cbb"><option value="0">なし</option><option value="1">UP（アンタレス）+1.0</option><option value="2">UP改（フォーマルハウト、トータルエクリプス）+2.0</option></select></label>
+  <div class="sub mo">ダメージ用（チェーンボーナスだけなら入力不要）</div>
+  <label class="mo">物理攻撃力（ステータス画面）<input type="number" id="mpa" min="0" step="1"></label>
+  <label class="mo">魔法攻撃力（ステータス画面）<input type="number" id="mma" min="0" step="1"></label>
+  <label class="mo">ブレイブ系<select id="mbr"><option value="1">なし</option><option value="1.4">ブレイブ ×1.4</option><option value="1.8">ブレイダ ×1.8</option></select></label>
+  <label class="mo">フェイス系<select id="mfa"><option value="1">なし</option><option value="1.4">フェイス ×1.4</option><option value="1.8">フェイダ ×1.8</option></select></label>
+  <label class="mo">ピンチにパワフル<select id="mpp"><option value="0">なし</option><option value="20">+20%</option><option value="40">改 +40%</option></select></label>
+  <label class="mo">仲間戦闘不能で強化（倒れた仲間の数は自動）<select id="mak"><option value="0">なし</option><option value="110">+110%／人</option><option value="130">改 +130%／人</option></select></label>
+  <label class="chk mo"><input type="checkbox" id="mgen">元気だと威力UP（+20%）</label>
+  <label class="chk mo"><input type="checkbox" id="mkiki">危機だと威力UP（+50%）</label>
+  <label class="mo">属性ダメージ+○%<select id="med"><option value="0">なし</option><option value="20">+20%</option><option value="30">+30%</option><option value="50">+50%</option></select></label>
+  <label class="mo">その属性<select id="medE"><option value="F">火</option><option value="I">氷</option><option value="T">雷</option><option value="W">水</option><option value="A">風</option><option value="E">土</option></select></label>
+  <label class="mo">攻撃力ダウン装備<select id="mdn"><option value="0">なし</option><option value="p50">物理大幅低下 −50%</option><option value="p30">物理低下 −30%</option><option value="m50">魔法大幅低下 −50%</option><option value="m30">魔法低下 −30%</option></select></label>
+  <label class="mo">エン系（物理攻撃に属性・×1.3）<select id="men"><option value="">なし</option><option value="F">火</option><option value="I">氷</option><option value="T">雷</option><option value="W">水</option></select></label>
+  <label class="chk mo"><input type="checkbox" id="mab1">チェーンスターター（たたかう1.5／ルイン1.25）</label>
+  <label class="chk mo"><input type="checkbox" id="mab2">ゾーンクラッシュ（エリアブラスト2.0／ルインガ2.45）</label>
+  <label class="chk mo"><input type="checkbox" id="mab3">バックスタブ（たたかう2.0／ルイン1.75）</label>
+  <label class="mo">インパクトブレイク／ブレイクバースト<select id="mab4"><option value="0">なし</option><option value="i">インパクトブレイク（たたかう5.0）</option><option value="b">ブレイクバースト（たたかう5.0）</option></select></label>
+  <label class="chk mo"><input type="checkbox" id="mdb">エンドストライク（残りHP＜ダメージ×1.2で×1.5、残りHPは自動）</label>
 
   <div class="sub" id="atbLabel">ATB</div>
   <div class="atbbar" id="atbbar"></div>
@@ -218,6 +241,10 @@ details[open] summary .nm::before{content:"▾ "}
 <fieldset>
   <legend>敵の状態</legend>
   <label>チェーン耐性<input type="number" id="cres" min="0" max="100" step="1" value="50"></label>
+  <label>敵の最大HP（ダメージ計算用・任意）<input type="number" id="ehp" min="0" step="1" placeholder="例：9660"></label>
+  <label>このターン開始時の残りHP（空なら最大HP）<input type="number" id="ehpCur" min="0" step="1"></label>
+  <label>ダメージの見積もり<select id="dmgV"><option value="min">最小（ばらつき下限）</option><option value="avg" selected>平均</option><option value="max">最大</option></select></label>
+  <label class="chk"><input type="checkbox" id="capUp">メンバーのダメージ限界突破（上限999,999）</label>
   <label>物理耐性<select id="tresP">
     <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">激減</option><option value="null">無効</option></select></label>
   <label>魔法耐性<select id="tresM">
@@ -235,7 +262,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk"><input type="checkbox" id="stag">ブレイク中</label>
   <label class="chk"><input type="checkbox" id="launched">打ち上げ中</label>
   <label class="chk"><input type="checkbox" id="epos">敵に強化がかかっている</label>
-  <label class="chk"><input type="checkbox" id="launchable" checked>召喚獣の攻撃で打ち上げられている（召喚獣の補正）</label>
+  <label class="chk"><input type="checkbox" id="noLaunch">打ち上げられない敵</label>
   <p class="hint">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
 </fieldset>
 
@@ -243,7 +270,7 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>ゲージ</legend>
   <label>現在のチェーンボーナス (%)<input type="number" id="cur" min="100" max="999.9" step="0.1" value="100"></label>
   <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999" step="1" value="200"></label>
-  <label>ブレイク予兆の位置<select id="omen"><option value="0.90">必要上昇量の0.90倍</option><option value="0.91" selected>0.91倍</option><option value="0.92">0.92倍</option></select></label>
+  <label>ブレイク予兆の位置<select id="omen"><option value="0.90" selected>必要上昇量の0.90倍</option><option value="0.91">0.91倍</option><option value="0.92">0.92倍</option></select></label>
   <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンが途切れた状態から始める（チェーンゲージが空）</label>
   <p class="hint">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
   <p class="hint">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
@@ -277,6 +304,7 @@ details[open] summary .nm::before{content:"▾ "}
   <div>
     <div class="cap">ブレイクまで</div>
     <p class="note" id="toBreak"></p>
+    <p class="note" id="dmgSum" hidden style="font-weight:600;color:var(--ink)"></p>
   </div>
 </aside>
 </div>
@@ -305,14 +333,16 @@ details[open] summary .nm::before{content:"▾ "}
       <ul>
         <li>自分がブラスターなら自分のロールレベル分（+1.0〜+3.0）。</li>
         <li>ほかのブラスターのメンバーから1人あたり <b>+0.1〜+0.3</b>。受け取る側もブラスターのときだけ付きます（アタッカーには付きません）。</li>
-        <li>ジョイントレイドは、同じ敵を狙う<b>味方キャラ</b>1人につき+1.0。召喚獣は数えません。</li>
+        <li>ジョイントレイドは、同じ敵を狙う味方1人につき+1.0。召喚中は召喚獣も数えます（シヴァは2体で+2.0）。召喚獣が別の敵を狙っているときは数えないので、そのときは結果より少なくなります。</li>
+        <li>ダメージは、FF13 ダメージ計算機と同じ式で計算します（攻撃力×技の倍率×ばらつき×ヒット時点のチェーンボーナス×アタッカーのロールボーナス×物理/魔法耐性・属性耐性、デプロテ/デシェル）。敵の最大HPを入れると、行動ごとの残りHPと撃破のタイミングを出します。エンハンサー以外の強化・装備のアビリティ、ジャマーの弱体魔法・ディフェンダーの技のダメージは含めていません。技のヒット数とダメージの倍率のヒット数が合わない技は、合計の倍率を最後のヒットでまとめて計算します。</li>
+        <li>戦闘不能になった味方は、ジョイントレイドの人数にもブラスターのパーティボーナスにも数えません。</li>
       </ul>
     </section>
     <section>
       <h3>属性耐性・弱体・ウィーク</h3>
       <ul>
         <li>属性補正：吸収・無効 ×0.25、激減・半減 ×0.5、標準・弱点 ×1。物理/魔法耐性はチェーンの倍率には影響しません。</li>
-        <li>「弱点」の補正は、属性が弱点なら物理/魔法耐性に関係なく付き、物理/魔法が弱点のときも付きます（バトルアルティマニアの耐性掛け合わせ表）。</li>
+        <li>「弱点」の補正は、物理/魔法耐性と属性耐性を掛け合わせたダメージ倍率が1倍を超えるときだけ付きます。例：魔法半減×氷弱点＝1倍なので付かない。召喚獣のドライビング技は物理/魔法耐性を無視するので、属性の弱点だけで判定します。</li>
         <li>召喚獣の属性攻撃は敵の属性耐性で減りません（弱点は有効）。</li>
         <li>ウィークが入ると属性耐性が1段階下がります（吸収→無効→激減→半減→標準→弱点）。ターン中に入った場合は、その後の行動から。</li>
         <li>「ウィークが入っている」にチェックするときは、「現在の弱体数」にも1つ含めてください。</li>
@@ -329,18 +359,21 @@ details[open] summary .nm::before{content:"▾ "}
     <section>
       <h3>召喚中（ドライビング前）</h3>
       <ul>
-        <li>召喚獣の攻撃は <b>基本値 × (100−チェーン耐性)/100</b> だけ上がります。ロールボーナス・違うコマンド・召喚獣用の補正は付けていません（弱点+0.1のみ）。</li>
+        <li>召喚獣用の条件補正は本の値です（ブレイク予兆 +0.5、ブレイク中 +0.1、打ち上げられている敵 +0.5）。「違うコマンド」とロールボーナスは付きません。3つとも実測で確認済みです。打ち上げは、打ち上げる技（天臨・烈破・サンダガなど）の1ヒット目には付かず、打ち上げた後のヒットから付きます。</li>
         <li>召喚者は自分のロールボーナスで計算します。</li>
       </ul>
     </section>
     <section>
       <h3>ドライビングモード</h3>
       <ul>
-        <li>召喚獣用の条件補正：違うコマンド・弱点・<b>打ち上げられている敵 +0.5</b>・ブレイク予兆 +0.5・ブレイク中 +0.1。</li>
-        <li>召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナスが付きます（「通常バトル」のメンバー設定を使用）。</li>
+        <li>召喚獣用の条件補正は、本の値の<b>2倍</b>になります（「違うコマンド」は付かない。弱点は本どおり +0.1）：ブレイク中 +0.2、<b>打ち上げた後のヒット +1.0</b>（天鳴万雷・バスターフォース・フィニッシュ技などで打ち上げた後。打ち上げる技の1ヒット目には付かず、打ち上げない技はその前の打ち上げ状態を引き継ぐ）、ブレイク予兆 +1.0。</li>
+        <li>ブラスターのロールボーナスは、召喚獣には付きません。</li>
         <li>技は物理/魔法耐性を無視するので、物理/魔法の弱点補正は付きません（アレキサンダーの鎧袖一触・苛烈なる制裁を除く）。</li>
         <li>召喚中の初期のコマンドは、バトルアルティマニアの「通常の行動」に合わせています（例：オーディンは連閃・天臨・烈破を計4回→サンダガ）。</li>
-        <li>フィニッシュ技は、ダメージ前にレベルに応じた量をそのまま加算します（例：斬鉄剣Lv3で+136.00）。</li>
+        <li>フィニッシュ技のダメージ前の上昇は、ダイヤモンドダスト・斬鉄剣・ガイアサルヴォーでは連続ヒット（下記）として計算します。まだ確かめていないほかの召喚獣のフィニッシュ技は、レベルに応じた量をそのまま加算します。</li>
+        <li>斬鉄剣は、斬鉄剣のヒット自身の上昇まで含めたチェーンボーナス（倍率）で、敵の残りHPが「3.0×オーディンの物理攻撃力×倍率²」未満なら一撃で倒せます（デスが効かない敵も含む。バトルアルティマニア）。斬鉄剣のダメージ前の上昇も17.0の連続ヒットで、Lv3は実測で7回（チェーンが途切れていれば1回目は0）、本では8回。</li>
+        <li>ガイアサルヴォーは、ダメージ前が Lv1で 22.0→32.0（合計54.0）、Lv2で 22.0×2→32.0×2（合計108.0）の連続ヒット、そのあと攻撃38.0（実測、どちらも本どおり）。Lv3で 22.0×3→32.0×3（合計162.0、実測で本どおり）。ブレイク前はチェーン耐性が掛かります（実測）。</li>
+        <li>ダイヤモンドダストは、ダメージ前の上昇が連続ヒットになり、1回ごとにチェーン耐性と条件補正（弱点など）を受けます。Lv3は実測で 6.0×10回→17.0×9回→5.0×2回（バトルアルティマニアでは 6.0×9回→17.0×8回→5.0×2回）。チェーンが途切れていると最初の1回は0です。Lv1・Lv2は本の回数どおりでした。ダイヤモンドダストのヒットの条件補正は2倍にならず、本の値（ブレイク予兆+0.5、ブレイク中+0.1、弱点+0.1）です。</li>
         <li>ゲージが残り2以上ならどの技も使え、残りは1で止まります。終了後はチェーンがリセットされます。</li>
         <li>幅のあるヒット数は最大値が初期値です（行ごとに変更可）。ブリュンヒルデのジェットは含めていません。</li>
       </ul>
@@ -420,42 +453,42 @@ const SK={
 const P=(h,b,e,t,hr)=>({h,b,e:e||"",t:t||"P",hr});
 const EID={
  odin:{jp:"オーディン",actors:[{label:"オーディン",atb:5,sk:[
-   {id:"o1",n:"連閃",cost:1,parts:[P(4,2.50)]},{id:"o2",n:"天臨",cost:1,parts:[P(3,3.33)]},
-   {id:"o3",n:"烈破",cost:1,parts:[P(1,10)]},{id:"o4",n:"絶影",cost:1,parts:[P(1,10)]},
-   {id:"o5",n:"サンダラ",cost:1,parts:[P(1,10,"T","M")]},{id:"o6",n:"サンダガ",cost:1,parts:[P(1,14.66,"T","M")]}]}],
+   {id:"o1",n:"連閃",cost:1,parts:[P(4,2.50)]},{id:"o2",launch:true,n:"天臨",cost:1,parts:[P(3,3.33)]},
+   {id:"o3",launch:true,n:"烈破",cost:1,parts:[P(1,10)]},{id:"o4",n:"絶影",cost:1,parts:[P(1,10)]},
+   {id:"o5",n:"サンダラ",cost:1,parts:[P(1,10,"T","M")]},{id:"o6",launch:true,n:"サンダガ",cost:1,parts:[P(1,14.66,"T","M")]}]}],
   gs:[{id:"og1",n:"轟剣",cost:[2],parts:[P(1,6.66,"T")]},
    {id:"og2",n:"雷光斬",cost:[3],parts:[P(2,3.75),P(5,3.75,"T")]},
    {id:"og3",n:"真空破",cost:[3],parts:[P(4,5.00,"","P",[2,4]),P(3,10.00,"","P",[1,3])]},
-   {id:"og4",n:"天鳴万雷",cost:[4],parts:[P(3,8.88,"T","P",[2,3])]}],
-  fin:{n:"斬鉄剣",lv:[51,85,136],parts:[P(1,24)]}},
+   {id:"og4",launch:true,n:"天鳴万雷",cost:[4],parts:[P(3,8.88,"T","P",[2,3])]}],
+  fin:{n:"斬鉄剣",lv:[51,85,136],te:"",ticks:[[[3,17]],[[5,17]],[[7,17]]],parts:[P(1,24)]}},
  shiva:{jp:"シヴァ",actors:[
   {label:"シヴァ・スティリア",atb:3,sk:[
-   {id:"st1",n:"ブリザド",cost:1,parts:[P(1,7.5,"I","M")]},{id:"st2",n:"ブリザラ",cost:2,parts:[P(1,11.25,"I","M")]},{id:"st3",n:"ブリザガ",cost:3,parts:[P(1,16.5,"I","M")]}]},
+   {id:"st1",n:"ブリザド",cost:1,parts:[P(1,7.5,"I","M")]},{id:"st2",n:"ブリザラ",cost:2,parts:[P(1,11.25,"I","M")]},{id:"st3",launch:true,n:"ブリザガ",cost:3,parts:[P(1,16.5,"I","M")]}]},
   {label:"シヴァ・ニクス",atb:4,sk:[
    {id:"nx1",n:"パワーホイール",cost:1,parts:[P(1,7.5)]},{id:"nx2",n:"フリッパーキック",cost:1,parts:[P(1,7.5)]},
    {id:"nx3",n:"ダンシングホイール",cost:1,parts:[P(4,1.87)]},{id:"nx4",n:"ホイールスロー",cost:1,parts:[P(5,1.87,"","P",[3,5])]},
    {id:"nx5",n:"トルネードレイヴ",cost:2,parts:[P(3,3.28)]},{id:"nx6",n:"ブリザラ",cost:2,parts:[P(1,11.25,"I","M")]}]}],
-  gs:[{id:"sg1",n:"ウィリーラッシュ",cost:[3],parts:[P(3,20,"","P",[2,3])]},
-   {id:"sg2",n:"スプラッシュ",cost:[3],parts:[P(5,4,"I")]},
-   {id:"sg3",n:"アイシクルターン",cost:[3],parts:[P(1,5),P(3,5)]},
-   {id:"sg4",n:"エアエッジ",cost:[3],parts:[P(2,2),P(1,20,"I"),P(1,10)]}],
-  fin:{n:"ダイヤモンドダスト",lv:[103,144,200],parts:[P(1,17,"I")]}},
+  gs:[{id:"sg1",n:"ウィリーラッシュ",cost:[3],parts:[P(3,7.5,"","P",[2,3])]},
+   {id:"sg2",launchStag:true,n:"スプラッシュ",cost:[3],parts:[P(5,4,"I")]},
+   {id:"sg3",n:"アイシクルターン",cost:[3],parts:[P(1,2),P(1,20)]},
+   {id:"sg4",n:"エアエッジ",cost:[3],parts:[P(1,2),P(1,20,"I"),P(1,2)]}],
+  fin:{n:"ダイヤモンドダスト",lv:[103,144,200],te:"I",ticks:[[[3,6],[5,17]],[[7,6],[6,17]],[[10,6],[9,17],[2,5]]],parts:[P(1,17,"I")]}},
  bryn:{jp:"ブリュンヒルデ",actors:[{label:"ブリュンヒルデ",atb:4,sk:[
    {id:"b1",n:"スラッシャー",cost:1,parts:[P(1,10)]},{id:"b2",n:"ヴァルキリーサイズ",cost:1,parts:[P(3,3.33),P(3,3.33,"","P",[1,3])]},
    {id:"b3",n:"ガンショット",cost:1,parts:[P(3,3.33)]},
    {id:"b4",n:"ヒートショット",cost:1,parts:[P(1,10,"F","M")]},{id:"b5",n:"アイスショット",cost:1,parts:[P(1,10,"I","M")]},
    {id:"b6",n:"エレキショット",cost:1,parts:[P(1,10,"T","M")]},{id:"b7",n:"アクアショット",cost:1,parts:[P(1,10,"W","M")]},
-   {id:"b8",n:"ヒートバースト",cost:1,parts:[P(1,2.5),P(1,15,"F","M")]},{id:"b9",n:"アイスバースト",cost:1,parts:[P(1,2.5),P(1,15,"I","M")]},
-   {id:"b10",n:"エレキバースト",cost:1,parts:[P(1,2.5),P(1,15,"T","M")]},{id:"b11",n:"アクアバースト",cost:1,parts:[P(1,2.5),P(1,15,"W","M")]}]}],
+   {id:"b8",launch:true,n:"ヒートバースト",cost:1,parts:[P(1,2.5),P(1,15,"F","M")]},{id:"b9",launch:true,n:"アイスバースト",cost:1,parts:[P(1,2.5),P(1,15,"I","M")]},
+   {id:"b10",launch:true,n:"エレキバースト",cost:1,parts:[P(1,2.5),P(1,15,"T","M")]},{id:"b11",launch:true,n:"アクアバースト",cost:1,parts:[P(1,2.5),P(1,15,"W","M")]}]}],
   gs:[{id:"bg1",n:"チョッパースピン",cost:[2],parts:[P(2,0.66,"","P",[1,2])]},
-   {id:"bg2",n:"カルトロップボム",cost:[3],parts:[P(1,2.0,"F")]},
+   {id:"bg2",launchStag:true,n:"カルトロップボム",cost:[3],parts:[P(1,2.0,"F")]},
    {id:"bg3",n:"スイーピングターン",cost:[3,1,1],parts:[P(3,0.47,"","P",[2,3])]},
    {id:"bg4",n:"ホットロッド",cost:[3,1,1],parts:[P(3,0.37,"F")]}],
   fin:{n:"ムスペルフレイム",lv:[78,114,174],parts:[P(1,26,"F")]}},
  baha:{jp:"バハムート",actors:[{label:"バハムート",atb:5,sk:[
-   {id:"h1",n:"ドラゴンクロー",cost:1,parts:[P(1,2.0)]},{id:"h2",n:"エアリアルレイヴ",cost:1,parts:[P(2,5),P(1,10)]},
-   {id:"h3",n:"ヘビーストライク",cost:1,parts:[P(1,30)]},{id:"h4",n:"インフェルノ",cost:1,parts:[P(1,40,"","M")]},
-   {id:"h5",n:"イグニス",cost:3,parts:[P(1,60,"","M")]}]}],
+   {id:"h1",n:"ドラゴンクロー",cost:1,parts:[P(1,2.0)]},{id:"h2",launch:true,n:"エアリアルレイヴ",cost:1,parts:[P(2,5),P(1,10)]},
+   {id:"h3",n:"ヘビーストライク",cost:1,parts:[P(1,30)]},{id:"h4",launch:true,n:"インフェルノ",cost:1,parts:[P(1,40,"","M")]},
+   {id:"h5",launch:true,n:"イグニス",cost:3,parts:[P(1,60,"","M")]}]}],
   gs:[{id:"hg1",n:"ハンティングダイブ",cost:[2],parts:[P(2,6.66,"","P",[1,2]),P(1,13.33)]},
    {id:"hg2",n:"スカイハイループ",cost:[2],parts:[P(2,6.66)]},
    {id:"hg3",n:"デストロイブレス",cost:[3],parts:[P(5,13.33,"","P",[1,5])]},
@@ -463,8 +496,8 @@ const EID={
   fin:{n:"メガフレア",lv:[91,153,215],parts:[P(1,25)]}},
  alex:{jp:"アレキサンダー",actors:[{label:"アレキサンダー",atb:4,sk:[
    {id:"x1",n:"鉄砕掌",cost:1,parts:[P(1,30)]},{id:"x2",n:"金剛掌",cost:1,parts:[P(1,3),P(1,60)]},
-   {id:"x3",n:"翔天掌",cost:1,parts:[P(1,30)]},{id:"x4",n:"破壊の拳",cost:1,parts:[P(1,30)]},
-   {id:"x5",n:"爆轟の鉄拳",cost:3,parts:[P(1,7.5),P(1,90)]},{id:"x6",n:"誇り高き挑発",cost:1,parts:[P(1,2,"","-")]}]}],
+   {id:"x3",launch:true,n:"翔天掌",cost:1,parts:[P(1,30)]},{id:"x4",n:"破壊の拳",cost:1,parts:[P(1,30)]},
+   {id:"x5",launch:true,n:"爆轟の鉄拳",cost:3,parts:[P(1,7.5),P(1,90)]},{id:"x6",n:"誇り高き挑発",cost:1,parts:[P(1,2,"","-")]}]}],
   gs:[{id:"xg1",n:"鎧袖一触",cost:[4],def:true,parts:[P(110,1.21,"","P",[1,110])]},
    {id:"xg2",n:"アースクエイク（近い敵）",cost:[4,2,2],chain:"xg2",parts:[P(3,0.10,"","P",[2,3])]},
    {id:"xg2f",n:"アースクエイク（遠い敵）",cost:[4,2,2],chain:"xg2",parts:[P(3,8.00,"","P",[2,3])]},
@@ -473,16 +506,17 @@ const EID={
   fin:{n:"聖なる審判",lv:[101,138,220],parts:[P(1,20)]}},
  heca:{jp:"ヘカトンケイル",actors:[{label:"ヘカトンケイル",atb:6,sk:[
    {id:"k1",n:"ラッシュ",cost:1,parts:[P(7,0.57)]},{id:"k2",n:"アサルトタックル",cost:1,parts:[P(1,2.0),P(1,4.0)]},
-   {id:"k3",n:"ハリケーンキック",cost:1,parts:[P(1,4.0)]},{id:"k4",n:"インパルス",cost:1,parts:[P(5,1.0,"","P",[3,5])]},
+   {id:"k3",n:"ハリケーンキック",cost:1,parts:[P(1,4.0)]},{id:"k4",launch:true,n:"インパルス",cost:1,parts:[P(5,1.0,"","P",[3,5])]},
    {id:"k5",n:"クエイク",cost:4,parts:[P(1,16.0,"E","M")]}]}],
   gs:[{id:"kg1",n:"ガトリングキャノン",cost:[1,1,1],parts:[P(32,0.20,"","P",[1,32])]},
    {id:"kg2",n:"テトラミサイル",cost:[2,1,1],parts:[P(4,3.33)]},
    {id:"kg3",n:"ペネトレイトレイ",cost:[3,1],parts:[P(4,1.66)]},
-   {id:"kg4",n:"バスターフォース",cost:[4],parts:[P(1,26.66)]}],
-  fin:{n:"ガイアサルヴォー",lv:[54,108,162],parts:[P(1,38)]}}
+   {id:"kg4",launch:true,n:"バスターフォース",cost:[4],parts:[P(1,26.66)]}],
+  fin:{n:"ガイアサルヴォー",lv:[54,108,162],te:"",ticks:[[[1,22],[1,32]],[[2,22],[2,32]],[[3,22],[3,32]]],parts:[P(1,38)]}}
 };
 const $=id=>document.getElementById(id);
-const f=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
+// ゲーム画面と同じく、小数第1位の表示は切り捨て
+const f=(n,d=2)=>d===1?(Math.floor(n*10+1e-6)/10).toFixed(1):(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
 const RAV_SELF=[0,1.0,1.5,2.0,2.5,3.0], RAV_PARTY=[0,0.1,0.1,0.2,0.2,0.3];
 const EL_MOD={abs:0.25,null:0.25,res:0.5,half:0.5,norm:1,weak:1};
 const RAV_CPOS=[0,.2,.3,.4,.5,.7,.8,.9,1.0], RAV_ENEG=[0,.3,.4,.5,.6,.7,.8,.9,1.0], SAB_ENEG=[.2,.3,.4,.5,.8,1.0,1.5,2.0,2.5];
@@ -502,7 +536,7 @@ const CH1={l:"light",s:"sazh",n:"snow",v:"vanille",h:"hope",f:"fang"};
 const canLearn=(name,chr)=>{const src=LEARN_SRC[name];if(!src)return true;return [...src].some(c=>CH1[c]===chr)};
 const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
 
-const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,elem:"F",queue:[],last:null},o);
+const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
 const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"I",chr:"snow"})];
 const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング"};
 // キャラ専用コマンド：who=使えるキャラ、rep=置き換える通常コマンド
@@ -512,7 +546,7 @@ M.forEach((mm,i)=>mm.label="メンバー"+(i+1));
 const EA={},DR={};
 Object.entries(EID).forEach(([k,d])=>{
   EA[k]=d.actors.map(a=>({kind:"eid",label:a.label,role:"SUM",atb:a.atb,skills:a.sk,queue:[],last:null,diff:true,on:true}));
-  DR[k]={kind:"drive",label:d.jp+"（ドライビング）",role:"SUM",skills:d.gs,fin:d.fin,queue:[],last:null,diff:true,on:true};
+  DR[k]={kind:"drive",label:d.jp+"（ドライビングモード）",role:"SUM",skills:d.gs,fin:d.fin,queue:[],last:null,diff:true,on:true};
 });
 let mode="normal", cur=0;
 
@@ -544,7 +578,7 @@ function renderTabs(){
   t.style.gridTemplateColumns=`repeat(${list.length},minmax(0,1fr))`;
   list.forEach((a,i)=>{
     const b=document.createElement("button");b.type="button";b.className="tab"+(a.on?"":" off");b.setAttribute("role","tab");b.setAttribute("aria-selected",a===A());
-    const cmds=a.on?(a.queue.length?a.queue.map(q=>q.name).join("・"):"コマンドなし"):"パーティにいない";
+    const cmds=a.on&&a.ko===-1?"戦闘不能":a.on?(a.queue.length?a.queue.map(q=>q.name).join("・"):"コマンドなし"):"パーティにいない";
     const title=a.kind==="member"?`${a.label}${mode==="summon"?"（召喚者）":""}・${CHR_JP[a.chr]}・${ROLE_JP[a.role]}`:a.label;
     b.innerHTML=`<b></b><span></span>`;b.querySelector("b").textContent=title;b.querySelector("span").textContent=cmds;
     b.onclick=()=>{cur=i;loadActor();render()};
@@ -556,8 +590,8 @@ function loadActor(){
   if(a.kind==="member"){
     $("mOn").checked=a.on;
     $("chr").value=a.chr;$("role").value=a.role;$("rlv").value=a.rlv;$("atb").value=a.atb;$("hp").value=a.hp;
-    $("cpos").value=a.cpos;$("cneg").checked=a.cneg;
-    $("jeo").checked=a.jeo;$("ovwOn").checked=a.ovwOn;$("vigor").checked=a.vigor;$("cbb").value=a.cbb;
+    $("mpa").value=a.pa||"";$("mma").value=a.ma||"";$("mbr").value=a.br||1;$("mfa").value=a.fa||1;$("mpp").value=a.pp||0;$("mak").value=a.ak||0;$("mgen").checked=!!a.gen;$("mkiki").checked=!!a.kiki;$("med").value=a.ed||0;$("medE").value=a.edE||"F";$("mdn").value=a.dn||"0";$("men").value=a.en||"";["ab1","ab2","ab3","db"].forEach(k=>$("m"+k).checked=!!a[k]);$("mab4").value=a.ab4||"0";$("cpos").value=a.cpos;$("cneg").checked=a.cneg;$("ko").value=a.ko||0;
+    $("jeo").checked=a.jeo;$("hv").checked=!!a.hv;$("ovwOn").checked=a.ovwOn;$("vigor").checked=a.vigor;$("cbb").value=a.cbb;
   }
   $("diff").checked=a.diff;
 }
@@ -568,13 +602,13 @@ function syncVis(){
     $("onWrap").hidden=M.indexOf(a)===0;
     // 同じキャラは2人選べない（パーティにいる他のメンバーのキャラは選択不可）
     [...$("chr").options].forEach(op=>{const used=M.find(o=>o!==a&&o.on&&o.chr===op.value);op.disabled=false;op.textContent=CHR_JP[op.value]+(used?`（${used.label}と設定ごと入れ替え）`:"")});
-    $("rlvWrap").hidden=a.role!=="RAV";$("jeoWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
+    $("rlvWrap").hidden=a.role!=="RAV"&&a.role!=="COM";$("rlvTx").textContent=(a.role==="COM"?"アタッカー":"ブラスター")+"のロールレベル";$("jeoWrap").hidden=a.role!=="COM";$("hvWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";$("cbbSub").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
     $("vigWrap").hidden=(a.role!=="RAV"&&a.chr!=="sazh")||!canLearn("ハイテンション",a.chr);if(!canLearn("ハイテンション",a.chr))a.vigor=false;
   }
-  $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";
+  $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";$("paWrap").hidden=mode==="normal";
   $("modeSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
-  $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣はメンバー1のキャラで決まります（ライトニング＝オーディン、サッズ＝ブリュンヒルデ、スノウ＝シヴァ、ホープ＝アレキサンダー、ヴァニラ＝ヘカトンケイル、ファング＝バハムート）。召喚獣のATBは固定です。ドライビング前の召喚獣の攻撃は、基本値×(100−チェーン耐性)/100 だけ上がります。"
-    :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。召喚獣はメンバー1のキャラで決まります。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。召喚したときのオプティマでブラスターだったメンバー全員のパーティボーナス（1人あたり+0.1〜+0.3）が召喚獣の攻撃に付きます。「通常バトル」のタブで3人のロールとロールレベルを設定してください。":"";
+  $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣はメンバー1のキャラで決まります（ライトニング＝オーディン、サッズ＝ブリュンヒルデ、スノウ＝シヴァ、ホープ＝アレキサンダー、ヴァニラ＝ヘカトンケイル、ファング＝バハムート）。召喚獣のATBは固定です。ドライビング前の召喚獣には、本の値の召喚獣用補正（ブレイク予兆+0.5など）が付き、「違うコマンド」とロールボーナスは付きません。"
+    :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。召喚獣はメンバー1のキャラで決まります。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。ブラスターのロールボーナスは召喚獣には付きません。":"";
   $("atbLabel").textContent=a.kind==="drive"?"ドライビングゲージ":"ATB";
   $("tpLabel").hidden=mode!=="normal";["tpQ","tpWhen","tpBase"].forEach(id=>$(id).closest("label").hidden=mode!=="normal");
   $("tpLabel").nextElementSibling;document.querySelector("#tpBase").closest("fieldset").querySelector(".hint").hidden=mode!=="normal";
@@ -614,7 +648,7 @@ function renderPalette(){
     const b=document.createElement("button");b.type="button";b.className="pbtn";
     b.innerHTML=`<span></span><span class="c">残り全部・Lv${lvl}</span>`;b.firstChild.textContent="フィニッシュ："+a.fin.n;
     b.disabled=finDone;
-    b.onclick=()=>{a.queue.push({sk:{id:"fin",n:a.fin.n,fin:true,parts:a.fin.parts},name:a.fin.n+" Lv"+lvl,cost:0,all:true,land:true,ph:a.fin.parts.map(x=>x.h)});render()};
+    b.onclick=()=>{a.queue.push({sk:{id:"fin",n:a.fin.n,fin:true,launch:true,parts:a.fin.parts},name:a.fin.n+" Lv"+lvl,cost:0,all:true,land:true,ph:a.fin.parts.map(x=>x.h)});render()};
     p.append(b);
   }
 }
@@ -638,6 +672,13 @@ function renderQueue(){
       l.innerHTML=`<input type="checkbox" ${it.land?"checked":""}><span>成功</span>`;
       l.querySelector("input").onchange=ev=>{it.land=ev.target.checked;calc()};
       extra.append(l);
+      if(it.sk.sab&&!it.sk.dispel){
+        // 付与済みの弱体が切れてから付け直した場合は、成功ボーナスがもう一度付く（実測）
+        const l2=document.createElement("label");l2.className="chk";l2.style.fontSize=".72rem";l2.title="前の効果が切れてから付け直した場合、成功ボーナス（+5.0）がもう一度付きます";
+        l2.innerHTML=`<input type="checkbox" ${it.expired?"checked":""}><span>切れて付け直し</span>`;
+        l2.querySelector("input").onchange=ev=>{it.expired=ev.target.checked;calc()};
+        extra.append(l2);
+      }
     }
     if(it.sk.id==="blzS"){
       const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
@@ -696,7 +737,7 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
     // 他のメンバーが使っているキャラを選んだら、2人のキャラを入れ替える
     if(other){
       // 他のメンバーが使っているキャラを選んだら、キャラと設定（ロール・ATB・コマンドなど）をまとめて入れ替える
-      ["chr","role","rlv","atb","hp","cpos","cneg","diff","jeo","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
+      ["chr","role","rlv","atb","hp","pa","ma","br","fa","pp","ak","gen","kiki","ed","edE","dn","en","ab1","ab2","ab3","ab4","db","cpos","cneg","ko","diff","jeo","hv","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
       loadActor();render();return}}a[key]=el.type==="checkbox"?el.checked:(conv?conv(el.value):el.value);
   if(key==="role")a.queue=[];
   if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
@@ -704,8 +745,8 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
   if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all){q.cost=a.atb;return true}u+=q.cost;return u<=a.atb})}
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
-bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("diff","diff");
-bind("jeo","jeo");bind("ovwOn","ovwOn");bind("vigor","vigor");bind("cbb","cbb",Number);
+bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("mpa","pa",v=>Math.max(0,+v||0));bind("mma","ma",v=>Math.max(0,+v||0));bind("mbr","br",Number);bind("mfa","fa",Number);bind("mpp","pp",Number);bind("mak","ak",Number);bind("mgen","gen");bind("mkiki","kiki");bind("med","ed",Number);bind("medE","edE");bind("mdn","dn");bind("men","en");bind("mab1","ab1");bind("mab2","ab2");bind("mab3","ab3");bind("mab4","ab4");bind("mdb","db");bind("ko","ko",Number);bind("diff","diff");
+bind("jeo","jeo");bind("hv","hv");bind("ovwOn","ovwOn");bind("vigor","vigor");bind("cbb","cbb",Number);
 $("eid").addEventListener("input",()=>{cur=0;loadActor();render()});
 $("finLvSel").addEventListener("input",()=>{const a=DR[$("eid").value];a.queue.forEach(q=>{if(q.sk.fin)q.name=q.sk.n+" Lv"+finLv()});render()});
 $("gc").addEventListener("input",()=>{const a=DR[$("eid").value];const g=+$("gc").value;$("finLvSel").value=g>=30?3:g>=25?2:1;
@@ -728,9 +769,11 @@ $("nextTurn").onclick=()=>{
   if(mode==="drive"){$("cur").value=100;$("stag").checked=false}
   else{$("cur").value=f(endState.cur,1);$("stag").checked=endState.stag}
   $("eneg").value=endState.eneg;
+  if(endState.hp!=null)$("ehpCur").value=Math.floor(endState.hp);
   $("imp").checked=endState.applied.includes("ウィーク");
   carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
   endState.last.forEach((v,a)=>a.last=v);
+  M.forEach(m=>{if(m.ko>0&&endState.koed&&endState.koed.has(m))m.ko=-1});
   actors().forEach(a=>{if(!$("keepQ").checked)a.queue=[];a.queue.forEach(q=>q.land=true)});
   turn++;$("turnLabel").textContent=turn+"ターン目（前ターンから引き継ぎ）"+(mode==="drive"?"・ドライビング終了でチェーンはリセット":"");
   render();
@@ -742,6 +785,9 @@ $("resetTurn").onclick=()=>{
 };
 
 function hitsOf(sk,it,a){
+  // ダイヤモンドダスト：ダメージ前の上昇は「6.0×n→17.0×n…」の連続ヒットとして、チェーン耐性・条件補正を受ける（実測）
+  if(sk.fin){const F=EID[$("eid").value].fin;if(F.ticks){const T=F.ticks[finLv()-1];
+    return [...T.flatMap(([h,b])=>Array(h).fill({b,e:F.te,t:"P",tick:true})),...F.parts.flatMap(p=>Array(p.h).fill({b:p.b,e:p.e,t:p.t}))]}}
   // ファングのリベンジモード/チャージ：地上の敵には4回攻撃（0＋0＋0.25＋0.25）（バトルアルティマニア）
   if(sk.fangSen&&a&&a.chr==="fang"&&!$("launched").checked){it.fangCombo=true;return [0,0,0.25,0.25].map(b=>({b,e:"",t:"P"}))}
   if(sk.fang&&a&&a.kind==="member"&&a.atb>=4){
@@ -755,6 +801,37 @@ function hitsOf(sk,it,a){
   return Array(sk.h||1).fill({b:sk.b,sb:sk.sb,e:it.e,t:sk.t});
 }
 
+// ===== ダメージ計算（FF13 ダメージ計算機と同じ式・倍率） =====
+// [倍率の配列, ばらつき(%), 物理/魔法 "p"/"m", 物理魔法耐性を無視(固有技)]
+const DMG={atk:[[1.2],4,"p"],atkF:[[1.2],4,"p"],blz:[[1.8],4,"p"],blzS:[[.7,.7,.7,.7,.7,.7,.7],4,"p"],ruin:[[1],9,"m"],ruinga:[[2.2],9,"m"],
+ sfist:[[2,.5],4,"p",1],hwind:[[.5,.5,1,.5],4,"p",1],gren:[[1.9],9,"p"],e1:[[1],9,"m"],e2:[[1.5],9,"m"],e3:[[2.2],9,"m"],bl:[[1.2],4,"p"],
+ a1:[[1],9,"m"],a2:[[1.5],9,"m"],a3:[[.1,3.5],9,"m"],aoo:[Array(11).fill(.3),4,"p",1],cb:[Array(17).fill(.1),9,"p",1],lr:[Array(8).fill(.5),9,"m",1],death:[[4],9,"m",1],
+ o1:[[.25,.25,.25,.25],9,"p"],o2:[[.33,.33,.33],9,"p"],o3:[[1],9,"p"],o4:[[1],9,"p"],o5:[[1.5],9,"m"],o6:[[2.2],9,"m"],
+ og1:[[2.33],4,"p",1],og2:[[.25,.25,.25,.25,.25,.25,.25],4,"p",1],og3:[[.75,.75,.75,.75,1.5,1.5,1.5],4,"p",1],og4:[[.66,.66,.66],4,"p",1],
+ st1:[[1],9,"m"],st2:[[1.5],9,"m"],st3:[[2.2],9,"m"],nx1:[[1],9,"p"],nx2:[[1],9,"p"],nx3:[[.25,.25,.25,.25],9,"p"],nx4:[[.25,.25,.25,.25,.25],9,"p"],nx5:[[.43,.43,.43],9,"p"],nx6:[[1.5],9,"m"],
+ sg1:[[1.25,1.25,1.25],4,"p",1],sg2:[[.5,.5,.5,.5,.5],4,"p",1],sg3:[[.62,.62,.62,.62],4,"p",1],sg4:[[.25,.25,1.25,1.25],4,"p",1],
+ b1:[[1],9,"p"],b2:[[.33,.33,.33,.33,.33,.33],9,"p"],b3:[[.33,.33,.33],9,"p"],b4:[[.85],9,"m"],b5:[[.85],9,"m"],b6:[[.85],9,"m"],b7:[[.85],9,"m"],
+ b8:[[.25,1.5],9,"m"],b9:[[.25,1.5],9,"m"],b10:[[.25,1.5],9,"m"],b11:[[.25,1.5],9,"m"],
+ bg1:[[.83,.83],4,"p",1],bg2:[[2.5],4,"p",1],bg3:[[.59,.59,.59],4,"p",1],bg4:[[.46,.46,.46],4,"p",1],
+ h1:[[1],9,"p"],h2:[[.25,.25,.5],9,"p"],h3:[[1.5],9,"p"],h4:[[2],9,"m"],h5:[[1.5],9,"m"],
+ hg1:[[.53,.53,1.06],4,"p",1],hg2:[[1.06,1.06],4,"p",1],hg3:[[.53,.53,.53,.53,.53],4,"p",1],hg4:[Array(11).fill(.13),4,"p",1],
+ x1:[[1],9,"p"],x2:[[.1,2],9,"p"],x3:[[1],9,"p"],x4:[[1],9,"p"],x5:[[.25,1.25],9,"p"],
+ xg1:[Array(110).fill(.06),4,"p"],xg2:[[.1,.1,.1],4,"p",1],xg2f:[[.4,.4,.4],4,"p",1],xg3:[Array(18).fill(.05),4,"m"],xg4:[[.41,.83,.83],4,"p",1],
+ k1:[Array(7).fill(.14),9,"p"],k2:[[.5,1],9,"p"],k3:[[1],9,"p"],k4:[[.25,.25,.25,.25,.25],9,"p"],k5:[[2.2],9,"m"],
+ kg1:[Array(32).fill(.03),4,"p",1],kg2:[[.17,.17,.17,.17],4,"p",1],kg3:[[.4,.4,.4,.4],4,"p",1],kg4:[[3.73],4,"p",1]};
+const DMG_FIN={odin:[[3],2,"p",1],shiva:[[14],2,"p",1],bryn:[[10.05],2,"p",1],baha:[[3],2,"p",1],alex:[[3],2,"p",1],heca:[[15],2,"p",1]};
+const DMG_BRK={sfist:[10,2],hwind:[3,3,6,2]};
+// 召喚獣のステータス（ランク別、ガイドの表）
+const EST={ody:{r:3,pa:[141,183,225,301,407,649,2283,2675,2942,3237,3560,3917,4504,5405],ma:[93,121,149,199,316,430,1515,1775,1952,2148,2362,2599,2989,3586]},
+sti:{r:5,pa:[177,205,323,442,1557,1824,2006,2207,2427,2670,3071,3685],ma:[193,224,355,483,1702,1994,2193,2412,2653,2919,3357,4028]},
+nix:{r:5,pa:[188,219,347,472,1660,1995,2140,2354,2589,2848,3276,3931],ma:[150,175,277,377,1328,1556,1712,1883,2071,2278,2620,3144]},
+bry:{r:6,pa:[274,434,590,2076,2432,2675,2943,3237,3561,4095,4914],ma:[274,434,590,2076,2432,2675,2943,3237,3561,4095,4914]},
+bah:{r:8,pa:[708,2491,2918,3210,3531,3884,4273,4917,5896],ma:[601,2117,2480,2728,3001,3301,3632,4176,5011]},
+ale:{r:8,pa:[1056,3114,3648,4012,4414,4855,5341,6142,7371],ma:[1056,3114,3648,4014,4414,4855,5341,6142,7371]},
+hec:{r:8,pa:[1170,2698,3161,3477,3825,4208,4629,5323,6388],ma:[603,1390,1629,1791,1971,2168,2385,2743,3292]}};
+const EKEY={odin:["ody"],shiva:["sti","nix"],bryn:["bry"],baha:["bah"],alex:["ale"],heca:["hec"]};
+function eidStat(k,i){const t=EST[EKEY[k][Math.min(i,EKEY[k].length-1)]],r=+$("eRank").value;if(!r||r<t.r)return{pa:0,ma:0};return{pa:t.pa[r-t.r],ma:t.ma[r-t.r]}}
+const CS_DMG=[0,100,110,120,130,150],CP_DMG=[0,5,5,10,10,15];
 function calc(){
   const lim=Math.max(100,+$("lim").value||200);
   const start=Math.min(999.9,Math.max(100,+$("cur").value||100));
@@ -784,25 +861,46 @@ function calc(){
   seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
 
   const lastBy=new Map(list.map(a=>[a,a.last]));
-  let brokeAt=null,brkBonus=0,firstPending=$("chainEmpty").checked&&!st.stag&&start<=100;
+  const ehpMax=Math.max(0,+$("ehp").value||0);let hpRem=ehpMax?Math.min(ehpMax,$("ehpCur").value===""?ehpMax:Math.max(0,+$("ehpCur").value||0)):0;const hpStart=hpRem;
+  const dV=$("dmgV").value;let dmgTotal=0,killAt=null;
+  const deps=()=>st.applied.has("デプロテ"),desh=()=>st.applied.has("デシェル");
+  let brokeAt=null,brkBonus=0,airborne=false,firstPending=$("chainEmpty").checked&&!st.stag&&start<=100;
   // チェーンボーナスが100%より上ならチェーンゲージは残っているので、このチェックは関係ない
   {const off=st.stag||start>100;$("chainEmpty").disabled=off;$("chainEmpty").closest("label").style.opacity=off?.5:1;}const out=[];const per=new Map(list.map(a=>[a,0]));
+  // 戦闘不能：指定した行動の後から、そのキャラは行動せず、ジョイントレイド・ブラスターのパーティボーナス・「仲間なし」の判定からも外れる
+  const alive=(x,i)=>x.on&&!(x.kind==="member"&&(x.ko===-1||(x.ko>0&&i>=x.ko)));
   seq.forEach((step,idx)=>{
     const {it,a,first}=step, sk=it.sk, role=a.role, isM=a.kind==="member";
+    if(!it.tp&&!alive(a,idx)){out.push({it,a,sum:0,lost:0,finReal:0,g0:st.cur,g1:st.cur,det:null,hits:0,ko:true});return}
     const hp=a.hp, cpos=a.cpos||0;
     const prev=lastBy.get(a);
-    const diff=prev?!(prev.id===sk.id&&prev.e===it.e&&prev.name===it.name):a.diff;
+    // ドライビングモードの最初の技には「違うコマンド」が付かない（動画で確認）
+    const diff=prev?!(prev.id===sk.id&&prev.e===it.e&&prev.name===it.name):(a.kind==="drive"?false:a.diff);
     const provFail=(sk.prov&&!it.land)||!!sk.noHit;
-    it.dup=!!(sk.sab&&!sk.dispel&&st.applied.has(sk.st));
+    it.dup=!!(sk.sab&&!sk.dispel&&st.applied.has(sk.st)&&!it.expired);const reapply=!!(it.expired&&st.applied.has(sk.st));
     const landed=it.land&&!it.dup;
     // 同じ敵を狙う味方：攻撃ロール（エンハンサー/ヒーラー以外）でパーティにいるメンバー。そのターンに行動しなくても数える
-    const others=list.filter(x=>x!==a&&x.kind==="member"&&x.on&&!nonAtk(x.role)).length;
+    // 同じ敵を狙う味方：攻撃ロールのメンバー＋召喚中の召喚獣（シヴァは2体）。召喚獣が別の敵を狙うと数えない（実測）
+    const others=list.filter(x=>x!==a&&alive(x,idx)&&((x.kind==="member"&&!nonAtk(x.role))||x.kind==="eid")).length;
     // 「他に狙う味方なし」はヒーラーなど攻撃していない味方がいても付かない（動画で確認）
-    const partyOthers=list.filter(x=>x!==a&&x.on).length;
+    const partyOthers=list.filter(x=>x!==a&&alive(x,idx)).length;
     const hl=hitsOf(sk,it,a);
+    // ダメージ：技の倍率をヒットに割り当てる（ヒット数が合わない技は、技の合計倍率を最後のヒットでまとめて計算）
+    let DI=sk.fin?DMG_FIN[$("eid").value]:DMG[sk.id];if(sk.fin&&DI){DI=DI.slice();}
+    const nT=hl.filter(x=>!x.tick).length,dIdx=[];if(DI){let m=DI[0];if(DMG_BRK[sk.id]&&st.stag)m=DMG_BRK[sk.id];
+      // アタッカーのアビリティ（チェーンスターターなど）は技全体の倍率を置き換える（ダメージ計算機と同じ）
+      if(a.kind==="member"){const AB={atk:[["ab1",1.5],["ab3",2],["ab4",5]],atkF:[["ab1",1.5],["ab3",2],["ab4",5]],ruin:[["ab1",1.25],["ab3",1.75]],blz:[["ab2",2]],ruinga:[["ab2",2.45]]}[sk.id]||[];
+        const ab=AB.filter(x=>x[0]==="ab4"?a.ab4&&a.ab4!=="0":a[x[0]]).map(x=>x[1]);if(ab.length)m=[Math.max(...ab)]}
+      const real=hl.map((x,i)=>i).filter(i=>!hl[i].tick);if(m.length===real.length)real.forEach((i,j)=>dIdx[i]=m[j]);else dIdx[real[real.length-1]]=m.reduce((x,y)=>x+y,0)}
+    let dmgAct=0,zanKill=null;
+    const stat=(()=>{if(!DI)return 0;const t=DI[2];if(a.kind==="member")return (t==="m"?a.ma:a.pa)*(t==="m"?(a.fa||1):(a.br||1));
+      const k=$("eid").value,ai=a.kind==="eid"?Math.max(0,EA[k].indexOf(a)):0,es=eidStat(k,ai);return t==="m"?es.ma:es.pa})();
     let sum=0,det=null,detSw=null,swFrom=0,finAdd=0,finReal=0,brkIdx=false,lost=0;const g0=st.cur;
-    if(sk.fin){const lv=finLv();finAdd=EID[$("eid").value].fin.lv[lv-1];const f0=st.cur;st.cur=Math.min(st.stag?999.9:lim,st.cur+finAdd);finReal=st.cur-f0;
+    if(sk.fin&&!EID[$("eid").value].fin.ticks){const lv=finLv();finAdd=EID[$("eid").value].fin.lv[lv-1];const f0=st.cur;st.cur=Math.min(st.stag?999.9:lim,st.cur+finAdd);finReal=st.cur-f0;
       sum+=finReal;if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h:-1,hits:hl.length,a,name:it.name}}}
+    // ドライビング：技ごとに打ち上げ状態を数え直す（1ヒット目は補正なし、打ち上げた後のヒットに+1.0）
+    // ドライビング：打ち上げる技は最初のヒットで打ち上げ直す（補正なし）。打ち上げない技は直前の打ち上げ状態を引き継ぐ（ヘカトンケイルで確認）
+    if((a.kind==="drive"||a.kind==="eid")&&(sk.launch||(sk.launchStag&&st.stag)))airborne=false;
     hl.forEach((hit,h)=>{
       // サッズのエリアブラスト：途中でブラスターに切り替えた場合、そのヒットからブラスター扱い
       const swRav=!!(it.swAt&&h+1>=it.swAt);
@@ -812,14 +910,18 @@ function calc(){
       if(sk.sab&&landed)b+=5;
       const e=hit.e, t=hit.t;
       // 弱点判定（バトルアルティマニアの耐性掛け合わせ表）：属性が弱点なら物理/魔法耐性に関係なく「増加」、物理/魔法が弱点でも「増加」
-      const typeWeak=t!=="-"&&tres[t]==="weak"&&!(a.kind==="drive"&&!sk.def);
-      const weak=(e&&er(e)==="weak")||typeWeak;
+      // 弱点判定（実測）：物理/魔法耐性×属性耐性のダメージ倍率が1倍を超えるときだけ「弱点」
+      // 例：魔法半減×氷弱点＝1倍 → 補正なし（アダマンケリスで2回確認）。召喚獣のドライビング技は物理/魔法耐性を無視
+      const TF={null:0,res:0.1,half:0.5,norm:1,weak:2}, EF={abs:0,null:0,res:0.1,half:0.5,norm:1,weak:2};
+      const tF=(t==="-"||(a.kind==="drive"&&!sk.def))?1:TF[tres[t]];
+      let eF=e?EF[er(e)]:1; if(e&&!isM&&eF<1)eF=1;
+      const weak=tF*eF>1;
       const elK=!e?1:(isM?EL_MOD[er(e)]:1);
       const mods=[];
       if(isM){
         if(role==="RAV"){const v=RAV_SELF[rlvH];if(v)mods.push([`ブラスターロールボーナス（自分 Lv${rlvH}）`,v])}
         // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（実測：アタッカーのサッズには付かない）
-        if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&o.on&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
+        if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&alive(o,idx)&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
         if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
         if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
         if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
@@ -827,14 +929,16 @@ function calc(){
       }else{
         // 召喚獣：召喚時のオプティマでブラスターだったメンバー全員のパーティボーナスが付く（動画の実測と一致）
         // 召喚中（ドライビング前）の召喚獣は実測で上乗せなし。ドライビングのみパーティボーナスが付く
-        if(a.kind==="drive")M.forEach(o=>{if(o.on&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
       }
       const modSum=mods.reduce((s,x)=>s+x[1],0);
       const cres=stag?0:cres0,resK=(100-cres)/100;
       // ブレイク予兆：ブレイク値まで上げるのに必要な上昇量の0.90〜0.92倍（バトルアルティマニア）
       const near=!stag&&(st.cur-100)>=(lim-100)*(+$("omen").value),launched=$("launched").checked,eneg=st.eneg;
       const C=[];const add=(ok,tx,v)=>{if(ok)C.push([tx,v])};
-      if(!sk.fin&&a.kind!=="eid"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
+      if(!sk.fin&&a.kind==="member"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
+      // ドライビングモードの召喚獣は、召喚獣用の条件補正（ブレイク中・打ち上げ・ブレイク予兆）が本の値の2倍。弱点は本どおり+0.1（実測）
+      // ダイヤモンドダストのヒット（ダメージ前の連続ヒットと攻撃）は本の値のまま（実測：ブレイク予兆+0.5、ブレイク中+0.1）
+      const DX=a.kind==="drive"&&!(sk.fin&&EID[$("eid").value].fin.ticks)?2:1;
       add(weak,"弱点を突く",0.1);
       if(role==="COM"){
         add(diff&&hp==="mid","違うコマンド＋HP30〜70%",0.2);
@@ -862,10 +966,16 @@ function calc(){
         add(cpos>0,"物理攻撃＋自分に強化",0.5);
       }
       if(role==="SAB")add(first,"1つ目＋敵の弱体"+eneg+"個",SAB_ENEG[eneg]);
-      if(role==="SUM"&&a.kind==="drive"){
-        add($("launchable").checked,"打ち上げられている敵",0.5);
+      if(role==="SUM"&&a.kind==="eid"){
+        // 召喚中（ドライビング前）は本の値（ブレイク予兆+0.5・ブレイク中+0.1は実測で確認）
+        add(airborne||(launched&&!$("noLaunch").checked),"打ち上げられている敵",0.5);
         add(near,"ブレイク予兆の敵",0.5);
         add(stag,"ブレイク中の敵",0.1);
+      }
+      if(role==="SUM"&&a.kind==="drive"){
+        add(airborne,"打ち上げた後のヒット",0.5*DX);
+        add(near,"ブレイク予兆の敵",0.5*DX);
+        add(stag,"ブレイク中の敵",0.1*DX);
       }
       const condSum=C.reduce((s,c)=>s+c[1],0);
       // バトルアルティマニア：掛け算のたびに小数第3位以下を切り捨て
@@ -879,6 +989,25 @@ function calc(){
       const capV=stag?999.9:lim;
       const h0=st.cur;st.cur=Math.min(capV,st.cur+v);const real=st.cur-h0;
       if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h,hits:hl.length,a,name:it.name}}
+      // 斬鉄剣の一撃判定は、斬鉄剣のヒット自身の上昇まで含めたチェーンボーナスで行う（実測）
+      if(sk.fin&&h===hl.length-1)it.preHit=st.cur;
+      if(dIdx[h]!=null&&stat>0&&!provFail){const t=DI[2],ig=!!DI[3],eidK=a.kind!=="member";
+        let d=stat*dIdx[h];const vr=DI[1]/100;
+        let hE=e;if(a.kind==="member"&&t==="p"&&!hE&&a.en)hE=a.en;
+        if(a.kind==="member"){const dead=M.filter(o=>o!==a&&o.on&&!alive(o,idx)).length;const ta=(a.role==="COM"&&a.hv?20:0)+(+a.pp||0)+(+a.ak||0)*dead+(a.gen?20:0)+(a.kiki?50:0);d*=1+ta/100}
+        d*=dV==="max"?1:dV==="min"?1-vr:1-vr/2;d*=st.cur/100;
+        {let c=0;if(a.kind==="member"){if(a.role==="COM")c+=CS_DMG[a.rlv]||0;M.forEach(o=>{if(o!==a&&alive(o,idx)&&o.role==="COM")c+=CP_DMG[o.rlv]||0});
+          if(+a.ed&&hE&&hE===a.edE)c+=+a.ed;const k=a.dn||"0";if(k!=="0"&&k[0]===t)c-=+k.slice(1)}d*=Math.max(0,1+c/100)}
+        if(a.kind==="member"&&a.en&&t==="p"&&hE===a.en)d*=1.3;
+        if(a.kind==="member"&&a.db&&ehpMax&&hpRem>0&&hpRem<1.2*d)d*=1.5;
+        const TFd={null:0,res:.1,half:.5,norm:1,weak:2},EFd={abs:0,null:0,res:.1,half:.5,norm:1,weak:2};
+        let tm=ig?1:TFd[tres[t==="m"?"M":"P"]];tm+=(t==="m"?desh():deps())?.89:0;
+        let ef=hE?EFd[er(hE)]:1;if(eidK&&hE&&ef<1)ef=1;d*=tm*ef;
+        d=Math.min(d,eidK||$("capUp").checked?999999:99999);d=Math.floor(Math.max(0,d));
+        if(sk.fin&&$("eid").value==="odin"&&h===hl.length-1&&ehpMax){const th=3*eidStat("odin",0).pa*Math.pow(st.cur/100,2);zanKill={th,rem:hpRem,ok:hpRem<th};if(hpRem<th)d=Math.max(d,hpRem)}
+        dmgAct+=d;if(ehpMax){hpRem=Math.max(0,hpRem-d);if(hpRem===0&&!killAt)killAt={idx,name:it.name,a}}}
+      // 打ち上げる技（ドライビング）が当たると、次のヒットから「打ち上げられている敵」
+      if((a.kind==="drive"||a.kind==="eid")&&!hit.tick&&!$("noLaunch").checked&&(sk.launch||(sk.launchStag&&stag)))airborne=true;
       sum+=real;if(real<v-1e-9)lost+=v-real;
       if(h===0&&!(firstPending&&dur0))it.noStart=false;
       if(starter)it.starter=true;else if(h===0)it.starter=false;
@@ -887,10 +1016,11 @@ function calc(){
     });
     // ルーラーフィスト・ハイウィンド：チェーンボーナスを100.0%にもどす
     if(sk.reset){st.cur=100;st.stag=false;it.resetDone=true}
-    if(sk.sab&&!sk.dispel&&landed){st.applied.add(sk.st);st.eneg=Math.min(8,st.eneg+1)}
+    if(sk.sab&&!sk.dispel&&landed){st.applied.add(sk.st);if(!reapply)st.eneg=Math.min(8,st.eneg+1)}
     lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
     per.set(a,per.get(a)+sum);
-    out.push({it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:""});
+    dmgTotal+=dmgAct;
+    out.push({it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
   });
 
   const total=out.reduce((s,o)=>s+o.sum,0)+brkBonus;
@@ -918,7 +1048,7 @@ function calc(){
   if(!out.length)box.innerHTML='<span class="empty">コマンドを追加すると表示されます。</span>';
   out.forEach((o,i)=>{
     const d=document.createElement("details"),s=document.createElement("summary");
-    s.innerHTML=`<span class="nm"></span><span class="v">+${f(o.sum)}</span><span class="g">${f(o.g0,1)}→${f(o.g1,1)}</span>`;
+    s.innerHTML=`<span class="nm"></span><span class="v">+${f(o.sum)}</span><span class="g">${f(o.g0,1)}→${f(o.g1,1)}${o.dmg!=null?`<br><small style="color:var(--muted)">${o.dmg.toLocaleString("ja-JP")}ダメージ</small>`:""}</span>`;
     const nm=s.querySelector(".nm");nm.textContent="";
     if($("order").value==="manual"&&mode!=="drive"&&!o.it.tp){
       const mv=(dir)=>{const k=manualOrder.indexOf(o.it),j=k+dir;if(k<0||j<0||j>=manualOrder.length)return;[manualOrder[k],manualOrder[j]]=[manualOrder[j],manualOrder[k]];calc()};
@@ -927,18 +1057,23 @@ function calc(){
     }
     nm.append(`${i+1}. `);
     const li=list.indexOf(o.a);
-    const w=document.createElement("span");w.className="who m"+(li%3);w.textContent=o.a.kind==="member"?"M"+(M.indexOf(o.a)+1):"召";nm.append(w,o.it.name+(o.it.fangCombo?"（連撃）":"")+(o.hits>1?` ×${o.hits}hit`:""));
+    const w=document.createElement("span");w.className="who m"+(li%3);w.textContent=o.a.kind==="member"?"M"+(M.indexOf(o.a)+1):"召";nm.append(w,o.it.name+(o.ko?"（戦闘不能）":"")+(o.it.fangCombo?"（連撃）":"")+(o.hits>1?` ×${o.hits}hit`:""));
     if(brokeAt&&brokeAt.idx===i){const b=document.createElement("span");b.className="brk";b.textContent="BREAK";nm.append(b)}
     d.append(s);
     const t=o.det,det=document.createElement("div");det.className="det";
     const row=(x,y)=>{const r=document.createElement("div");r.className="r";r.innerHTML="<span></span><span></span>";r.children[0].textContent=x;r.children[1].textContent=y;det.append(r)};
     row("行動",`${o.a.label}（${ROLE_JP[o.a.role]}）`);
     if(o.it.swAt)row("途中でブラスターに切り替え",`${o.it.swAt}ヒット目から（Lv${o.it.swLv||5}）`);
+    if(o.ko){row("戦闘不能のため行動しない","0.00");d.append(det);box.append(d);return}
+    if(o.dmg!=null)row("ダメージ（"+({min:"最小",avg:"平均",max:"最大"})[$("dmgV").value]+"、ヒット時点のチェーンボーナスで計算）",o.dmg.toLocaleString("ja-JP")+(o.hpAfter!=null?`（残りHP ${o.hpAfter.toLocaleString("ja-JP")}）`:""));
+    else if(o.noStat)row("ダメージ",o.a.kind==="member"?"攻撃力が未入力":"召喚獣ランクが未選択");
+    if(o.zanKill)row("斬鉄剣の一撃判定",`残りHP ${Math.floor(o.zanKill.rem).toLocaleString("ja-JP")} ${o.zanKill.ok?"＜":"≧"} ${Math.floor(o.zanKill.th).toLocaleString("ja-JP")} → ${o.zanKill.ok?"一撃で倒せる":"一撃では倒せない"}`);
     if(o.lost)row("ブレイク値で止まって無駄になった分","−"+f(o.lost));
     if(o.brk)row("ブレイク時のボーナス（合計に含む）","+100.00");
     if(o.it.noStart)row("チェーン持続0秒の技で、チェーンが途切れているため上がらない","0.00");
     if(o.it.starter)row("チェーン開始の1ヒット（%は上がらない）","0.00");
     if(o.it.resetDone)row("チェーンボーナスを100.0%にもどす","（ブレイクも終了）");
+    if(o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit){const c=o.it.preHit/100,pa=eidStat("odin",0).pa;row("一撃判定に使うチェーンボーナス（斬鉄剣のヒット自身の上昇を含む）",f(o.it.preHit,1)+"%");if(pa)row("一撃で倒せる敵の残りHP（3.0×物理攻撃力×倍率²）",Math.floor(3*pa*c*c)+" 未満");}
     if(o.finAdd)row("フィニッシュの加算（Lv"+finLv()+"）","+"+f(o.finAdd));
     if(o.it.dup)row("同じ弱体が付与済み","成功ボーナス(+5.0)なし");
     if(o.it.sk.sab&&!o.it.dup&&o.it.land)row("弱体成功ボーナス","基本値に+5.0");
@@ -962,24 +1097,28 @@ function calc(){
   });
 
   [...$("queue").querySelectorAll(".qrow")].forEach((r,i)=>{const it=A().queue[i];if(!it)return;const cb=r.querySelector("input[type=checkbox]");if(!cb)return;
-    cb.disabled=!!it.dup;const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"付与済み":"成功";lab.style.opacity=it.dup?.55:1});
+    cb.disabled=!!it.dup;const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"付与済み":"成功";lab.style.opacity=it.dup?.55:1;const ex=r.querySelectorAll("input[type=checkbox]")[1];if(ex&&it.sk.sab&&!it.sk.dispel)ex.parentNode.hidden=!(it.dup||it.expired)});
 
-  {const bh=$("bonusHint");bh.hidden=mode!=="drive";
+  {const bh=$("bonusHint");bh.hidden=true;
    if(mode==="drive"){const rv=M.filter(o=>o.on&&o.role==="RAV");const tot=rv.reduce((s2,o)=>s2+RAV_PARTY[o.rlv],0);
     bh.textContent=`召喚獣に付くブラスターボーナス：+${f(tot,1)}（${rv.length?rv.map(o=>o.label+" Lv"+o.rlv).join("・"):"ブラスターなし"}）。変えるときは「通常バトル」の各メンバーで設定してください。`}}
-  endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy};
+  endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy,koed:new Set(M.filter(m=>m.ko>0&&m.ko<=seq.length))};
   $("diff").disabled=!!A().last;
   $("carryNote").textContent=list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
   $("nextTurn").disabled=!seq.length;
   const tb=$("toBreak");
+  const zt=out.find(o=>o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit);
   if($("stag").checked)tb.textContent="すでにブレイク中です。";
   else if(brokeAt)tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":"このターンでブレイクします。";
   else if(total<=0)tb.textContent="ゲージが上がりません。";
   else if(mode==="drive")tb.textContent=`残り ${f(lim-st.cur,1)}%。ドライビングモード終了後はチェーンがリセットされます。`;
   else{const need=lim-st.cur;tb.textContent=`このターン後の残り ${f(need,1)}%。同じ並びならあと約 ${Math.ceil(need/total-1e-9)} ターン（2ターン目以降は条件補正が変わる場合あり）。`}
+  {const dn=$("dmgSum");if(ehpMax||dmgTotal){dn.hidden=false;dn.textContent=`このターンのダメージ合計 ${Math.floor(dmgTotal).toLocaleString("ja-JP")}`+(ehpMax?`／残りHP ${Math.floor(hpStart).toLocaleString("ja-JP")} → ${Math.floor(hpRem).toLocaleString("ja-JP")}`+(killAt?`（${killAt.a.label}の「${killAt.name}」で撃破）`:""):"")}else dn.hidden=true}
+  endState.hp=ehpMax?hpRem:null;
+  if(zt){const c=zt.it.preHit/100,pa=eidStat("odin",0).pa;tb.textContent+=` 斬鉄剣が当たった時点のチェーンボーナスは ${f(zt.it.preHit,1)}%`+(pa?`：敵の残りHPが ${Math.floor(3*pa*c*c)} 未満なら一撃で倒せます。`:"（オーディンの召喚獣ランクを選ぶと、一撃で倒せる残りHPを表示します）。")}
 }
 
-["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","epos","launchable","cur","lim"].forEach(id=>$(id).addEventListener("input",calc));
+["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","epos","noLaunch","cur","lim","eRank","ehp","ehpCur","dmgV","capUp"].forEach(id=>$(id).addEventListener("input",calc));
 document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",calc));
 
 // 例：通常バトル＝ブラスター/アタッカー/ブラスター、召喚中＝各召喚獣のAIの基本行動、ドライビング＝空
