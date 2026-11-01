@@ -54,6 +54,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .atbbar .slot.on{background:var(--atb-soft);border-color:var(--atb);color:var(--ink)}
 .atbbar .slot.on.start{font-weight:700}
 .palette{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.palg{flex-basis:100%;font-size:.72rem;color:var(--muted);margin-top:4px}
 .pbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
 .pbtn:hover:not(:disabled){border-color:var(--atb)}
 .pbtn:disabled{opacity:.4;cursor:not-allowed}
@@ -569,7 +570,7 @@ const isActive=a=>a.on&&!nonAtk(a.role)&&a.queue.length>0;
 document.querySelectorAll(".eres").forEach(s=>{
   s.innerHTML='<option value="abs">吸収</option><option value="null">無効</option><option value="res">耐久</option><option value="half">半減</option><option value="norm" selected>標準</option><option value="weak">弱点</option>';
 });
-["F","I","T","W"].forEach(e=>{const b=document.createElement("button");b.type="button";b.textContent=EN[e];b.dataset.e=e;
+["ALL","N","F","I","T","W","A"].forEach(e=>{const b=document.createElement("button");b.type="button";b.textContent=e==="ALL"?"全":e==="N"?"属性なし":EN[e];b.dataset.e=e;b.title=e==="ALL"?"使えるコマンドを属性ごとにすべて表示":"";
   b.onclick=()=>{A().elem=e;renderPalette()};$("elemSeg").append(b)});
 $("modeSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;cur=0;loadActor();render()});
 
@@ -626,22 +627,36 @@ function renderPalette(){
   const list=a.kind==="member"?SK[a.role].filter(sk=>allowed(sk,a,SK[a.role])):a.skills;
   const hasGroup=a.kind==="member"&&list.some(s=>typeof s.n!=="string");
   $("elemSeg").hidden=!hasGroup;$("elemWrapLabel").hidden=!hasGroup;
+  // そのキャラが覚えるコマンドがない属性のボタンは表示しない（例：サッズは水属性を覚えない）
+  if(hasGroup){const has=e=>e==="ALL"||list.some(sk=>typeof sk.n!=="string"?(["F","I","T","W"].includes(e)&&canLearn(nameOf(sk,e),a.chr)):((sk.e||"N")===e&&canLearn(sk.n,a.chr)));
+    $("elemSeg").querySelectorAll("button").forEach(b=>b.hidden=!has(b.dataset.e));
+    if(!has(a.elem)){const v=[...$("elemSeg").querySelectorAll("button")].find(b=>!b.hidden&&b.dataset.e!=="ALL");a.elem=v?v.dataset.e:"ALL"}}
   $("elemSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.e===a.elem));
   const p=$("palette");p.innerHTML="";
   const finDone=a.queue.some(q=>q.sk.fin);
   $("palLabel").textContent=nonAtk(a.role)?"エンハンサー/ヒーラーのコマンドは敵のチェーンゲージを上げません（ATBの確認用）":a.kind==="drive"?"技を押すとゲージを消費して追加（連続使用でコストが下がる技あり）":"コマンドを押すとATBに追加";
-  list.forEach(sk=>{
+  // 「全」：使えるコマンドを属性ごとに並べる（属性つきコマンドは火・氷・雷・水すべて）
+  const showAll=a.kind==="member"&&a.elem==="ALL";
+  const items=[];list.forEach(sk=>{
+    if(a.kind==="member"&&typeof sk.n!=="string"){(showAll?["F","I","T","W"]:["F","I","T","W"].includes(a.elem)?[a.elem]:[]).forEach(el=>items.push({sk,el,g:el}))}
+    else if(a.kind!=="member"||!hasGroup||showAll||(sk.e?sk.e===a.elem:a.elem==="N"))items.push({sk,el:a.kind==="member"&&["F","I","T","W"].includes(a.elem)?a.elem:"F",g:sk.e||""})});
+  // メンバーのコマンドは、属性ごとに見出しをつけて並べる（風属性のエアロ系が火・氷などに混ざらないように）
+  const grp=a.kind==="member"&&new Set(items.map(x=>x.g)).size>1;
+  if(grp){const ORD=["","F","I","T","W","A","E"];items.sort((x,y)=>ORD.indexOf(x.g)-ORD.indexOf(y.g))}
+  let lastG=null;
+  items.forEach(({sk,el,g})=>{
+    if(a.kind==="member"&&!canLearn(nameOf(sk,el),a.chr))return;
+    if(grp&&g!==lastG){lastG=g;const h=document.createElement("div");h.className="palg";h.textContent=g?EN[g]+"属性":"属性なし";p.append(h)}
     const b=document.createElement("button");b.type="button";b.className="pbtn";
     const all=sk.cost==="ALL",c=all?cap(a):chainCost(a,sk);
     b.innerHTML=`<span></span><span class="c">${all?"全ATB":c}</span>`;
-    b.firstChild.textContent=a.kind==="member"?nameOf(sk,a.elem):sk.n;
-    if(a.kind==="member"&&!canLearn(nameOf(sk,a.elem),a.chr))return;
+    b.firstChild.textContent=a.kind==="member"?nameOf(sk,el):sk.n;
     // ファング：ATB4本以上で残り1枚のときだけ「たたかう（連撃）」として選べる
     if(sk.fang&&a.kind==="member"&&a.atb>=4&&rem===1){b.firstChild.textContent="たたかう（連撃）";b.style.borderColor="var(--gauge)";b.title="ATBの最後の枠だけ連撃（0.0×2＋0.25×2）になります"}
     else if(sk.fang&&a.kind==="member"&&a.atb>=4)b.title="残り1枚になると連撃になります";
     b.disabled=finDone||(a.kind==="drive"?rem<2:(all?a.queue.length>0:c>rem));
     if(a.kind==="drive"&&rem>=2&&c>=rem)b.title=`残り${rem}なので、使うと残り1になります`;
-    b.onclick=()=>addCmd(sk);
+    b.onclick=()=>addCmd(sk,undefined,el);
     p.append(b);
   });
   if(a.kind==="drive"){
@@ -654,11 +669,11 @@ function renderPalette(){
   }
 }
 const finLv=()=>+$("finLvSel").value;
-function addCmd(sk,custom){
+function addCmd(sk,custom,el){
   const a=A(),all=sk.cost==="ALL";
-  const isM=a.kind==="member";
-  const e=sk.e!==undefined?sk.e:(isM&&typeof sk.n!=="string"?a.elem:"");
-  a.queue.push({sk,e,name:custom||!isM?sk.n:nameOf(sk,a.elem),cost:all?cap(a):chainCost(a,sk),all,land:true,ph:sk.parts?sk.parts.map(x=>x.h):null});
+  const isM=a.kind==="member";const ae=el||(["F","I","T","W"].includes(a.elem)?a.elem:"F");
+  const e=sk.e!==undefined?sk.e:(isM&&typeof sk.n!=="string"?ae:"");
+  a.queue.push({sk,e,name:custom||!isM?sk.n:nameOf(sk,ae),cost:all?cap(a):chainCost(a,sk),all,land:true,ph:sk.parts?sk.parts.map(x=>x.h):null});
   render();
 }
 function renderQueue(){
