@@ -246,9 +246,9 @@ details[open] summary .nm::before{content:"▾ "}
   <label>ダメージの見積もり<select id="dmgV"><option value="min">最小（ばらつき下限）</option><option value="avg" selected>平均</option><option value="max">最大</option></select></label>
   <label class="chk"><input type="checkbox" id="capUp">メンバーのダメージ限界突破（上限999,999）</label>
   <label>物理耐性<select id="tresP">
-    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">激減</option><option value="null">無効</option></select></label>
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
   <label>魔法耐性<select id="tresM">
-    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">激減</option><option value="null">無効</option></select></label>
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
   <div class="sub">属性耐性</div>
   <label>火<select class="eres" data-e="F"></select></label>
   <label>氷<select class="eres" data-e="I"></select></label>
@@ -341,10 +341,10 @@ details[open] summary .nm::before{content:"▾ "}
     <section>
       <h3>属性耐性・弱体・ウィーク</h3>
       <ul>
-        <li>属性補正：吸収・無効 ×0.25、激減・半減 ×0.5、標準・弱点 ×1。物理/魔法耐性はチェーンの倍率には影響しません。</li>
+        <li>属性補正：吸収・無効 ×0.25、耐久・半減 ×0.5、標準・弱点 ×1。物理/魔法耐性はチェーンの倍率には影響しません。</li>
         <li>「弱点」の補正は、物理/魔法耐性と属性耐性を掛け合わせたダメージ倍率が1倍を超えるときだけ付きます。例：魔法半減×氷弱点＝1倍なので付かない。召喚獣のドライビング技は物理/魔法耐性を無視するので、属性の弱点だけで判定します。</li>
         <li>召喚獣の属性攻撃は敵の属性耐性で減りません（弱点は有効）。</li>
-        <li>ウィークが入ると属性耐性が1段階下がります（吸収→無効→激減→半減→標準→弱点）。ターン中に入った場合は、その後の行動から。</li>
+        <li>ウィークが入ると属性耐性が1段階下がります（吸収→無効→耐久→半減→標準→弱点）。ターン中に入った場合は、その後の行動から。</li>
         <li>「ウィークが入っている」にチェックするときは、「現在の弱体数」にも1つ含めてください。</li>
         <li>弱体が成功すると敵の弱体数が1つ増えます（デスペルは除く）。同じ弱体（単体版とガ版を含む）が入っていれば付与されず、+5.0も付きません。</li>
       </ul>
@@ -566,7 +566,7 @@ const nonAtk=r=>r==="SYN"||r==="MED";
 const isActive=a=>a.on&&!nonAtk(a.role)&&a.queue.length>0;
 
 document.querySelectorAll(".eres").forEach(s=>{
-  s.innerHTML='<option value="abs">吸収</option><option value="null">無効</option><option value="res">激減</option><option value="half">半減</option><option value="norm" selected>標準</option><option value="weak">弱点</option>';
+  s.innerHTML='<option value="abs">吸収</option><option value="null">無効</option><option value="res">耐久</option><option value="half">半減</option><option value="norm" selected>標準</option><option value="weak">弱点</option>';
 });
 ["F","I","T","W"].forEach(e=>{const b=document.createElement("button");b.type="button";b.textContent=EN[e];b.dataset.e=e;
   b.onclick=()=>{A().elem=e;renderPalette()};$("elemSeg").append(b)});
@@ -836,7 +836,7 @@ function calc(){
   const lim=Math.max(100,+$("lim").value||200);
   const start=Math.min(999.9,Math.max(100,+$("cur").value||100));
   const st={stag:$("stag").checked,cur:start,eneg:Math.min(8,Math.max(0,+$("eneg").value|0)),applied:new Set([...carried.applied,...($("imp").checked?["ウィーク"]:[])])};
-  const SHIFT={abs:"null",null:"res",res:"half",half:"norm",norm:"weak",weak:"weak"},JN={abs:"吸収",null:"無効",res:"激減",half:"半減",norm:"標準",weak:"弱点"};
+  const SHIFT={abs:"null",null:"res",res:"half",half:"norm",norm:"weak",weak:"weak"},JN={abs:"吸収",null:"無効",res:"耐久",half:"半減",norm:"標準",weak:"弱点"};
   const resOf={};document.querySelectorAll(".eres").forEach(s=>resOf[s.dataset.e]=s.value);
   const imp=()=>st.applied.has("ウィーク"), er=e=>imp()?SHIFT[resOf[e]]:resOf[e];
   const cres0=Math.min(100,Math.max(0,+$("cres").value||0));
