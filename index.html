@@ -54,6 +54,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .atbbar .slot.on{background:var(--atb-soft);border-color:var(--atb);color:var(--ink)}
 .atbbar .slot.on.start{font-weight:700}
 .palette{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.qt th,.qt td{border-bottom:1px solid var(--line);padding:3px 6px;text-align:left;vertical-align:top}
 .palg{flex-basis:100%;font-size:.72rem;color:var(--muted);margin-top:4px}
 .pbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
 .pbtn:hover:not(:disabled){border-color:var(--atb)}
@@ -305,8 +306,12 @@ details[open] summary .nm::before{content:"▾ "}
   </div>
   <div>
     <div class="cap">ブレイクまで</div>
-    <p class="note" id="toBreak"></p>
+    <p class="note" id="toBreak" style="white-space:pre-line"></p>
     <p class="note" id="dmgSum" hidden style="font-weight:600;color:var(--ink)"></p>
+    <details id="qtable" hidden style="margin-top:6px"><summary class="cap" style="cursor:pointer">ターン開始時の表示ごとのブレイク早見表</summary>
+      <p class="note">今のコマンドの並びのまま、ターン開始時のチェーンボーナス（画面の表示）だけを変えたときに、どの行動でブレイクするかの一覧です。表示は小数第1位までの切り捨てなので、結果が分かれる表示は両方を出しています。ブレイクの演出で画面が止まらないようにするなら、「オプティマチェンジ」の行動が当たるまでにオプティマを変えてください（結果が分かれる表示では早いほうの行動にしています。早めに変えても、ATBに入れたコマンドは最後まで出ます）。</p>
+      <div style="overflow-x:auto"><table class="qt" style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr><th>ターン開始時の表示</th><th>ブレイク</th><th>オプティマチェンジ</th></tr></thead><tbody></tbody></table></div>
+    </details>
   </div>
 </aside>
 </div>
@@ -779,10 +784,11 @@ $("cAdd").onclick=()=>{
 };
 
 let carried={applied:[]}, endState=null, turn=1, manualOrder=[];
+let exactCur=null;
 $("nextTurn").onclick=()=>{
   if(!endState)return;
   if(mode==="drive"){$("cur").value=100;$("stag").checked=false}
-  else{$("cur").value=f(endState.cur,1);$("stag").checked=endState.stag}
+  else{$("cur").value=f(endState.cur,1);$("stag").checked=endState.stag;exactCur=endState.cur}
   // 100.0%ならチェーンゲージは空、100%より上なら残っている
   $("chainEmpty").checked=!$("stag").checked&&+$("cur").value<=100;
   $("eneg").value=endState.eneg;
@@ -849,9 +855,37 @@ hec:{r:8,pa:[1170,2698,3161,3477,3825,4208,4629,5323,6388],ma:[603,1390,1629,179
 const EKEY={odin:["ody"],shiva:["sti","nix"],bryn:["bry"],baha:["bah"],alex:["ale"],heca:["hec"]};
 function eidStat(k,i){const t=EST[EKEY[k][Math.min(i,EKEY[k].length-1)]],r=+$("eRank").value;if(!r||r<t.r)return{pa:0,ma:0};return{pa:t.pa[r-t.r],ma:t.ma[r-t.r]}}
 const CS_DMG=[0,100,110,120,130,150],CP_DMG=[0,5,5,10,10,15];
+// ===== ターン開始時の表示ごとのブレイク早見表 =====
+// 画面の表示は小数第1位までの切り捨てなので、各表示値の下限(x.x0)と上限(x.x9)で計算し、結果が分かれる表示は両方を出す
+let SIM=null;
+function quickTable(lim){
+  const box=$("qtable");if(!box)return;
+  if($("stag").checked||mode==="drive"){box.hidden=true;return}
+  const sim=v=>{SIM=v;try{return calc()}finally{SIM=null}};
+  const rows=[];let prev=null;
+  const hiD=Math.floor((lim-0.01)*10)/10;
+  // 範囲：ブレイク値の手前から、100%まで（ブレイクしない値が続いたら打ち切り）
+  let noneRun=0;
+  for(let d=hiD;d>=100-1e-9;d=Math.round((d-0.1)*10)/10){
+    const a=sim(d),b=sim(Math.min(lim-0.01,d+0.09));
+    const k=a.key+"|"+b.key;
+    if(prev&&prev.k===k)prev.lo=d;else{prev={k,hi:d,lo:d,a,b};rows.push(prev)}
+    if(a.key===-1&&b.key===-1){if(++noneRun>2)break}else noneRun=0;
+  }
+  box.hidden=false;
+  const tb=box.querySelector("tbody");tb.innerHTML="";
+  rows.forEach((r,i)=>{const tr=document.createElement("tr");
+    const last=i===rows.length-1&&r.a.key===-1&&r.b.key===-1;
+    const rng=last?`${f(r.hi,1)}以下`:r.hi===r.lo?f(r.hi,1):`${f(r.lo,1)}〜${f(r.hi,1)}`;
+    const early=r.b.key===-1?r.a:r.a.key===-1?r.b:(r.a.key<r.b.key?r.a:r.b);
+    const txt=r.a.key===r.b.key?r.a.label:`${r.b.label} か ${r.a.label}（表示だけでは決まらない）`;
+    const act=early.key===-1?"—":`${early.label.replace(/「.*」/,"")}が当たるまでに`;
+    tr.innerHTML="<td></td><td></td><td></td>";tr.children[0].textContent=rng;tr.children[1].textContent=txt;tr.children[2].textContent=act;tb.append(tr)});
+}
 function calc(){
   const lim=Math.max(100,+$("lim").value||200);
-  const start=Math.min(999.9,Math.max(100,+$("cur").value||100));
+  // 「次のターンへ」で引き継いだときは、表示（小数第1位）ではなく内部の値（小数第2位まで）を使う
+  const curIn=+$("cur").value||100;const start=SIM!=null?SIM:Math.min(999.9,Math.max(100,(exactCur!=null&&Math.floor(exactCur*10+1e-6)/10===curIn)?exactCur:curIn));
   const st={stag:$("stag").checked,cur:start,eneg:Math.min(8,Math.max(0,+$("eneg").value|0)),applied:new Set([...carried.applied,...($("imp").checked?["ウィーク"]:[])])};
   const SHIFT={abs:"null",null:"res",res:"half",half:"norm",norm:"weak",weak:"weak"},JN={abs:"吸収",null:"無効",res:"耐久",half:"半減",norm:"標準",weak:"弱点"};
   const resOf={};document.querySelectorAll(".eres").forEach(s=>resOf[s.dataset.e]=s.value);
@@ -886,7 +920,7 @@ function calc(){
   const deps=()=>st.applied.has("デプロテ"),desh=()=>st.applied.has("デシェル");
   let brokeAt=null,brkBonus=0,airborne=false,firstPending=$("chainEmpty").checked&&!st.stag&&start<=100;
   // チェーンボーナスが100%より上ならチェーンゲージは残っているので、このチェックは関係ない
-  {const off=st.stag||start>100;if(off)$("chainEmpty").checked=false;$("chainEmpty").disabled=off;$("chainEmpty").closest("label").style.opacity=off?.5:1;}const out=[];const per=new Map(list.map(a=>[a,0]));
+  if(SIM==null){const off=st.stag||start>100;if(off)$("chainEmpty").checked=false;$("chainEmpty").disabled=off;$("chainEmpty").closest("label").style.opacity=off?.5:1;}const out=[];const per=new Map(list.map(a=>[a,0]));
   // 戦闘不能：指定した行動の後から、そのキャラは行動せず、ジョイントレイド・ブラスターのパーティボーナス・「仲間なし」の判定からも外れる
   const alive=(x,i)=>x.on&&!(x.kind==="member"&&(x.ko===-1||(x.ko>0&&i>=x.ko)));
   seq.forEach((step,idx)=>{
@@ -1042,12 +1076,16 @@ function calc(){
     dmgTotal+=dmgAct;
     out.push({it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
   });
+  if(SIM!=null){let n=0;if(brokeAt)out.slice(0,brokeAt.idx+1).forEach(o=>{if(o.a===brokeAt.a&&!o.it.tp)n++});
+    return brokeAt?{key:brokeAt.idx,label:`${brokeAt.a.kind==="member"?CHR_JP[brokeAt.a.chr]:brokeAt.a.label}の${n}発目「${brokeAt.name}」`}:{key:-1,label:"このターンではブレイクしない"}}
 
   const total=out.reduce((s,o)=>s+o.sum,0)+brkBonus;
   $("rTotal").textContent=f(total);
   const pill=$("rState");
   if($("stag").checked){pill.hidden=false;pill.textContent="ブレイク中"}
-  else if(brokeAt){pill.hidden=false;pill.textContent=`${brokeAt.a.label}の「${brokeAt.name}」${brokeAt.h<0?"の加算":brokeAt.hits>1?(brokeAt.h+1)+"ヒット目":""}でブレイク！`}
+  // ブレイクするのは、そのキャラの何発目のコマンドか（ブレイク直前にオプティマを変えるタイミングの目安）
+  const nmA=x=>x.kind==="member"?CHR_JP[x.chr]:x.label;let brkN=0,brkPrev=null;if(brokeAt){out.slice(0,brokeAt.idx+1).forEach(o=>{if(o.a===brokeAt.a&&!o.it.tp)brkN++});brkPrev=brokeAt.idx>0?out[brokeAt.idx-1]:null}
+  if(!$("stag").checked&&brokeAt){pill.hidden=false;pill.textContent=`${nmA(brokeAt.a)}の${brkN}発目「${brokeAt.name}」${brokeAt.h<0?"の加算":brokeAt.hits>1?(brokeAt.h+1)+"ヒット目":""}でブレイク！`}
   else pill.hidden=true;
 
   const scale=st.stag?999.9:lim;
@@ -1129,13 +1167,14 @@ function calc(){
   const tb=$("toBreak");
   const zt=out.find(o=>o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit);
   if($("stag").checked)tb.textContent="すでにブレイク中です。";
-  else if(brokeAt)tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":"このターンでブレイクします。";
+  else if(brokeAt){tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":`${nmA(brokeAt.a)}の${brkN}発目でブレイク（内訳${brokeAt.idx+1}番目）。\n→ ${nmA(brokeAt.a)}の${brkN}発目が当たるまでにオプティマチェンジ（ブレイクの演出で画面が止まらないようにする場合。早めに変えても、ATBに入れたコマンドは最後まで出ます）。`}
   else if(total<=0)tb.textContent="ゲージが上がりません。";
   else if(mode==="drive")tb.textContent=`残り ${f(lim-st.cur,1)}%。ドライビングモード終了後はチェーンがリセットされます。`;
   else{const need=lim-st.cur;tb.textContent=`このターン後の残り ${f(need,1)}%。同じ並びならあと約 ${Math.ceil(need/total-1e-9)} ターン（2ターン目以降は条件補正が変わる場合あり）。`}
   {const dn=$("dmgSum");if(ehpMax||dmgTotal){dn.hidden=false;dn.textContent=`このターンのダメージ合計 ${Math.floor(dmgTotal).toLocaleString("ja-JP")}`+(ehpMax?`／残りHP ${Math.floor(hpStart).toLocaleString("ja-JP")} → ${Math.floor(hpRem).toLocaleString("ja-JP")}`+(killAt?`（${killAt.a.label}の「${killAt.name}」で撃破）`:""):"")}else dn.hidden=true}
   endState.hp=ehpMax?hpRem:null;
   if(zt){const c=zt.it.preHit/100,pa=eidStat("odin",0).pa;tb.textContent+=` 斬鉄剣が当たった時点のチェーンボーナスは ${f(zt.it.preHit,1)}%`+(pa?`：敵の残りHPが ${Math.floor(3*pa*c*c)} 未満なら一撃で倒せます。`:"（オーディンの召喚獣ランクを選ぶと、一撃で倒せる残りHPを表示します）。")}
+  quickTable(lim);
 }
 
 // 現在のチェーンボーナスを変えたら、100.0%ならチェーンゲージが空（チェックを入れる）、100%より上なら外す
