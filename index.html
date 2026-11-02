@@ -55,6 +55,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .atbbar .slot.on.start{font-weight:700}
 .palette{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
 .qt th,.qt td{border-bottom:1px solid var(--line);padding:3px 6px;text-align:left;vertical-align:top}
+#optEdSum::-webkit-details-marker{display:none}
 .palg{flex-basis:100%;font-size:.72rem;color:var(--muted);margin-top:4px}
 .pbtn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
 .pbtn:hover:not(:disabled){border-color:var(--atb)}
@@ -150,6 +151,14 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>パーティ</legend>
   <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
     <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
+  <div class="full" id="optWrap" style="display:grid;grid-template-columns:1fr;gap:6px">
+    <label>今のオプティマ<select id="optNow"></select></label>
+    <details id="optEd"><summary class="lbtn" id="optEdSum" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;list-style:none">✎ オプティマを登録・編集</summary>
+      <p class="hint">メンバー1〜3（パーティのタブの順）のロールを選ぶと、名前はゲームのオプティマ名が自動で入ります（自分で書き換えることもできます。空にすると自動に戻ります）。数に制限はありません（章やパーティごとに名前を分けておくと選びやすくなります。例：「3章 トライディザスター」）。このブラウザに保存されます。</p>
+      <div id="optList" style="display:flex;flex-direction:column;gap:4px"></div>
+      <div class="qtools" style="gap:6px;margin-top:4px"><button class="lbtn" type="button" id="optAdd">オプティマを追加</button><button class="lbtn" type="button" id="optFromParty">今のロールで追加</button></div>
+    </details>
+  </div>
   <label id="eidWrap">召喚獣（メンバー1のキャラで決まる）<select id="eid" disabled>
     <option value="odin">オーディン</option><option value="shiva">シヴァ</option><option value="bryn">ブリュンヒルデ</option>
     <option value="baha">バハムート</option><option value="alex">アレキサンダー</option><option value="heca">ヘカトンケイル</option></select></label>
@@ -175,6 +184,8 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
   <label class="mo">戦闘不能になるタイミング<select id="ko"><option value="0">ならない</option><option value="-1">最初から戦闘不能</option><option value="1">内訳の1番目の行動の後</option><option value="2">内訳の2番目の行動の後</option><option value="3">内訳の3番目の行動の後</option><option value="4">内訳の4番目の行動の後</option><option value="5">内訳の5番目の行動の後</option><option value="6">内訳の6番目の行動の後</option><option value="7">内訳の7番目の行動の後</option><option value="8">内訳の8番目の行動の後</option><option value="9">内訳の9番目の行動の後</option><option value="10">内訳の10番目の行動の後</option><option value="11">内訳の11番目の行動の後</option><option value="12">内訳の12番目の行動の後</option><option value="13">内訳の13番目の行動の後</option><option value="14">内訳の14番目の行動の後</option><option value="15">内訳の15番目の行動の後</option><option value="16">内訳の16番目の行動の後</option><option value="17">内訳の17番目の行動の後</option><option value="18">内訳の18番目の行動の後</option><option value="19">内訳の19番目の行動の後</option><option value="20">内訳の20番目の行動の後</option><option value="21">内訳の21番目の行動の後</option><option value="22">内訳の22番目の行動の後</option><option value="23">内訳の23番目の行動の後</option><option value="24">内訳の24番目の行動の後</option></select></label>
   <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド</label>
+  <label id="shComWrap">オプティマチェンジの時点で<select id="shCom"><option value="auto">自動（チェンジ前に動き出していれば、ATBの行動は最後まで出る）</option><option value="yes">行動決定済み（ATBの行動は最後まで出る）</option><option value="no">未決定（ATBの行動は取り消し）</option></select></label>
+  <label id="shRoleWrap">オプティマチェンジ後のロール<select id="shRole"><option value="">変えない（同じロール）</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
   <div class="sub mo">ロールのアビリティ（クリスタリウムで習得）</div>
   <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン（アタッカー）</label>
   <label class="chk mo" id="hvWrap"><input type="checkbox" id="hv">ハイボルテージ（アタッカー・攻撃力+20%、ダメージ用）</label>
@@ -232,6 +243,9 @@ details[open] summary .nm::before{content:"▾ "}
     <option value="manual" selected>自分で並べる（右の内訳の ▲▼ で入れ替え）</option>
     <optgroup label="交互（1人1コマンドずつ順番に）"><option value="rr:012">交互 M1→M2→M3（1人1コマンドずつ）</option><option value="rr:021">交互 M1→M3→M2（1人1コマンドずつ）</option><option value="rr:102">交互 M2→M1→M3（1人1コマンドずつ）</option><option value="rr:120">交互 M2→M3→M1（1人1コマンドずつ）</option><option value="rr:201">交互 M3→M1→M2（1人1コマンドずつ）</option><option value="rr:210">交互 M3→M2→M1（1人1コマンドずつ）</option></optgroup>
     <optgroup label="メンバーごとにまとめて（1人目を全部→2人目→3人目）"><option value="seq:012">まとめて M1→M2→M3（1人ずつ全部）</option><option value="seq:021">まとめて M1→M3→M2（1人ずつ全部）</option><option value="seq:102">まとめて M2→M1→M3（1人ずつ全部）</option><option value="seq:120">まとめて M2→M3→M1（1人ずつ全部）</option><option value="seq:201">まとめて M3→M1→M2（1人ずつ全部）</option><option value="seq:210">まとめて M3→M2→M1（1人ずつ全部）</option></optgroup></select></label>
+  <label class="full">オプティマチェンジのタイミング<select id="shiftAt"><option value="0">しない（このターンはオプティマを変えない）</option><option value="999">全員の行動が当たってからチェンジ（次のターンから新しいオプティマ）</option><option value="1">内訳の1番目が当たる前にチェンジ（1番目から新しいロール）</option><option value="2">内訳の2番目が当たる前にチェンジ（2番目から新しいロール）</option><option value="3">内訳の3番目が当たる前にチェンジ（3番目から新しいロール）</option><option value="4">内訳の4番目が当たる前にチェンジ（4番目から新しいロール）</option><option value="5">内訳の5番目が当たる前にチェンジ（5番目から新しいロール）</option><option value="6">内訳の6番目が当たる前にチェンジ（6番目から新しいロール）</option><option value="7">内訳の7番目が当たる前にチェンジ（7番目から新しいロール）</option><option value="8">内訳の8番目が当たる前にチェンジ（8番目から新しいロール）</option><option value="9">内訳の9番目が当たる前にチェンジ（9番目から新しいロール）</option><option value="10">内訳の10番目が当たる前にチェンジ（10番目から新しいロール）</option><option value="11">内訳の11番目が当たる前にチェンジ（11番目から新しいロール）</option><option value="12">内訳の12番目が当たる前にチェンジ（12番目から新しいロール）</option><option value="13">内訳の13番目が当たる前にチェンジ（13番目から新しいロール）</option><option value="14">内訳の14番目が当たる前にチェンジ（14番目から新しいロール）</option><option value="15">内訳の15番目が当たる前にチェンジ（15番目から新しいロール）</option><option value="16">内訳の16番目が当たる前にチェンジ（16番目から新しいロール）</option><option value="17">内訳の17番目が当たる前にチェンジ（17番目から新しいロール）</option><option value="18">内訳の18番目が当たる前にチェンジ（18番目から新しいロール）</option><option value="19">内訳の19番目が当たる前にチェンジ（19番目から新しいロール）</option><option value="20">内訳の20番目が当たる前にチェンジ（20番目から新しいロール）</option><option value="21">内訳の21番目が当たる前にチェンジ（21番目から新しいロール）</option><option value="22">内訳の22番目が当たる前にチェンジ（22番目から新しいロール）</option><option value="23">内訳の23番目が当たる前にチェンジ（23番目から新しいロール）</option><option value="24">内訳の24番目が当たる前にチェンジ（24番目から新しいロール）</option><option value="25">内訳の25番目が当たる前にチェンジ（25番目から新しいロール）</option><option value="26">内訳の26番目が当たる前にチェンジ（26番目から新しいロール）</option><option value="27">内訳の27番目が当たる前にチェンジ（27番目から新しいロール）</option><option value="28">内訳の28番目が当たる前にチェンジ（28番目から新しいロール）</option><option value="29">内訳の29番目が当たる前にチェンジ（29番目から新しいロール）</option><option value="30">内訳の30番目が当たる前にチェンジ（30番目から新しいロール）</option><option value="31">内訳の31番目が当たる前にチェンジ（31番目から新しいロール）</option></select></label>
+  <label class="full" id="shiftToWrap">オプティマチェンジ先（登録したオプティマ）<select id="shiftTo"></select></label>
+  <p class="hint">ATBを使い切る前でも、行動の途中でもオプティマは変えられます。ここでは「内訳の○番目の行動が当たる前」に変えた場合を計算します（その行動から新しいロール。全部当たってから変えるなら、次の行動の番号を選びます）（行動の途中で変える場合は、ATBの行の「○hit目から」「当たる時のロール」を使います）。オプティマチェンジのあとに当たるヒットは、各メンバーの「オプティマチェンジ後のロール」で計算します（チェンジの時点で行動が決まっていた（動き出していた）メンバーのATBの行動は最後まで出て、決まっていなかったメンバーの行動は取り消しになります。最後まで出た行動のロールボーナス・条件補正・ジョイントレイドの人数は当たった時点のロールで決まります）。</p>
   <p class="hint">M1〜M3はパーティのタブの順（召喚中はM1＝召喚者、M2・M3＝召喚獣）です。</p>
   <p class="hint">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
   <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
@@ -309,7 +323,7 @@ details[open] summary .nm::before{content:"▾ "}
     <p class="note" id="toBreak" style="white-space:pre-line"></p>
     <p class="note" id="dmgSum" hidden style="font-weight:600;color:var(--ink)"></p>
     <details id="qtable" hidden style="margin-top:6px"><summary class="cap" style="cursor:pointer">ターン開始時の表示ごとのブレイク早見表</summary>
-      <p class="note">今のコマンドの並びのまま、ターン開始時のチェーンボーナス（画面の表示）だけを変えたときに、どの行動でブレイクするかの一覧です。表示は小数第1位までの切り捨てなので、結果が分かれる表示は両方を出しています。ブレイクの演出で画面が止まらないようにするなら、「オプティマチェンジ」の行動が当たるまでにオプティマを変えてください（結果が分かれる表示では早いほうの行動にしています。早めに変えても、ATBに入れたコマンドは最後まで出ます）。</p>
+      <p class="note">今のコマンドの並びのまま、ターン開始時のチェーンボーナス（画面の表示）だけを変えたときに、どの行動でブレイクするかの一覧です。表示は小数第1位までの切り捨てなので、結果が分かれる表示は両方を出しています。ブレイクの演出で画面が止まらないようにするなら、「オプティマチェンジ」の行動が当たるまでにオプティマを変えてください（結果が分かれる表示では早いほうの行動にしています）。上昇量はヒットした時点のロールで決まるので、早く変えすぎると、その後のヒットの上昇が小さくなることがあります。この表はオプティマを変えない前提です。</p>
       <div style="overflow-x:auto"><table class="qt" style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr><th>ターン開始時の表示</th><th>ブレイク</th><th>オプティマチェンジ</th></tr></thead><tbody></tbody></table></div>
     </details>
   </div>
@@ -543,7 +557,7 @@ const CH1={l:"light",s:"sazh",n:"snow",v:"vanille",h:"hope",f:"fang"};
 const canLearn=(name,chr)=>{const src=LEARN_SRC[name];if(!src)return true;return [...src].some(c=>CH1[c]===chr)};
 const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
 
-const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
+const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,shRole:"",shCom:"auto",ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
 const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"I",chr:"snow"})];
 const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング"};
 // キャラ専用コマンド：who=使えるキャラ、rep=置き換える通常コマンド
@@ -597,12 +611,13 @@ function loadActor(){
   if(a.kind==="member"){
     $("mOn").checked=a.on;
     $("chr").value=a.chr;$("role").value=a.role;$("rlv").value=a.rlv;$("atb").value=a.atb;$("hp").value=a.hp;
-    $("mpa").value=a.pa||"";$("mma").value=a.ma||"";$("mbr").value=a.br||1;$("mfa").value=a.fa||1;$("mpp").value=a.pp||0;$("mak").value=a.ak||0;$("mgen").checked=!!a.gen;$("mkiki").checked=!!a.kiki;$("med").value=a.ed||0;$("medE").value=a.edE||"F";$("mdn").value=a.dn||"0";$("men").value=a.en||"";["ab1","ab2","ab3","db"].forEach(k=>$("m"+k).checked=!!a[k]);$("mab4").value=a.ab4||"0";$("cpos").value=a.cpos;$("cneg").checked=a.cneg;$("ko").value=a.ko||0;
+    $("mpa").value=a.pa||"";$("mma").value=a.ma||"";$("mbr").value=a.br||1;$("mfa").value=a.fa||1;$("mpp").value=a.pp||0;$("mak").value=a.ak||0;$("mgen").checked=!!a.gen;$("mkiki").checked=!!a.kiki;$("med").value=a.ed||0;$("medE").value=a.edE||"F";$("mdn").value=a.dn||"0";$("men").value=a.en||"";["ab1","ab2","ab3","db"].forEach(k=>$("m"+k).checked=!!a[k]);$("mab4").value=a.ab4||"0";$("shRole").value=a.shRole||"";$("shCom").value=a.shCom||"auto";$("cpos").value=a.cpos;$("cneg").checked=a.cneg;$("ko").value=a.ko||0;
     $("jeo").checked=a.jeo;$("hv").checked=!!a.hv;$("ovwOn").checked=a.ovwOn;$("vigor").checked=a.vigor;$("cbb").value=a.cbb;
   }
   $("diff").checked=a.diff;
 }
 function syncVis(){
+  {const on=mode==="normal"&&+$("shiftAt").value>0;$("shiftToWrap").hidden=!on;$("shRoleWrap").hidden=!on||A().kind!=="member";$("shComWrap").hidden=!on||A().kind!=="member"||+$("shiftAt").value===999;}
   const a=A(),isM=a.kind==="member";
   document.querySelectorAll(".mo").forEach(el=>el.hidden=!isM);
   if(isM){
@@ -612,7 +627,7 @@ function syncVis(){
     $("rlvWrap").hidden=a.role!=="RAV"&&a.role!=="COM";$("rlvTx").textContent=(a.role==="COM"?"アタッカー":"ブラスター")+"のロールレベル";$("jeoWrap").hidden=a.role!=="COM";$("hvWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";$("cbbSub").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
     $("vigWrap").hidden=(a.role!=="RAV"&&a.chr!=="sazh")||!canLearn("ハイテンション",a.chr);if(!canLearn("ハイテンション",a.chr))a.vigor=false;
   }
-  $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";$("paWrap").hidden=mode==="normal";
+  $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";$("paWrap").hidden=mode==="normal";$("optWrap").hidden=mode!=="normal";
   $("modeSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
   $("modeHint").textContent=mode==="summon"?"召喚中はメンバー1（召喚者）と召喚獣だけが戦います。召喚獣はメンバー1のキャラで決まります（ライトニング＝オーディン、サッズ＝ブリュンヒルデ、スノウ＝シヴァ、ホープ＝アレキサンダー、ヴァニラ＝ヘカトンケイル、ファング＝バハムート）。召喚獣のATBは固定です。ドライビング前の召喚獣には、本の値の召喚獣用補正（ブレイク予兆+0.5など）が付き、「違うコマンド」とロールボーナスは付きません。"
     :mode==="drive"?"ドライビングモードは召喚獣だけが行動します。召喚獣はメンバー1のキャラで決まります。技を押すとドライビングゲージを消費して追加、最後にフィニッシュ技を選べます。ブラスターのロールボーナスは召喚獣には付きません。":"";
@@ -701,6 +716,23 @@ function renderQueue(){
         extra.append(l2);
       }
     }
+    // 複数ヒットの技：ヒットの途中でオプティマチェンジ（○hit目から別のロール）。例：デスペラードの途中でサッズがアタッカーに
+    {const nh=it.sk.parts?it.sk.parts.reduce((x,p)=>x+p.h,0):it.sk.bs?it.sk.bs.length:(it.sk.h||1);
+     // 1ヒットの技（デスなど）：当たる直前にオプティマを変えた場合の「当たる時のロール」
+     if(a.kind==="member"&&nh===1&&!it.sk.noHit&&!it.tp){
+      const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
+      l.innerHTML=`当たる時のロール<select style="width:auto;padding:2px 4px" aria-label="当たる時のロール"><option value="">そのまま</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select>`;
+      l.title="当たる直前にオプティマを変えた場合、変更後のロールで計算します";
+      const se=l.querySelector("select");se.value=it.hsRole||"";se.oninput=ev=>{it.hsRole=ev.target.value;it.hsAt=it.hsRole?1:0;calc()};
+      extra.append(l)}
+     if(a.kind==="member"&&nh>1&&it.sk.id!=="blzS"){
+      const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
+      l.innerHTML=`<input type="number" min="0" max="${nh}" step="1" value="${it.hsAt||0}" style="width:3.6em;padding:2px 4px" aria-label="ロールが変わるヒット">hit目から<select style="width:auto;padding:2px 4px" aria-label="変更後のロール">${'<option value="">—</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option>'}</select>`;
+      l.querySelector("select").value=it.hsRole||"";
+      l.querySelector("input").oninput=ev=>{it.hsAt=Math.min(nh,Math.max(0,+ev.target.value|0));calc()};
+      l.querySelector("select").oninput=ev=>{it.hsRole=ev.target.value;calc()};
+      l.title="ヒットの途中でオプティマを変えた場合、そのヒットから変更後のロールで計算します（0＝変えない）";
+      extra.append(l)}}
     if(it.sk.id==="blzS"){
       const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
       l.innerHTML=`<input type="number" min="0" max="7" step="1" value="${it.swAt||0}" style="width:3.6em;padding:2px 4px" aria-label="ブラスターに切り替えるヒット">hit目からブラスター Lv<select style="width:auto;padding:2px 4px" aria-label="ブラスターのロールレベル">${[1,2,3,4,5].map(v=>`<option${(it.swLv||5)==v?" selected":""}>${v}</option>`).join("")}</select>`;
@@ -758,7 +790,7 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
     // 他のメンバーが使っているキャラを選んだら、2人のキャラを入れ替える
     if(other){
       // 他のメンバーが使っているキャラを選んだら、キャラと設定（ロール・ATB・コマンドなど）をまとめて入れ替える
-      ["chr","role","rlv","atb","hp","pa","ma","br","fa","pp","ak","gen","kiki","ed","edE","dn","en","ab1","ab2","ab3","ab4","db","cpos","cneg","ko","diff","jeo","hv","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
+      ["chr","role","rlv","atb","hp","pa","ma","br","fa","pp","ak","gen","kiki","ed","edE","dn","en","ab1","ab2","ab3","ab4","db","cpos","cneg","ko","shRole","diff","jeo","hv","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
       loadActor();render();return}}a[key]=el.type==="checkbox"?el.checked:(conv?conv(el.value):el.value);
   if(key==="role")a.queue=[];
   if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
@@ -766,7 +798,7 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
   if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all){q.cost=a.atb;return true}u+=q.cost;return u<=a.atb})}
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
-bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("mpa","pa",v=>Math.max(0,+v||0));bind("mma","ma",v=>Math.max(0,+v||0));bind("mbr","br",Number);bind("mfa","fa",Number);bind("mpp","pp",Number);bind("mak","ak",Number);bind("mgen","gen");bind("mkiki","kiki");bind("med","ed",Number);bind("medE","edE");bind("mdn","dn");bind("men","en");bind("mab1","ab1");bind("mab2","ab2");bind("mab3","ab3");bind("mab4","ab4");bind("mdb","db");bind("ko","ko",Number);bind("diff","diff");
+bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("shRole","shRole");bind("shCom","shCom");bind("mpa","pa",v=>Math.max(0,+v||0));bind("mma","ma",v=>Math.max(0,+v||0));bind("mbr","br",Number);bind("mfa","fa",Number);bind("mpp","pp",Number);bind("mak","ak",Number);bind("mgen","gen");bind("mkiki","kiki");bind("med","ed",Number);bind("medE","edE");bind("mdn","dn");bind("men","en");bind("mab1","ab1");bind("mab2","ab2");bind("mab3","ab3");bind("mab4","ab4");bind("mdb","db");bind("ko","ko",Number);bind("diff","diff");
 bind("jeo","jeo");bind("hv","hv");bind("ovwOn","ovwOn");bind("vigor","vigor");bind("cbb","cbb",Number);
 $("eid").addEventListener("input",()=>{cur=0;loadActor();render()});
 $("finLvSel").addEventListener("input",()=>{const a=DR[$("eid").value];a.queue.forEach(q=>{if(q.sk.fin)q.name=q.sk.n+" Lv"+finLv()});render()});
@@ -797,6 +829,8 @@ $("nextTurn").onclick=()=>{
   carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
   endState.last.forEach((v,a)=>a.last=v);
   M.forEach(m=>{if(m.ko>0&&endState.koed&&endState.koed.has(m))m.ko=-1});
+  // オプティマを変えた場合、次のターンは変更後のロールから
+  if(mode==="normal"&&+$("shiftAt").value>0){M.forEach(m=>{if(m.shRole&&m.shRole!==m.role){m.role=m.shRole;m.queue=[]}m.shRole=""});$("shiftAt").value="0";$("optNow").value=$("shiftTo").value;$("shiftTo").value=""}
   actors().forEach(a=>{if(!$("keepQ").checked)a.queue=[];a.queue.forEach(q=>q.land=true)});
   turn++;$("turnLabel").textContent=turn+"ターン目（前ターンから引き継ぎ）"+(mode==="drive"?"・ドライビング終了でチェーンはリセット":"");
   render();
@@ -910,6 +944,14 @@ function calc(){
     seq.sort((x,y)=>manualOrder.indexOf(x.it)-manualOrder.indexOf(y.it));
     // 各キャラの「1つ目のストックコマンド」は、そのキャラのキューの先頭のまま
   }
+  // 「内訳の○番目」の選択肢は、今ATBに並んでいる行動の数に合わせる
+  if(SIM==null){const n=seq.length;
+    const fit=(id,fixed,lab,maxN)=>{const el=$(id);if(!el)return;const cur=el.value;const want=fixed.length+maxN;
+      if(el.options.length===want&&el.dataset.n==String(maxN))return;el.innerHTML=fixed.join("")+Array.from({length:maxN},(_,i)=>`<option value="${i+1}">${lab(i+1)}</option>`).join("");el.dataset.n=maxN;
+      el.value=[...el.options].some(o=>o.value===cur)?cur:"0"};
+    fit("shiftAt",['<option value="0">しない（このターンはオプティマを変えない）</option>','<option value="999">全員の行動が当たってからチェンジ（次のターンから新しいオプティマ）</option>'],k=>`内訳の${k}番目が当たる前にチェンジ（${k}番目から新しいロール）`,n);
+    fit("ko",['<option value="0">ならない</option>','<option value="-1">最初から戦闘不能</option>'],k=>`内訳の${k}番目の行動の後`,Math.max(0,n-1));
+    if(A().kind==="member")$("ko").value=String(A().ko||0);}
   const qn=mode==="normal"?+$("tpQ").value:0,QK={id:"quake",n:"クエイク",b:+$("tpBase").value||0,t:"M",e:"E"};
   const qs=[...Array(qn)].map(()=>({it:{sk:QK,e:"E",name:"クエイク（TP）",cost:0,tp:true,land:true},a:M[0],first:false}));
   seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
@@ -922,9 +964,16 @@ function calc(){
   // チェーンボーナスが100%より上ならチェーンゲージは残っているので、このチェックは関係ない
   if(SIM==null){const off=st.stag||start>100;if(off)$("chainEmpty").checked=false;$("chainEmpty").disabled=off;$("chainEmpty").closest("label").style.opacity=off?.5:1;}const out=[];const per=new Map(list.map(a=>[a,0]));
   // 戦闘不能：指定した行動の後から、そのキャラは行動せず、ジョイントレイド・ブラスターのパーティボーナス・「仲間なし」の判定からも外れる
+  // ターンの途中でオプティマチェンジ：内訳のshiftAt番目の行動のあとから、変更後のロールで計算
+  // 値k＝内訳のk番目（1始まり）が当たる前にチェンジ → 0始まりの番号 k-1 以降が新しいロール
+  const shiftK=mode==="normal"&&+$("shiftAt").value!==999?(+$("shiftAt").value||0):0,shiftOn=shiftK>0,shiftAt=shiftK-1;
+  const roleOf=(x,i)=>(shiftOn&&i>=shiftAt&&x.kind==="member"&&x.shRole)?x.shRole:x.role;
   const alive=(x,i)=>x.on&&!(x.kind==="member"&&(x.ko===-1||(x.ko>0&&i>=x.ko)));
   seq.forEach((step,idx)=>{
-    const {it,a,first}=step, sk=it.sk, role=a.role, isM=a.kind==="member";
+    const {it,a,first}=step, sk=it.sk, role=roleOf(a,idx), isM=a.kind==="member";
+    // オプティマチェンジ：チェンジの時点で行動が決まっていないメンバーの行動は取り消し
+    if(!it.tp&&shiftOn&&idx>=shiftAt&&a.kind==="member"){const c=a.shCom||"auto";const committed=c==="yes"||(c==="auto"&&seq.slice(0,shiftAt).some(x=>x.a===a&&!x.it.tp));
+      if(!committed){out.push({it,a,sum:0,lost:0,finReal:0,g0:st.cur,g1:st.cur,det:null,hits:0,cancel:true});return}}
     if(!it.tp&&!alive(a,idx)){out.push({it,a,sum:0,lost:0,finReal:0,g0:st.cur,g1:st.cur,det:null,hits:0,ko:true});return}
     const hp=a.hp, cpos=a.cpos||0;
     const prev=lastBy.get(a);
@@ -935,7 +984,7 @@ function calc(){
     const landed=it.land&&!it.dup;
     // 同じ敵を狙う味方：攻撃ロール（エンハンサー/ヒーラー以外）でパーティにいるメンバー。そのターンに行動しなくても数える
     // 同じ敵を狙う味方：攻撃ロールのメンバー＋召喚中の召喚獣（シヴァは2体）。召喚獣が別の敵を狙うと数えない（実測）
-    const others=list.filter(x=>x!==a&&alive(x,idx)&&((x.kind==="member"&&!nonAtk(x.role))||x.kind==="eid")).length;
+    const others=list.filter(x=>x!==a&&alive(x,idx)&&((x.kind==="member"&&!nonAtk(roleOf(x,idx)))||x.kind==="eid")).length;
     // 「他に狙う味方なし」はヒーラーなど攻撃していない味方がいても付かない（動画で確認）
     const partyOthers=list.filter(x=>x!==a&&alive(x,idx)).length;
     const hl=hitsOf(sk,it,a);
@@ -958,7 +1007,8 @@ function calc(){
     hl.forEach((hit,h)=>{
       // サッズのエリアブラスト：途中でブラスターに切り替えた場合、そのヒットからブラスター扱い
       const swRav=!!(it.swAt&&h+1>=it.swAt);
-      const role=swRav?"RAV":a.role, rlvH=swRav?(it.swLv||5):a.rlv;
+      const hsOn=!!(it.hsAt&&it.hsRole&&h+1>=it.hsAt);
+      const role=swRav?"RAV":hsOn?it.hsRole:roleOf(a,idx), rlvH=swRav?(it.swLv||5):a.rlv;
       const stag=st.stag;
       let b=stag&&hit.sb!=null?hit.sb:hit.b;
       if(sk.sab&&landed)b+=5;
@@ -975,7 +1025,7 @@ function calc(){
       if(isM){
         if(role==="RAV"){const v=RAV_SELF[rlvH];if(v)mods.push([`ブラスターロールボーナス（自分 Lv${rlvH}）`,v])}
         // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（実測：アタッカーのサッズには付かない）
-        if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&alive(o,idx)&&o.role==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
+        if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
         if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
         if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
         if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
@@ -1048,9 +1098,9 @@ function calc(){
       if(dIdx[h]!=null&&stat>0&&!provFail){const t=DI[2],ig=!!DI[3],eidK=a.kind!=="member";
         let d=stat*dIdx[h];const vr=DI[1]/100;
         let hE=e;if(a.kind==="member"&&t==="p"&&!hE&&a.en)hE=a.en;
-        if(a.kind==="member"){const dead=M.filter(o=>o!==a&&o.on&&!alive(o,idx)).length;const ta=(a.role==="COM"&&a.hv?20:0)+(+a.pp||0)+(+a.ak||0)*dead+(a.gen?20:0)+(a.kiki?50:0);d*=1+ta/100}
+        if(a.kind==="member"){const dead=M.filter(o=>o!==a&&o.on&&!alive(o,idx)).length;const ta=(role==="COM"&&a.hv?20:0)+(+a.pp||0)+(+a.ak||0)*dead+(a.gen?20:0)+(a.kiki?50:0);d*=1+ta/100}
         d*=dV==="max"?1:dV==="min"?1-vr:1-vr/2;d*=st.cur/100;
-        {let c=0;if(a.kind==="member"){if(a.role==="COM")c+=CS_DMG[a.rlv]||0;M.forEach(o=>{if(o!==a&&alive(o,idx)&&o.role==="COM")c+=CP_DMG[o.rlv]||0});
+        {let c=0;if(a.kind==="member"){if(role==="COM")c+=CS_DMG[a.rlv]||0;M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="COM")c+=CP_DMG[o.rlv]||0});
           if(+a.ed&&hE&&hE===a.edE)c+=+a.ed;const k=a.dn||"0";if(k!=="0"&&k[0]===t)c-=+k.slice(1)}d*=Math.max(0,1+c/100)}
         if(a.kind==="member"&&a.en&&t==="p"&&hE===a.en)d*=1.3;
         if(a.kind==="member"&&a.db&&ehpMax&&hpRem>0&&hpRem<1.2*d)d*=1.5;
@@ -1066,7 +1116,7 @@ function calc(){
       if(h===0&&!(firstPending&&dur0))it.noStart=false;
       if(starter)it.starter=true;else if(h===0)it.starter=false;
       if(!det)det={b,mods,resK,C,elK,v,stag,eidEl:!isM&&e&&resOf[e]!=="weak"};
-      if(swRav&&!detSw&&h>0){detSw={b,mods,resK,C,elK,v,stag};swFrom=h+1}
+      if((swRav||hsOn)&&!detSw&&h>0){detSw={b,mods,resK,C,elK,v,stag,role};swFrom=h+1}
     });
     // ルーラーフィスト・ハイウィンド：チェーンボーナスを100.0%にもどす
     if(sk.reset){st.cur=100;st.stag=false;it.resetDone=true}
@@ -1074,7 +1124,7 @@ function calc(){
     lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
     per.set(a,per.get(a)+sum);
     dmgTotal+=dmgAct;
-    out.push({it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
+    out.push({shifted:shiftOn&&idx>=shiftAt&&a.kind==="member",shRoleNow:roleOf(a,idx),it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
   });
   if(SIM!=null){let n=0;if(brokeAt)out.slice(0,brokeAt.idx+1).forEach(o=>{if(o.a===brokeAt.a&&!o.it.tp)n++});
     return brokeAt?{key:brokeAt.idx,label:`${brokeAt.a.kind==="member"?CHR_JP[brokeAt.a.chr]:brokeAt.a.label}の${n}発目「${brokeAt.name}」`}:{key:-1,label:"このターンではブレイクしない"}}
@@ -1115,14 +1165,17 @@ function calc(){
     }
     nm.append(`${i+1}. `);
     const li=list.indexOf(o.a);
-    const w=document.createElement("span");w.className="who m"+(li%3);w.textContent=o.a.kind==="member"?"M"+(M.indexOf(o.a)+1):"召";nm.append(w,o.it.name+(o.ko?"（戦闘不能）":"")+(o.it.fangCombo?"（連撃）":"")+(o.hits>1?` ×${o.hits}hit`:""));
+    const w=document.createElement("span");w.className="who m"+(li%3);w.textContent=o.a.kind==="member"?"M"+(M.indexOf(o.a)+1):"召";nm.append(w,o.it.name+(o.ko?"（戦闘不能）":"")+(o.cancel?"（取り消し）":"")+(o.it.fangCombo?"（連撃）":"")+(o.hits>1?` ×${o.hits}hit`:""));
     if(brokeAt&&brokeAt.idx===i){const b=document.createElement("span");b.className="brk";b.textContent="BREAK";nm.append(b)}
+    if(+$("shiftAt").value===i+1&&mode==="normal"){const c=document.createElement("span");c.className="brk";c.style.color="var(--accent)";c.textContent="この行動が当たる前にチェンジ";nm.append(c)}
     d.append(s);
     const t=o.det,det=document.createElement("div");det.className="det";
     const row=(x,y)=>{const r=document.createElement("div");r.className="r";r.innerHTML="<span></span><span></span>";r.children[0].textContent=x;r.children[1].textContent=y;det.append(r)};
     row("行動",`${o.a.label}（${ROLE_JP[o.a.role]}）`);
     if(o.it.swAt)row("途中でブラスターに切り替え",`${o.it.swAt}ヒット目から（Lv${o.it.swLv||5}）`);
     if(o.ko){row("戦闘不能のため行動しない","0.00");d.append(det);box.append(d);return}
+    if(o.cancel){row("オプティマチェンジの時点で行動が決まっていなかったため取り消し","0.00");d.append(det);box.append(d);return}
+    if(o.shifted)row("オプティマチェンジのあとに当たる",`${ROLE_JP[o.shRoleNow]}として計算`);
     if(o.dmg!=null)row("ダメージ（"+({min:"最小",avg:"平均",max:"最大"})[$("dmgV").value]+"、ヒット時点のチェーンボーナスで計算）",o.dmg.toLocaleString("ja-JP")+(o.hpAfter!=null?`（残りHP ${o.hpAfter.toLocaleString("ja-JP")}）`:""));
     else if(o.noStat)row("ダメージ",o.a.kind==="member"?"攻撃力が未入力":"召喚獣ランクが未選択");
     if(o.zanKill)row("斬鉄剣の一撃判定",`残りHP ${Math.floor(o.zanKill.rem).toLocaleString("ja-JP")} ${o.zanKill.ok?"＜":"≧"} ${Math.floor(o.zanKill.th).toLocaleString("ja-JP")} → ${o.zanKill.ok?"一撃で倒せる":"一撃では倒せない"}`);
@@ -1145,7 +1198,7 @@ function calc(){
       row("属性補正","×"+f(t.elK)+(t.eidEl?"（召喚獣は属性耐性を無視）":""));
       row("1ヒット目の上昇量",f(t.v));
       if(o.detSw){const u=o.detSw;
-        row(`── ${o.swFrom}ヒット目以降（ブラスター）──`,"");
+        row(`── ${o.swFrom}ヒット目以降（${ROLE_JP[u.role]||"ブラスター"}）──`,"");
         u.mods.forEach(x=>row("　基本値補正："+x[0],"+"+f(x[1])));
         u.C.forEach(c=>row("　条件補正："+c[0],"+"+f(c[1])));
         row(`${o.swFrom}ヒット目の上昇量`,f(u.v));}
@@ -1167,7 +1220,7 @@ function calc(){
   const tb=$("toBreak");
   const zt=out.find(o=>o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit);
   if($("stag").checked)tb.textContent="すでにブレイク中です。";
-  else if(brokeAt){tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":`${nmA(brokeAt.a)}の${brkN}発目でブレイク（内訳${brokeAt.idx+1}番目）。\n→ ${nmA(brokeAt.a)}の${brkN}発目が当たるまでにオプティマチェンジ（ブレイクの演出で画面が止まらないようにする場合。早めに変えても、ATBに入れたコマンドは最後まで出ます）。`}
+  else if(brokeAt){tb.textContent=mode==="drive"?"ドライビングモード中にブレイクします。":`${nmA(brokeAt.a)}の${brkN}発目でブレイク（内訳${brokeAt.idx+1}番目）。\n→ ${nmA(brokeAt.a)}の${brkN}発目が当たるまでにオプティマチェンジ（ブレイクの演出で画面が止まらないようにする場合）。\n※ATBに入れたコマンドは最後まで出ますが、上昇量はヒットした時点のロールで決まります。早く変えすぎて、その後のヒットのロールが変わる（ブラスターでなくなる、ブラスターが減る）と、上昇が小さくなってブレイクが遅れることがあります。この計算はオプティマを変えない前提です。`}
   else if(total<=0)tb.textContent="ゲージが上がりません。";
   else if(mode==="drive")tb.textContent=`残り ${f(lim-st.cur,1)}%。ドライビングモード終了後はチェーンがリセットされます。`;
   else{const need=lim-st.cur;tb.textContent=`このターン後の残り ${f(need,1)}%。同じ並びならあと約 ${Math.ceil(need/total-1e-9)} ターン（2ターン目以降は条件補正が変わる場合あり）。`}
@@ -1194,6 +1247,49 @@ const qe=(a,id)=>{const sk=a.skills.find(s=>s.id===id);a.queue.push({sk,e:"",nam
 ["h1","h1","h1","h2","h4"].forEach(id=>qe(EA.baha[0],id));
 ["x1","x1","x3","x4"].forEach(id=>qe(EA.alex[0],id));
 ["k1","k2","k3","k4","k1","k3"].forEach(id=>qe(EA.heca[0],id));
+// ===== オプティマの登録 =====
+const OPT_ROLES=[["","—（いない）"],["COM","アタッカー"],["RAV","ブラスター"],["SEN","ディフェンダー"],["SAB","ジャマー"],["SYN","エンハンサー"],["MED","ヒーラー"]];
+const OPT_NAMES={"COM,COM":"デュアルアサルト","COM,RAV":"アサルト＋バスター","COM,SEN":"アサルト＋シールド","COM,SAB":"アサルト＆ジャム","COM,SYN":"アサルト＆サポート","COM,MED":"アサルト＆キュア","RAV,RAV":"デュアルフォース","RAV,SEN":"バスター＋シールド","RAV,SAB":"バスター＆ジャム","RAV,SYN":"バスター＆サポート","RAV,MED":"バスター＆キュア","SEN,SEN":"デュアルシールド","SEN,SAB":"シールド＆ジャム","SEN,SYN":"シールド＆サポート","SEN,MED":"シールド＆キュア","SAB,SAB":"ダブルジャミング","SAB,SYN":"ジャム／サポート","SAB,MED":"ジャム／キュア","SYN,SYN":"ダブルサポート","SYN,MED":"サポート／キュア","MED,MED":"ダブルキュア","COM,COM,COM":"ケルベロス","COM,COM,RAV":"フューリアス","COM,COM,SEN":"鋼のレギオン","COM,COM,SAB":"アグレッション","COM,COM,SYN":"躍動の両雄","COM,COM,MED":"揺るぎなき覇者","COM,RAV,RAV":"ラッシュアサルト","COM,RAV,SEN":"デルタアタック","COM,RAV,SAB":"撃滅の戦鬼","COM,RAV,SYN":"風雲の龍虎","COM,RAV,MED":"勇戦の凱歌","COM,SEN,SEN":"インプレグナブル","COM,SEN,SAB":"リベリオン","COM,SEN,SYN":"奮起の挑戦者","COM,SEN,MED":"勝利への決意","COM,SAB,SAB":"カラミティサーカス","COM,SAB,SYN":"逆襲の魁","COM,SAB,MED":"狩人への祝福","COM,SYN,SYN":"獅子心王","COM,SYN,MED":"不屈の戦士","COM,MED,MED":"青雲の志士","RAV,RAV,RAV":"トライディザスター","RAV,RAV,SEN":"ヴァンガード","RAV,RAV,SAB":"カタストロフィ","RAV,RAV,SYN":"魔道のパレード","RAV,RAV,MED":"精霊のオラトリオ","RAV,SEN,SEN":"インターセプト","RAV,SEN,SAB":"マタドール","RAV,SEN,SYN":"迎撃のマーチ","RAV,SEN,MED":"抗戦の賛歌","RAV,SAB,SAB":"惑乱の嵐","RAV,SAB,SYN":"謀略のラプソディ","RAV,SAB,MED":"デクスタラス","RAV,SYN,SYN":"無双のフォース","RAV,SYN,MED":"ブレイヴァリー","RAV,MED,MED":"不死の魔人","SEN,SEN,SEN":"グレートウォール","SEN,SEN,SAB":"フォートレス","SEN,SEN,SYN":"鉄の双璧","SEN,SEN,MED":"不落の砦","SEN,SAB,SAB":"策謀の復讐者","SEN,SAB,SYN":"反撃の狼煙","SEN,SAB,MED":"レジスタンス","SEN,SYN,SYN":"マイティガード","SEN,SYN,MED":"忍耐の守護者","SEN,MED,MED":"フェニックス","SAB,SAB,SAB":"アシュラ","SAB,SAB,SYN":"無慈悲なる災厄","SAB,SAB,MED":"冥界のコーラス","SAB,SYN,SYN":"フォーミダブル","SAB,SYN,MED":"トリニティユニオン","SAB,MED,MED":"執拗なる計略","SYN,SYN,SYN":"トリスメギストス","SYN,SYN,MED":"ホワイトウインド","SYN,MED,MED":"恵みの慈雨","MED,MED,MED":"アスクレピオス"};
+// ロールの組み合わせからオプティマ名を自動で決める（並び順は関係なし。1人ならロール名）
+const OPT_ORD=["COM","RAV","SEN","SAB","SYN","MED"];
+function optAutoName(r){const k=r.filter(Boolean).sort((a,b)=>OPT_ORD.indexOf(a)-OPT_ORD.indexOf(b));if(!k.length)return "（ロールなし）";if(k.length===1)return ROLE_JP[k[0]];return OPT_NAMES[k.join(",")]||k.map(x=>ROLE_JP[x]).join("／")}
+const OPT_DEF=[{r:["RAV","RAV","RAV"]},{r:["COM","RAV","RAV"]}].map(o=>({n:optAutoName(o.r),r:o.r,auto:true}));
+let OPT=(()=>{try{const v=JSON.parse(localStorage.getItem("ff13cc_optima")||"null");if(Array.isArray(v))return v}catch(e){}return OPT_DEF.map(o=>({n:o.n,r:o.r.slice()}))})();
+const optSave=()=>{try{localStorage.setItem("ff13cc_optima",JSON.stringify(OPT))}catch(e){}};
+const optLabel=o=>`${o.n}（${o.r.map(x=>x?ROLE_JP[x]:"—").join("／")}）`;
+function optRenderSelects(){
+  const now=$("optNow"),to=$("shiftTo"),nv=now.value,tv=to.value;
+  now.innerHTML='<option value="">選ばない（メンバーごとに設定）</option>'+OPT.map((o,i)=>`<option value="${i}"></option>`).join("");
+  to.innerHTML='<option value="">選ばない（メンバーごとに設定）</option>'+OPT.map((o,i)=>`<option value="${i}"></option>`).join("");
+  [now,to].forEach(sel=>[...sel.options].slice(1).forEach((op,i)=>op.textContent=optLabel(OPT[i])));
+  now.value=OPT[nv]?nv:"";to.value=OPT[tv]?tv:"";
+}
+function optRenderList(){
+  $("optEdSum").textContent=`✎ オプティマを登録・編集（${OPT.length}件登録）${$("optEd").open?" ▲閉じる":" ▼開く"}`;
+  const box=$("optList");box.innerHTML="";
+  OPT.forEach((o,i)=>{const row=document.createElement("div");row.style.cssText="display:flex;flex-wrap:wrap;gap:4px;align-items:center";
+    const nm=document.createElement("input");nm.type="text";nm.value=o.n;nm.style.cssText="flex:1 1 9em;min-width:7em";nm.setAttribute("aria-label","オプティマの名前");
+    nm.oninput=()=>{o.n=nm.value;o.auto=!nm.value;if(!nm.value)o.n=optAutoName(o.r);optSave();optRenderSelects()};nm.placeholder="空にすると自動";row.append(nm);
+    [0,1,2].forEach(k=>{const se=document.createElement("select");se.style.width="auto";se.setAttribute("aria-label","メンバー"+(k+1)+"のロール");
+      se.innerHTML=OPT_ROLES.map(([v,t])=>`<option value="${v}">M${k+1} ${t}</option>`).join("");se.value=o.r[k]||"";
+      se.oninput=()=>{o.r[k]=se.value;if(o.auto!==false){o.n=optAutoName(o.r);nm.value=o.n}optSave();optRenderSelects()};row.append(se)});
+    const del=document.createElement("button");del.type="button";del.className="x";del.textContent="×";del.setAttribute("aria-label","削除");
+    del.onclick=()=>{OPT.splice(i,1);optSave();optRenderList();optRenderSelects()};row.append(del);box.append(row)});
+}
+$("optAdd").onclick=()=>{const r=["RAV","RAV","RAV"];OPT.push({n:optAutoName(r),r,auto:true});optSave();optRenderList();optRenderSelects()};
+$("optFromParty").onclick=()=>{const r=M.map(m=>m.on?m.role:"");OPT.push({n:optAutoName(r),r,auto:true});optSave();optRenderList();optRenderSelects()};
+// 今のオプティマ：3人のロールをまとめて設定（ロールが変わったメンバーのATBは空になる）
+function optApplyNow(i){const o=OPT[i];if(!o)return;M.forEach((m,k)=>{const r=o.r[k];if(!r){return}if(m.role!==r){m.role=r;m.queue=[]}});loadActor();render()}
+$("optNow").addEventListener("input",()=>optApplyNow($("optNow").value));
+// ターン途中のチェンジ先：3人のチェンジ後のロールをまとめて設定
+$("shiftTo").addEventListener("input",()=>{const o=OPT[$("shiftTo").value];M.forEach((m,k)=>{m.shRole=o&&o.r[k]&&o.r[k]!==m.role?o.r[k]:""});loadActor();render()});
+// 3人のロールが登録したオプティマと同じなら、そのオプティマを選んだ表示にする
+const optFind=rs=>OPT.findIndex(o=>[0,1,2].every(k=>(o.r[k]||"")===(rs[k]||"")));
+function optSync(){const now=M.map(m=>m.on?m.role:"");const i=optFind(now);$("optNow").value=i>=0?String(i):"";
+  const after=M.map(m=>m.on?(m.shRole||m.role):"");const j=optFind(after);if($("shiftTo").value!==""||M.some(m=>m.shRole))$("shiftTo").value=j>=0?String(j):""}
+$("role").addEventListener("input",optSync);$("shRole").addEventListener("input",optSync);$("mOn").addEventListener("input",optSync);$("shiftAt").addEventListener("input",()=>{syncVis();calc()});
+$("optEd").addEventListener("toggle",optRenderList);
+optRenderSelects();optRenderList();
 loadActor();render();
 </script>
 </body>
