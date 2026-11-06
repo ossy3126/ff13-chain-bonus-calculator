@@ -44,6 +44,22 @@ input[type=number]{font-family:var(--mono)}
 select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .full{grid-column:1/-1}
+/* 長い一覧（オプティマ・敵）は自前の一覧で表示（ブラウザの一覧は、選んでいる行の文字が読めなくなることがあるため） */
+.fs{position:relative;width:100%;min-width:0;max-width:100%}label:has(>.fs){min-width:0}#optWrap>label{min-width:0}
+.fs>select{position:absolute;inset:0;opacity:0;pointer-events:none}
+.fs-btn{width:100%;text-align:left;font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:6px 28px 6px 8px;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:2.2em}
+.fs-btn::after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.fs-btn[aria-expanded="true"]{border-color:var(--accent)}
+.fs-pop{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:50;max-height:min(60vh,420px);overflow:auto;background:var(--panel);border:1px solid var(--accent);border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.25);padding:4px 0}
+.fs-g{position:sticky;top:-4px;z-index:1;font-size:.75rem;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:5px 10px;letter-spacing:.03em}
+.fs-i{padding:7px 12px 7px 18px;font-size:.88rem;color:var(--ink);cursor:pointer;line-height:1.35}
+.fs-i.top{padding-left:10px;color:var(--muted)}
+.fs-i:hover,.fs-i.hl{background:var(--atb-soft);color:var(--ink)}
+.fs-i.sel{background:var(--accent);color:var(--panel);font-weight:700}
+.fs-i.sel.hl,.fs-i.sel:hover{background:var(--accent);color:var(--panel)}
+.fs-i.dis{opacity:.45;cursor:default}
+.dbox{border:1px solid var(--line);border-radius:6px;padding:6px 10px}.dbox>summary{grid-template-columns:1fr;font-size:.8rem;font-weight:700;color:var(--muted)}.dbox[open]>summary{margin-bottom:8px}.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px}
+.enRow input,#enName{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}.enRow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.enRow input{flex:1 1 9em;min-width:7em}.enRow .note{flex:1 1 100%}
 .hint{grid-column:1/-1;font-size:.75rem;color:var(--muted);margin:0}
 .sub{grid-column:1/-1;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:4px 0 -4px}
 
@@ -72,6 +88,10 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .x{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px}
 .x:hover{color:var(--gauge-hot)}
 .qtools{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.enNx{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 8px}.enNx .hint{margin:0}
+.fs-q{position:sticky;top:-4px;z-index:2;background:var(--panel);padding:4px 8px 6px;border-bottom:1px solid var(--line)}
+.fs-q input{width:100%;box-sizing:border-box;font:inherit;font-size:.9rem;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink)}
+.fs-none{padding:8px 12px;color:var(--muted);font-size:.85rem}
 .lbtn{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:5px;padding:4px 10px;cursor:pointer}
 .lbtn:hover{border-color:var(--accent)}
 
@@ -142,6 +162,7 @@ details[open] summary .nm::before{content:"▾ "}
   <p>パーティ3人のATBにコマンドを並べると、1ターンでチェーンボーナスが合計いくつ上がるかを計算します。式は『ファイナルファンタジーXIII バトルアルティマニア』によります。</p>
 </header>
 <p class="note" style="margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px"><b>チェーンボーナスだけ知りたいときに必要な入力</b>：戦闘モード／各メンバーのキャラ・ロール・ロールレベル（ブラスター／アタッカー）・ATBゲージ数・HP・コマンド（とロールのアビリティ）／敵のチェーン耐性・ブレイク値・物理耐性・魔法耐性・属性耐性／現在のチェーンボーナス。<br>「ダメージ用」の項目（攻撃力・補正）と敵の最大HP、召喚獣ランクは、ダメージと残りHPを出したいときだけ入れてください。</p>
+<div class="qtools" style="margin:0 0 8px;gap:8px;align-items:center"><button class="lbtn" type="button" id="stReset">入力を初期値に戻す</button><span class="note">入力した内容はこのブラウザに自動で保存され、次に開いたときもそのまま残ります（初期値に戻しても、登録したオプティマと敵は消えません）。</span></div>
 <div class="formula">1ヒットの上昇量 = [ (スキル基本値 + 基本値補正) × (100 − チェーン耐性)/100 + 条件補正 ] × 属性補正</div>
 
 <div class="grid">
@@ -151,9 +172,17 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>パーティ</legend>
   <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
     <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
+  <label class="chk full" id="preWrap"><input type="checkbox" id="preOpt">2章まで（オプティマ解禁前）で計算する（リーダー＝メンバー1と、AIの組み合わせ：ライトニング＋サッズ（2人以上。1度だけスノウも）／スノウ＋ガドー（＋レブロ）／ヴァニラ＋ホープの2人）</label>
   <div class="full" id="optWrap" style="display:grid;grid-template-columns:1fr;gap:6px">
+    <label id="ch3W" hidden>3章のパーティ<select id="ch3P"><option value="light,snow,vanille">ライトニング・スノウ・ヴァニラ</option><option value="light,vanille,sazh">ライトニング・ヴァニラ・サッズ</option><option value="snow">スノウ（1人）</option></select></label>
+    <label id="ch9W" hidden>9章の場面<select id="ch9P"><option value="L">合流前：ライトニング・ホープ・ファング</option><option value="S">合流前：サッズ・ヴァニラ</option><option value="A">6人合流後</option></select></label>
+    <p class="hint" id="ch3FixNote" hidden></p>
+    <p class="hint" id="ch3RoleNote" hidden>3章で使えるロール：ライトニング＝アタッカー・ブラスター／スノウ＝アタッカー・ブラスター・ディフェンダー／サッズ＝ブラスター／ヴァニラ＝ブラスター・ヒーラー（それ以外のロールは選べません。オプティマの一覧も、使えるロールで組めるものだけになります）</p>
+    <label>パーティの人数<select id="pCount"><option value="3">3人</option><option value="2">2人</option><option value="1">1人</option></select></label>
     <label>今のオプティマ<select id="optNow"></select></label>
+    <label id="optNowArrW" hidden>誰がどのロールか<select id="optNowArr"></select></label>
     <details id="optEd"><summary class="lbtn" id="optEdSum" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;list-style:none">✎ オプティマを登録・編集</summary>
+      <p class="hint"><b>登録したオプティマは「誰がどのロールか」まで覚えるので、「今のオプティマ」「オプティマチェンジ先」で選ぶと1回で3人のロールが入ります</b>（よく使うオプティマ・すべてのオプティマは、名前を選んだあとに「誰がどのロールか」も選ぶので2回）。よく使う並びを登録しておくと便利です。「今のロールで追加」で、今のパーティのロールをそのまま登録できます。</p>
       <p class="hint">メンバー1〜3（パーティのタブの順）のロールを選ぶと、名前はゲームのオプティマ名が自動で入ります（自分で書き換えることもできます。空にすると自動に戻ります）。数に制限はありません（章やパーティごとに名前を分けておくと選びやすくなります。例：「3章 トライディザスター」）。このブラウザに保存されます。</p>
       <div id="optList" style="display:flex;flex-direction:column;gap:4px"></div>
       <div class="qtools" style="gap:6px;margin-top:4px"><button class="lbtn" type="button" id="optAdd">オプティマを追加</button><button class="lbtn" type="button" id="optFromParty">今のロールで追加</button></div>
@@ -170,7 +199,7 @@ details[open] summary .nm::before{content:"▾ "}
   <p class="note full" id="bonusHint" style="padding:6px 10px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-soft);color:var(--ink)"></p>
   <div class="tabs" id="tabs" role="tablist"></div>
   <label class="chk mo" id="onWrap"><input type="checkbox" id="mOn">このメンバーがパーティにいる（外すと計算から完全に除外）</label>
-  <label class="mo">キャラ<select id="chr"><option value="light">ライトニング</option><option value="sazh">サッズ</option><option value="snow">スノウ</option><option value="hope">ホープ</option><option value="vanille">ヴァニラ</option><option value="fang">ファング</option></select></label>
+  <label class="mo">キャラ<select id="chr"><option value="light">ライトニング</option><option value="sazh">サッズ</option><option value="snow">スノウ</option><option value="hope">ホープ</option><option value="vanille">ヴァニラ</option><option value="fang">ファング</option><option value="gadot">ガドー</option><option value="lebreau">レブロ</option></select></label>
   <label class="mo">ロール<select id="role">
     <option value="COM">アタッカー</option><option value="RAV">ブラスター</option>
     <option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option>
@@ -184,16 +213,16 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
   <label class="mo">戦闘不能になるタイミング<select id="ko"><option value="0">ならない</option><option value="-1">最初から戦闘不能</option><option value="1">内訳の1番目の行動の後</option><option value="2">内訳の2番目の行動の後</option><option value="3">内訳の3番目の行動の後</option><option value="4">内訳の4番目の行動の後</option><option value="5">内訳の5番目の行動の後</option><option value="6">内訳の6番目の行動の後</option><option value="7">内訳の7番目の行動の後</option><option value="8">内訳の8番目の行動の後</option><option value="9">内訳の9番目の行動の後</option><option value="10">内訳の10番目の行動の後</option><option value="11">内訳の11番目の行動の後</option><option value="12">内訳の12番目の行動の後</option><option value="13">内訳の13番目の行動の後</option><option value="14">内訳の14番目の行動の後</option><option value="15">内訳の15番目の行動の後</option><option value="16">内訳の16番目の行動の後</option><option value="17">内訳の17番目の行動の後</option><option value="18">内訳の18番目の行動の後</option><option value="19">内訳の19番目の行動の後</option><option value="20">内訳の20番目の行動の後</option><option value="21">内訳の21番目の行動の後</option><option value="22">内訳の22番目の行動の後</option><option value="23">内訳の23番目の行動の後</option><option value="24">内訳の24番目の行動の後</option></select></label>
   <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド</label>
-  <label id="shComWrap">オプティマチェンジの時点で<select id="shCom"><option value="auto">自動（チェンジ前に動き出していれば、ATBの行動は最後まで出る）</option><option value="yes">行動決定済み（ATBの行動は最後まで出る）</option><option value="no">未決定（ATBの行動は取り消し）</option></select></label>
+  <label id="shComWrap">オプティマチェンジの時点で<select id="shCom"><option value="auto">自動（チェンジ前に動いていれば、実行中の1発だけ出る）</option><option value="yes">実行中（次の1発だけ出る）</option><option value="no">未実行（何も出ない）</option></select></label>
   <label id="shRoleWrap">オプティマチェンジ後のロール<select id="shRole"><option value="">変えない（同じロール）</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
-  <div class="sub mo">ロールのアビリティ（クリスタリウムで習得）</div>
+  <div class="sub mo" id="abSub">ロールのアビリティ（クリスタリウムで習得）</div>
   <label class="chk mo" id="jeoWrap"><input type="checkbox" id="jeo">ブレイクチェーン（アタッカー）</label>
   <label class="chk mo" id="hvWrap"><input type="checkbox" id="hv">ハイボルテージ（アタッカー・攻撃力+20%、ダメージ用）</label>
   <label class="chk mo" id="ovwWrap"><input type="checkbox" id="ovwOn">ジョイントレイド（ブラスター）</label>
   <label class="chk mo" id="vigWrap"><input type="checkbox" id="vigor">ハイテンション（ブラスター・HP70%超）</label>
   <div class="sub mo" id="cbbSub">武器</div>
   <label class="mo" id="cbbWrap">サッズの武器「チェーンボーナスUP」<select id="cbb"><option value="0">なし</option><option value="1">UP（アンタレス）+1.0</option><option value="2">UP改（フォーマルハウト、トータルエクリプス）+2.0</option></select></label>
-  <div class="sub mo">ダメージ用（チェーンボーナスだけなら入力不要）</div>
+  <details class="mo full dbox" id="dmgBoxM"><summary><span class="nm" id="dmgBoxMT">ダメージ用（チェーンボーナスだけなら入力不要）</span></summary><div class="dgrid">
   <label class="mo">物理攻撃力（ステータス画面）<input type="number" id="mpa" min="0" step="1"></label>
   <label class="mo">魔法攻撃力（ステータス画面）<input type="number" id="mma" min="0" step="1"></label>
   <label class="mo">ブレイブ系<select id="mbr"><option value="1">なし</option><option value="1.4">ブレイブ ×1.4</option><option value="1.8">ブレイダ ×1.8</option></select></label>
@@ -211,6 +240,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk mo"><input type="checkbox" id="mab3">バックスタブ（たたかう2.0／ルイン1.75）</label>
   <label class="mo">インパクトブレイク／ブレイクバースト<select id="mab4"><option value="0">なし</option><option value="i">インパクトブレイク（たたかう5.0）</option><option value="b">ブレイクバースト（たたかう5.0）</option></select></label>
   <label class="chk mo"><input type="checkbox" id="mdb">エンドストライク（残りHP＜ダメージ×1.2で×1.5、残りHPは自動）</label>
+  </div></details>
 
   <div class="sub" id="atbLabel">ATB</div>
   <div class="atbbar" id="atbbar"></div>
@@ -244,24 +274,39 @@ details[open] summary .nm::before{content:"▾ "}
     <optgroup label="交互（1人1コマンドずつ順番に）"><option value="rr:012">交互 M1→M2→M3（1人1コマンドずつ）</option><option value="rr:021">交互 M1→M3→M2（1人1コマンドずつ）</option><option value="rr:102">交互 M2→M1→M3（1人1コマンドずつ）</option><option value="rr:120">交互 M2→M3→M1（1人1コマンドずつ）</option><option value="rr:201">交互 M3→M1→M2（1人1コマンドずつ）</option><option value="rr:210">交互 M3→M2→M1（1人1コマンドずつ）</option></optgroup>
     <optgroup label="メンバーごとにまとめて（1人目を全部→2人目→3人目）"><option value="seq:012">まとめて M1→M2→M3（1人ずつ全部）</option><option value="seq:021">まとめて M1→M3→M2（1人ずつ全部）</option><option value="seq:102">まとめて M2→M1→M3（1人ずつ全部）</option><option value="seq:120">まとめて M2→M3→M1（1人ずつ全部）</option><option value="seq:201">まとめて M3→M1→M2（1人ずつ全部）</option><option value="seq:210">まとめて M3→M2→M1（1人ずつ全部）</option></optgroup></select></label>
   <label class="full">オプティマチェンジのタイミング<select id="shiftAt"><option value="0">しない（このターンはオプティマを変えない）</option><option value="999">全員の行動が当たってからチェンジ（次のターンから新しいオプティマ）</option><option value="1">内訳の1番目が当たる前にチェンジ（1番目から新しいロール）</option><option value="2">内訳の2番目が当たる前にチェンジ（2番目から新しいロール）</option><option value="3">内訳の3番目が当たる前にチェンジ（3番目から新しいロール）</option><option value="4">内訳の4番目が当たる前にチェンジ（4番目から新しいロール）</option><option value="5">内訳の5番目が当たる前にチェンジ（5番目から新しいロール）</option><option value="6">内訳の6番目が当たる前にチェンジ（6番目から新しいロール）</option><option value="7">内訳の7番目が当たる前にチェンジ（7番目から新しいロール）</option><option value="8">内訳の8番目が当たる前にチェンジ（8番目から新しいロール）</option><option value="9">内訳の9番目が当たる前にチェンジ（9番目から新しいロール）</option><option value="10">内訳の10番目が当たる前にチェンジ（10番目から新しいロール）</option><option value="11">内訳の11番目が当たる前にチェンジ（11番目から新しいロール）</option><option value="12">内訳の12番目が当たる前にチェンジ（12番目から新しいロール）</option><option value="13">内訳の13番目が当たる前にチェンジ（13番目から新しいロール）</option><option value="14">内訳の14番目が当たる前にチェンジ（14番目から新しいロール）</option><option value="15">内訳の15番目が当たる前にチェンジ（15番目から新しいロール）</option><option value="16">内訳の16番目が当たる前にチェンジ（16番目から新しいロール）</option><option value="17">内訳の17番目が当たる前にチェンジ（17番目から新しいロール）</option><option value="18">内訳の18番目が当たる前にチェンジ（18番目から新しいロール）</option><option value="19">内訳の19番目が当たる前にチェンジ（19番目から新しいロール）</option><option value="20">内訳の20番目が当たる前にチェンジ（20番目から新しいロール）</option><option value="21">内訳の21番目が当たる前にチェンジ（21番目から新しいロール）</option><option value="22">内訳の22番目が当たる前にチェンジ（22番目から新しいロール）</option><option value="23">内訳の23番目が当たる前にチェンジ（23番目から新しいロール）</option><option value="24">内訳の24番目が当たる前にチェンジ（24番目から新しいロール）</option><option value="25">内訳の25番目が当たる前にチェンジ（25番目から新しいロール）</option><option value="26">内訳の26番目が当たる前にチェンジ（26番目から新しいロール）</option><option value="27">内訳の27番目が当たる前にチェンジ（27番目から新しいロール）</option><option value="28">内訳の28番目が当たる前にチェンジ（28番目から新しいロール）</option><option value="29">内訳の29番目が当たる前にチェンジ（29番目から新しいロール）</option><option value="30">内訳の30番目が当たる前にチェンジ（30番目から新しいロール）</option><option value="31">内訳の31番目が当たる前にチェンジ（31番目から新しいロール）</option></select></label>
-  <label class="full" id="shiftToWrap">オプティマチェンジ先（登録したオプティマ）<select id="shiftTo"></select></label>
-  <p class="hint">ATBを使い切る前でも、行動の途中でもオプティマは変えられます。ここでは「内訳の○番目の行動が当たる前」に変えた場合を計算します（その行動から新しいロール。全部当たってから変えるなら、次の行動の番号を選びます）（行動の途中で変える場合は、ATBの行の「○hit目から」「当たる時のロール」を使います）。オプティマチェンジのあとに当たるヒットは、各メンバーの「オプティマチェンジ後のロール」で計算します（チェンジの時点で行動が決まっていた（動き出していた）メンバーのATBの行動は最後まで出て、決まっていなかったメンバーの行動は取り消しになります。最後まで出た行動のロールボーナス・条件補正・ジョイントレイドの人数は当たった時点のロールで決まります）。</p>
+  <label class="full" id="shiftToWrap">オプティマチェンジ先<select id="shiftTo"></select></label>
+  <label class="full" id="shiftToArrW" hidden>チェンジ先で誰がどのロールか<select id="shiftToArr"></select></label>
+  <p class="hint" id="shiftHint">ATBを使い切る前でも、行動の途中でもオプティマは変えられます。ここでは「内訳の○番目の行動が当たる前」に変えた場合を計算します（その行動から新しいロール。全部当たってから変えるなら、次の行動の番号を選びます）（行動の途中で変える場合は、ATBの行の「○hit目から」「当たる時のロール」を使います）。オプティマチェンジのあとに当たるヒットは、各メンバーの「オプティマチェンジ後のロール」で計算します（チェンジの時点で実行中だった1発だけが出て、そのあとのATBの行動は取り消しになります（チェンジする行動は実行中として扱います）。出た1発のロールボーナス・条件補正・ジョイントレイドの人数は当たった時点のロールで決まります）。</p>
   <p class="hint">M1〜M3はパーティのタブの順（召喚中はM1＝召喚者、M2・M3＝召喚獣）です。</p>
   <p class="hint">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
   <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
   <label>クエイクの回数<select id="tpQ"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
   <label>使うタイミング<select id="tpWhen"><option value="before">全員のコマンドの前</option><option value="after">全員のコマンドの後</option></select></label>
   <label>クエイクの基本値<input type="number" id="tpBase" step="0.1" min="0" value="10"></label>
-  <p class="hint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
+  <p class="hint" id="tpHint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
 </fieldset>
 
 <fieldset>
   <legend>敵の状態</legend>
+  <div class="full" style="display:grid;gap:6px">
+    <label>登録した敵<select id="enSel" data-search="1"></select></label>
+    <p class="hint" id="enNote" hidden></p>
+    <div class="enNx" id="enNx" hidden></div>
+    <details id="enEd"><summary class="lbtn" id="enEdSum" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;list-style:none">✎ 敵を登録・編集</summary>
+      <p class="hint">今の「チェーン耐性・ブレイク値・ブレイク予兆の位置・敵の最大HP・物理耐性・魔法耐性・属性耐性・打ち上げられない敵」を、名前を付けて保存します。「登録した敵」で選ぶと、まとめて入ります。このブラウザに保存されます。</p>
+      <p class="hint">1・2章の一覧から選ぶと、「2章まで（オプティマ解禁前）で計算する」に自動でチェックが入り、3章以降の一覧から選ぶと自動で外れます。3章の一覧から選ぶと、パーティが3章の編成（ライトニング・スノウ・ヴァニラ／ライトニング・ヴァニラ・サッズ／スノウ1人）になり、「3章のパーティ」で切り替えられます（シヴァ・ニクスはスノウ1人、重攻撃騎マナスヴィン（3回目）はライトニング・スノウ・ヴァニラ、ベヒーモス剛と戦闘爆撃騎カルラはライトニング・ヴァニラ・サッズ）。4章の一覧から選ぶと、4章に参加できるキャラ（ライトニング・サッズ・ヴァニラ・ホープ）とロールだけになります（ドレッドノートはサッズ・ライトニング・ヴァニラ、オーディンはライトニング・ホープ）。5章の一覧から選ぶと、ライトニングとホープの2人になります（リーダーはどちらでも可）。6章の一覧から選ぶと、ヴァニラ（リーダー）とサッズの2人になります。7章の一覧から選ぶと、ライトニング・スノウ・ホープ・ファングだけになり、リーダーによって組める相手が決まります。</p>
+      <p class="hint">1〜13章の敵は最初から入っています（値は『ファイナルファンタジーXIII バトルアルティマニア』参照。HP・チェーン耐性・ブレイク値・物理/魔法耐性・属性耐性）。名前は日本語版の名前です（Final Fantasy Wiki の対訳表による）。英語名は説明に出ます。名前は下の欄で変えられます。召喚獣（シヴァ・ニクス、オーディン、ブリュンヒルデ、バハムート、アレキサンダー、ヘカトンケイル）はブレイク値の代わりにゲージがあるため、ブレイク値と最大HPは入りません。</p>
+      <div class="qtools" style="gap:6px"><input type="text" id="enName" placeholder="敵の名前（例：ベヒーモス改）" style="flex:1 1 12em;min-width:8em"><select id="enCh" style="width:auto" aria-label="章"><option value="">章なし</option><option value="1">1章</option><option value="2">2章</option><option value="3">3章</option><option value="4">4章</option><option value="5">5章</option><option value="6">6章</option><option value="7">7章</option><option value="8">8章</option><option value="9">9章</option><option value="10">10章</option><option value="11">11章</option><option value="12">12章</option><option value="13">13章</option></select><button class="lbtn" type="button" id="enAdd">今の設定で登録</button></div>
+      <div id="enList" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+    </details>
+  </div>
   <label>チェーン耐性<input type="number" id="cres" min="0" max="100" step="1" value="50"></label>
+  <details class="full dbox" id="dmgBoxE"><summary><span class="nm" id="dmgBoxET">ダメージ用（敵の最大HP・残りHP・見積もり）</span></summary><div class="dgrid">
   <label>敵の最大HP（ダメージ計算用・任意）<input type="number" id="ehp" min="0" step="1" placeholder="例：9660"></label>
   <label>このターン開始時の残りHP（空なら最大HP）<input type="number" id="ehpCur" min="0" step="1"></label>
   <label>ダメージの見積もり<select id="dmgV"><option value="min">最小（ばらつき下限）</option><option value="avg" selected>平均</option><option value="max">最大</option></select></label>
   <label class="chk"><input type="checkbox" id="capUp">メンバーのダメージ限界突破（上限999,999）</label>
+  </div></details>
   <label>物理耐性<select id="tresP">
     <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
   <label>魔法耐性<select id="tresM">
@@ -278,6 +323,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk"><input type="checkbox" id="imp">ウィークが入っている</label>
   <label class="chk"><input type="checkbox" id="stag">ブレイク中</label>
   <label class="chk"><input type="checkbox" id="launched">打ち上げ中</label>
+  <label class="chk" id="guardW" hidden><input type="checkbox" id="guard">ガード中（受けるダメージが90%減る。チェーンと耐性は変わらない）</label>
   <label class="chk"><input type="checkbox" id="epos">敵に強化がかかっている</label>
   <label class="chk"><input type="checkbox" id="noLaunch">打ち上げられない敵</label>
   <p class="hint">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
@@ -286,7 +332,7 @@ details[open] summary .nm::before{content:"▾ "}
 <fieldset>
   <legend>ゲージ</legend>
   <label>現在のチェーンボーナス (%)<input type="number" id="cur" min="100" max="999.9" step="0.1" value="100"></label>
-  <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999" step="1" value="200"></label>
+  <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999.9" step="0.1" value="200"></label>
   <label>ブレイク予兆の位置<select id="omen"><option value="0.90" selected>必要上昇量の0.90倍</option><option value="0.91">0.91倍</option><option value="0.92">0.92倍</option></select></label>
   <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンゲージが空の状態から始める（100.0%なら自動でチェック）</label>
   <p class="hint">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
@@ -323,7 +369,7 @@ details[open] summary .nm::before{content:"▾ "}
     <p class="note" id="toBreak" style="white-space:pre-line"></p>
     <p class="note" id="dmgSum" hidden style="font-weight:600;color:var(--ink)"></p>
     <details id="qtable" hidden style="margin-top:6px"><summary class="cap" style="cursor:pointer">ターン開始時の表示ごとのブレイク早見表</summary>
-      <p class="note">今のコマンドの並びのまま、ターン開始時のチェーンボーナス（画面の表示）だけを変えたときに、どの行動でブレイクするかの一覧です。表示は小数第1位までの切り捨てなので、結果が分かれる表示は両方を出しています。ブレイクの演出で画面が止まらないようにするなら、「オプティマチェンジ」の行動が当たるまでにオプティマを変えてください（結果が分かれる表示では早いほうの行動にしています）。上昇量はヒットした時点のロールで決まるので、早く変えすぎると、その後のヒットの上昇が小さくなることがあります。この表はオプティマを変えない前提です。</p>
+      <p class="note">今のコマンドの並びのまま、ターン開始時のチェーンボーナス（画面の表示）だけを変えたときに、どの行動でブレイクするかの一覧です。表示は小数第1位までの切り捨てなので、結果が分かれる表示は両方を出しています。ブレイクの演出で画面が止まらないようにするなら、「オプティマチェンジ」の行動が当たるまでにオプティマを変えてください（表示だけでは決まらない値は、遅いほうの行動にまとめています。オプティマを変えると実行中の1発しか出ないので、早く変えすぎるとブレイクしなくなるためです。実際の値によっては1発早くブレイクして演出で止まります）。※この表はオプティマチェンジによる上昇の減り方を含んでいません。上昇量はヒットした時点のロールで決まるので、早く変えすぎると、その後のヒットの上昇が小さくなることがあります。この表はオプティマを変えない前提です。</p>
       <div style="overflow-x:auto"><table class="qt" style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr><th>ターン開始時の表示</th><th>ブレイク</th><th>オプティマチェンジ</th></tr></thead><tbody></tbody></table></div>
     </details>
   </div>
@@ -405,8 +451,15 @@ details[open] summary .nm::before{content:"▾ "}
 
 <script>
 const EN={F:"火",I:"氷",T:"雷",W:"水",A:"風",E:"土"};
-const ROLE_JP={COM:"アタッカー",RAV:"ブラスター",SEN:"ディフェンダー",SAB:"ジャマー",SYN:"エンハンサー",MED:"ヒーラー",SUM:"召喚獣"};
+const ROLE_JP={PRE:"ロールなし（2章まで）",COM:"アタッカー",RAV:"ブラスター",SEN:"ディフェンダー",SAB:"ジャマー",SYN:"エンハンサー",MED:"ヒーラー",SUM:"召喚獣"};
 const SK={
+ // 2章まで（オプティマ解禁前）：ロールなし。ガドー・レブロのたたかうはバトルアルティマニアの値
+ PRE:[
+  {id:"patk",n:"たたかう",cost:1,b:0.5,t:"P"},
+  {id:"pblz",n:"エリアブラスト",cost:2,b:0.5,t:"P",who:"light"},
+  {id:"pgren",n:"手投げ弾",cost:2,b:0.5,t:"P",e:"F",who:"snow"},
+  {id:"gatk",n:"たたかう",cost:3,parts:[{h:7,b:2.0,e:"",t:"P"}],t:"P",who:"gadot",rep:"patk"},
+  {id:"latk",n:"たたかう",cost:2,b:6.0,t:"P",who:"lebreau",rep:"patk"}],
  COM:[
   {id:"atk",n:"たたかう",cost:1,b:0.5,t:"P"},
   {id:"atkF",n:"たたかう",cost:1,b:0.5,t:"P",fang:true,who:"fang",rep:"atk"},
@@ -559,7 +612,19 @@ const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
 
 const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,shRole:"",shCom:"auto",ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
 const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"I",chr:"snow"})];
-const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング"};
+const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング",gadot:"ガドー",lebreau:"レブロ"};
+const PRE_ONLY=["gadot","lebreau"];
+// 2章まで：操作できるのはリーダー（ライトニング・スノウ・ヴァニラ）だけ。サッズ・ホープ・ガドー・レブロはAI。ファングは登場しない
+const PRE_ATB={vanille:3,gadot:3.5,lebreau:3.5};const PRE_LEAD=["light","snow","vanille"],PRE_AI=["sazh","hope","gadot","lebreau"];
+// AIメンバーはリーダーで決まる：ライトニング＝サッズ（1度だけスノウも）、スノウ＝ガドー・レブロ、ヴァニラ＝ホープ
+const PRE_PARTY={light:["sazh","snow"],snow:["gadot","lebreau"],vanille:["hope"]};
+// スノウのパーティは、スノウ1人／スノウ・ガドー／スノウ・ガドー・レブロ（メンバー2はガドー、メンバー3はレブロ）
+const preOkFor=k=>k===0?PRE_LEAD:M[0].chr==="snow"?[k===1?"gadot":"lebreau"]:(PRE_PARTY[M[0].chr]||[]);
+// リーダーが変わったら、選べなくなったAIメンバーを入れ替える（入れ替える相手がいなければパーティから外す）
+const preFixAI=()=>{M.forEach((m,k)=>{if(k===0)return;const ok=preOkFor(k);if(ok.includes(m.chr)&&!M.some(o=>o!==m&&o.on&&m.on&&o.chr===m.chr))return;
+  const free=ok.find(c=>!M.some(o=>o!==m&&o.chr===c));if(free){m.chr=free;m.atb=PRE_ATB[free]||2;m.queue=[]}else{m.on=false;m.queue=[]}})};
+const PRE=()=>mode==="normal"&&!!document.getElementById("preOpt")&&document.getElementById("preOpt").checked;
+const CHR_OK=(m)=>Object.keys(CHR_JP).filter(c=>PRE()?(m===undefined?c!=="fang":preOkFor(M.indexOf(m)).includes(c)):!PRE_ONLY.includes(c));
 // キャラ専用コマンド：who=使えるキャラ、rep=置き換える通常コマンド
 const allowed=(sk,a,list)=>{if(a.kind!=="member")return true;if(sk.who)return sk.who===a.chr;return !list.some(x=>x.rep===sk.id&&x.who===a.chr)};
 M.forEach((mm,i)=>mm.label="メンバー"+(i+1));
@@ -572,7 +637,7 @@ Object.entries(EID).forEach(([k,d])=>{
 let mode="normal", cur=0;
 
 // 各キャラが召喚できる召喚獣
-const EID_OF={light:"odin",sazh:"bryn",snow:"shiva",hope:"alex",vanille:"heca",fang:"baha"};
+const EID_OF={light:"odin",sazh:"bryn",snow:"shiva",hope:"alex",vanille:"heca",fang:"baha",gadot:"odin",lebreau:"odin"};
 function actors(){
   $("eid").value=EID_OF[M[0].chr];
   const k=$("eid").value;
@@ -600,7 +665,7 @@ function renderTabs(){
   list.forEach((a,i)=>{
     const b=document.createElement("button");b.type="button";b.className="tab"+(a.on?"":" off");b.setAttribute("role","tab");b.setAttribute("aria-selected",a===A());
     const cmds=a.on&&a.ko===-1?"戦闘不能":a.on?(a.queue.length?a.queue.map(q=>q.name).join("・"):"コマンドなし"):"パーティにいない";
-    const title=a.kind==="member"?`${a.label}${mode==="summon"?"（召喚者）":""}・${CHR_JP[a.chr]}・${ROLE_JP[a.role]}`:a.label;
+    const title=a.kind==="member"?`${a.label}${mode==="summon"?"（召喚者）":""}・${CHR_JP[a.chr]}・${a.role==="PRE"?(M.indexOf(a)===0?"リーダー":"AI"):ROLE_JP[a.role]}`:a.label;
     b.innerHTML=`<b></b><span></span>`;b.querySelector("b").textContent=title;b.querySelector("span").textContent=cmds;
     b.onclick=()=>{cur=i;loadActor();render()};
     t.append(b);
@@ -617,7 +682,7 @@ function loadActor(){
   $("diff").checked=a.diff;
 }
 function syncVis(){
-  {const on=mode==="normal"&&+$("shiftAt").value>0;$("shiftToWrap").hidden=!on;$("shRoleWrap").hidden=!on||A().kind!=="member";$("shComWrap").hidden=!on||A().kind!=="member"||+$("shiftAt").value===999;}
+  {const on=mode==="normal"&&+$("shiftAt").value>0;$("shiftToWrap").hidden=!on;if(!on)$("shiftToArrW").hidden=true;$("shRoleWrap").hidden=!on||A().kind!=="member";$("shComWrap").hidden=!on||A().kind!=="member"||+$("shiftAt").value===999;}
   const a=A(),isM=a.kind==="member";
   document.querySelectorAll(".mo").forEach(el=>el.hidden=!isM);
   if(isM){
@@ -665,7 +730,7 @@ function renderPalette(){
   if(grp){const ORD=["","F","I","T","W","A","E"];items.sort((x,y)=>ORD.indexOf(x.g)-ORD.indexOf(y.g))}
   let lastG=null;
   items.forEach(({sk,el,g})=>{
-    if(a.kind==="member"&&!canLearn(nameOf(sk,el),a.chr))return;
+    if(a.kind==="member"&&a.role!=="PRE"&&!canLearn(nameOf(sk,el),a.chr))return;
     if(grp&&g!==lastG){lastG=g;const h=document.createElement("div");h.className="palg";h.textContent=g?EN[g]+"属性":"属性なし";p.append(h)}
     const b=document.createElement("button");b.type="button";b.className="pbtn";
     const all=sk.cost==="ALL",c=all?cap(a):chainCost(a,sk);
@@ -719,13 +784,13 @@ function renderQueue(){
     // 複数ヒットの技：ヒットの途中でオプティマチェンジ（○hit目から別のロール）。例：デスペラードの途中でサッズがアタッカーに
     {const nh=it.sk.parts?it.sk.parts.reduce((x,p)=>x+p.h,0):it.sk.bs?it.sk.bs.length:(it.sk.h||1);
      // 1ヒットの技（デスなど）：当たる直前にオプティマを変えた場合の「当たる時のロール」
-     if(a.kind==="member"&&nh===1&&!it.sk.noHit&&!it.tp){
+     if(a.kind==="member"&&a.role!=="PRE"&&nh===1&&!it.sk.noHit&&!it.tp){
       const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
       l.innerHTML=`当たる時のロール<select style="width:auto;padding:2px 4px" aria-label="当たる時のロール"><option value="">そのまま</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select>`;
       l.title="当たる直前にオプティマを変えた場合、変更後のロールで計算します";
       const se=l.querySelector("select");se.value=it.hsRole||"";se.oninput=ev=>{it.hsRole=ev.target.value;it.hsAt=it.hsRole?1:0;calc()};
       extra.append(l)}
-     if(a.kind==="member"&&nh>1&&it.sk.id!=="blzS"){
+     if(a.kind==="member"&&a.role!=="PRE"&&nh>1&&it.sk.id!=="blzS"){
       const l=document.createElement("label");l.className="chk";l.style.fontSize=".72rem";
       l.innerHTML=`<input type="number" min="0" max="${nh}" step="1" value="${it.hsAt||0}" style="width:3.6em;padding:2px 4px" aria-label="ロールが変わるヒット">hit目から<select style="width:auto;padding:2px 4px" aria-label="変更後のロール">${'<option value="">—</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option>'}</select>`;
       l.querySelector("select").value=it.hsRole||"";
@@ -764,7 +829,7 @@ function renderQueue(){
     let usedSlots=0;
     a.queue.forEach(it=>{if(usedSlots>=n||it.cost<=0)return;const w=Math.min(it.cost,n-usedSlots);usedSlots+=w;
       const d=document.createElement("div");d.className="slot on start";d.style.flex=String(w);d.textContent=it.name;bar.append(d)});
-    for(let s=usedSlots;s<n;s++){const d=document.createElement("div");d.className="slot";d.style.flex="1";bar.append(d)}
+    for(let s=usedSlots;s<n-1e-9;s++){const d=document.createElement("div");d.className="slot";d.style.flex=String(Math.min(1,n-s));bar.append(d)}
   }
   $("atbInfo").textContent=`使用 ${used(a)} / ${n}${a.kind==="eid"?"（ATB固定）":""}`;
   const last=a.queue[a.queue.length-1];
@@ -783,7 +848,7 @@ function fixDrive(a){
   }
   a.queue=keep;
 }
-function render(){if(cur>=actors().length)cur=0;if(mode==="drive")fixDrive(DR[$("eid").value]);syncVis();renderPalette();renderQueue();calc();renderTabs()}
+function render(){if(cur>=actors().length)cur=0;setTimeout(dmgBoxSync,0);if(mode==="drive")fixDrive(DR[$("eid").value]);syncVis();renderPalette();renderQueue();calc();renderTabs()}
 
 const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.kind!=="member"&&key!=="diff")return;const el=$(id);
   if(key==="chr"){const other=M.find(o=>o!==a&&o.on&&o.chr===el.value);
@@ -793,9 +858,11 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
       ["chr","role","rlv","atb","hp","pa","ma","br","fa","pp","ak","gen","kiki","ed","edE","dn","en","ab1","ab2","ab3","ab4","db","cpos","cneg","ko","shRole","diff","jeo","hv","ovwOn","vigor","cbb","elem","queue","last"].forEach(k=>{const t=a[k];a[k]=other[k];other[k]=t});
       loadActor();render();return}}a[key]=el.type==="checkbox"?el.checked:(conv?conv(el.value):el.value);
   if(key==="role")a.queue=[];
-  if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=Object.keys(CHR_JP).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
-  if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr));
+  if(key==="on"&&a.on&&M.some(o=>o!==a&&o.on&&o.chr===a.chr)){const free=CHR_OK(a).find(c=>!M.some(o=>o!==a&&o.on&&o.chr===c));if(free){a.chr=free;$("chr").value=free;a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&canLearn(q.name,a.chr))}}
+  if(key==="chr")a.queue=a.queue.filter(q=>q.sk.id==="custom"||allowed(q.sk,a,SK[a.role])&&(a.role==="PRE"||canLearn(q.name,a.chr)));
   if(key==="atb"){let u=0;a.queue=a.queue.filter(q=>{if(q.all){q.cost=a.atb;return true}u+=q.cost;return u<=a.atb})}
+  // 2章まで：ATBはキャラで決まる（ヴァニラ3、ガドー・レブロ3.5、ほかは2）
+  if(key==="chr"&&a.role==="PRE"){a.atb=PRE_ATB[a.chr]||2;let u=0;a.queue=a.queue.filter(q=>{u+=q.cost;return u<=a.atb});if(a===M[0])preFixAI()}
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
 bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("shRole","shRole");bind("shCom","shCom");bind("mpa","pa",v=>Math.max(0,+v||0));bind("mma","ma",v=>Math.max(0,+v||0));bind("mbr","br",Number);bind("mfa","fa",Number);bind("mpp","pp",Number);bind("mak","ak",Number);bind("mgen","gen");bind("mkiki","kiki");bind("med","ed",Number);bind("medE","edE");bind("mdn","dn");bind("men","en");bind("mab1","ab1");bind("mab2","ab2");bind("mab3","ab3");bind("mab4","ab4");bind("mdb","db");bind("ko","ko",Number);bind("diff","diff");
@@ -815,6 +882,14 @@ $("cAdd").onclick=()=>{
   addCmd({id:"custom",n:"カスタム（"+f(+$("cBase").value||0,1)+"×"+h+"）",cost:c,b:+$("cBase").value||0,h,t:$("cType").value,e:$("cElem").value},true);
 };
 
+// 選んだ敵
+const enCurO=()=>{const x=$("enSel")&&$("enSel").value;return x!==""&&x!=null?ENM[+x]||null:null};
+// ブレイクしたときに切り替える状態（その敵の耐性）
+const enBrkO=()=>{const o=enCurO();return o&&o.brk?ENM.find(y=>y.en===o.brk)||null:null};
+// ガード中（ガードを使う敵だけ）：受けるダメージが90%減る
+const guardOn=()=>{const o=enCurO();return !!(o&&o.guard&&$("guard").checked)};
+// 選んだ敵が自分にかけている弱体
+const enSelfDeb=()=>{const x=$("enSel")&&$("enSel").value;const o=x!==""&&x!=null?ENM[+x]:null;return o&&o.v&&Array.isArray(o.v.deb)?o.v.deb:[]};
 let carried={applied:[]}, endState=null, turn=1, manualOrder=[];
 let exactCur=null;
 $("nextTurn").onclick=()=>{
@@ -824,6 +899,7 @@ $("nextTurn").onclick=()=>{
   // 100.0%ならチェーンゲージは空、100%より上なら残っている
   $("chainEmpty").checked=!$("stag").checked&&+$("cur").value<=100;
   $("eneg").value=endState.eneg;
+  if(mode!=="drive"&&endState.stag){const b=enBrkO();if(b){$("enSel").value=String(ENM.indexOf(b));enApply(ENM.indexOf(b))}}
   if(endState.hp!=null)$("ehpCur").value=Math.floor(endState.hp);
   $("imp").checked=endState.applied.includes("ウィーク");
   carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
@@ -902,30 +978,37 @@ function quickTable(lim){
   let noneRun=0;
   for(let d=hiD;d>=100-1e-9;d=Math.round((d-0.1)*10)/10){
     const a=sim(d),b=sim(Math.min(lim-0.01,d+0.09));
-    const k=a.key+"|"+b.key;
-    if(prev&&prev.k===k)prev.lo=d;else{prev={k,hi:d,lo:d,a,b};rows.push(prev)}
+    // 表示だけでは決まらない値は、早いほうの行動にまとめる（その前にオプティマを変えれば、1発遅れてもブレイクに間に合う）
+    const ea=b.key===-1?a:a.key===-1?b:(a.key>b.key?a:b);const k=String(ea.key)+(a.key!==b.key?"*":"");
+    const kk=k.replace("*","");if(prev&&prev.kk===kk){prev.lo=d;if(k.endsWith("*"))prev.amb=true}else{prev={k,kk,hi:d,lo:d,a,b,amb:k.endsWith("*")};rows.push(prev)}
     if(a.key===-1&&b.key===-1){if(++noneRun>2)break}else noneRun=0;
+    if(prev.amb&&(a.key!==b.key)&&prev.lo===d){if(a.key===-1||b.key===-1){prev.noneD=prev.noneD||[];prev.noneD.push(d)}else{prev.ambD=prev.ambD||[];prev.ambD.push(d)}}
   }
   box.hidden=false;
   const tb=box.querySelector("tbody");tb.innerHTML="";
   rows.forEach((r,i)=>{const tr=document.createElement("tr");
     const last=i===rows.length-1&&r.a.key===-1&&r.b.key===-1;
     const rng=last?`${f(r.hi,1)}以下`:r.hi===r.lo?f(r.hi,1):`${f(r.lo,1)}〜${f(r.hi,1)}`;
-    const early=r.b.key===-1?r.a:r.a.key===-1?r.b:(r.a.key<r.b.key?r.a:r.b);
-    const txt=r.a.key===r.b.key?r.a.label:`${r.b.label} か ${r.a.label}（表示だけでは決まらない）`;
+    const early=r.b.key===-1?r.a:r.a.key===-1?r.b:(r.a.key>r.b.key?r.a:r.b);
+    const txt=early.label;
     const act=early.key===-1?"—":`${early.label.replace(/「.*」/,"")}が当たるまでに`;
-    tr.innerHTML="<td></td><td></td><td></td>";tr.children[0].textContent=rng;tr.children[1].textContent=txt;tr.children[2].textContent=act;tb.append(tr)});
+    tr.innerHTML="<td></td><td></td><td></td>";tr.children[0].textContent=rng+(r.ambD?`（${r.ambD.map(x=>f(x,1)).join("・")}は1発早くブレイクして演出で止まることあり）`:"")+(r.noneD?`（${r.noneD.map(x=>f(x,1)).join("・")}はこのターンでブレイクしないこともある）`:"");tr.children[1].textContent=txt;tr.children[2].textContent=act;tb.append(tr)});
 }
 function calc(){
   const lim=Math.max(100,+$("lim").value||200);
   // 「次のターンへ」で引き継いだときは、表示（小数第1位）ではなく内部の値（小数第2位まで）を使う
   const curIn=+$("cur").value||100;const start=SIM!=null?SIM:Math.min(999.9,Math.max(100,(exactCur!=null&&Math.floor(exactCur*10+1e-6)/10===curIn)?exactCur:curIn));
-  const st={stag:$("stag").checked,cur:start,eneg:Math.min(8,Math.max(0,+$("eneg").value|0)),applied:new Set([...carried.applied,...($("imp").checked?["ウィーク"]:[])])};
+  const st={stag:$("stag").checked,cur:start,eneg:Math.min(8,Math.max(0,+$("eneg").value|0)+enSelfDeb().filter(x=>!carried.applied.includes(x)).length),applied:new Set([...carried.applied,...($("imp").checked?["ウィーク"]:[]),...enSelfDeb()])};
   const SHIFT={abs:"null",null:"res",res:"half",half:"norm",norm:"weak",weak:"weak"},JN={abs:"吸収",null:"無効",res:"耐久",half:"半減",norm:"標準",weak:"弱点"};
   const resOf={};document.querySelectorAll(".eres").forEach(s=>resOf[s.dataset.e]=s.value);
   const imp=()=>st.applied.has("ウィーク"), er=e=>imp()?SHIFT[resOf[e]]:resOf[e];
   const cres0=Math.min(100,Math.max(0,+$("cres").value||0));
   const tres={P:$("tresP").value,M:$("tresM").value};
+  // ブレイクした瞬間から、ブレイク後の状態の耐性（物理・魔法・属性）で計算する
+  const brkO=enBrkO(),res0={...resOf},tres0={...tres};
+  const onBrk=()=>{if(!brkO)return;tres.P=brkO.v.tresP;tres.M=brkO.v.tresM;Object.assign(resOf,brkO.v.er)};
+  const offBrk=()=>{if(!brkO)return;Object.assign(tres,tres0);Object.assign(resOf,res0)};
+  if(st.stag)onBrk();
   const list=actors();
   const attackers=list.filter(isActive);
 
@@ -972,7 +1055,9 @@ function calc(){
   seq.forEach((step,idx)=>{
     const {it,a,first}=step, sk=it.sk, role=roleOf(a,idx), isM=a.kind==="member";
     // オプティマチェンジ：チェンジの時点で行動が決まっていないメンバーの行動は取り消し
-    if(!it.tp&&shiftOn&&idx>=shiftAt&&a.kind==="member"){const c=a.shCom||"auto";const committed=c==="yes"||(c==="auto"&&seq.slice(0,shiftAt).some(x=>x.a===a&&!x.it.tp));
+    // チェンジの時点で実行中だった1つの行動だけが最後まで出て、そのメンバーの残りの行動は取り消し（実測：打った分しか行動しない）
+    if(!it.tp&&shiftOn&&idx>=shiftAt&&a.kind==="member"){const c=a.shCom||"auto";const firstAfter=seq.slice(shiftAt,idx).every(x=>x.a!==a||x.it.tp);
+      const committed=firstAfter&&(idx===shiftAt||c==="yes"||(c==="auto"&&seq.slice(0,shiftAt).some(x=>x.a===a&&!x.it.tp)));
       if(!committed){out.push({it,a,sum:0,lost:0,finReal:0,g0:st.cur,g1:st.cur,det:null,hits:0,cancel:true});return}}
     if(!it.tp&&!alive(a,idx)){out.push({it,a,sum:0,lost:0,finReal:0,g0:st.cur,g1:st.cur,det:null,hits:0,ko:true});return}
     const hp=a.hp, cpos=a.cpos||0;
@@ -1000,7 +1085,7 @@ function calc(){
       const k=$("eid").value,ai=a.kind==="eid"?Math.max(0,EA[k].indexOf(a)):0,es=eidStat(k,ai);return t==="m"?es.ma:es.pa})();
     let sum=0,det=null,detSw=null,swFrom=0,finAdd=0,finReal=0,brkIdx=false,lost=0;const g0=st.cur;
     if(sk.fin&&!EID[$("eid").value].fin.ticks){const lv=finLv();finAdd=EID[$("eid").value].fin.lv[lv-1];const f0=st.cur;st.cur=Math.min(st.stag?999.9:lim,st.cur+finAdd);finReal=st.cur-f0;
-      sum+=finReal;if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h:-1,hits:hl.length,a,name:it.name}}}
+      sum+=finReal;if(!st.stag&&st.cur>=lim){st.stag=true;onBrk();st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h:-1,hits:hl.length,a,name:it.name}}}
     // ドライビング：技ごとに打ち上げ状態を数え直す（1ヒット目は補正なし、打ち上げた後のヒットに+1.0）
     // ドライビング：打ち上げる技は最初のヒットで打ち上げ直す（補正なし）。打ち上げない技は直前の打ち上げ状態を引き継ぐ（ヘカトンケイルで確認）
     if((a.kind==="drive"||a.kind==="eid")&&(sk.launch||(sk.launchStag&&st.stag)))airborne=false;
@@ -1029,7 +1114,7 @@ function calc(){
         if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
         if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
         if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
-        if(a.cbb)mods.push(["チェーンボーナス強化",a.cbb]);
+        if(a.cbb&&role!=="PRE")mods.push(["チェーンボーナス強化",a.cbb]);
       }else{
         // 召喚獣：召喚時のオプティマでブラスターだったメンバー全員のパーティボーナスが付く（動画の実測と一致）
         // 召喚中（ドライビング前）の召喚獣は実測で上乗せなし。ドライビングのみパーティボーナスが付く
@@ -1039,11 +1124,13 @@ function calc(){
       // ブレイク予兆：ブレイク値まで上げるのに必要な上昇量の0.90〜0.92倍（バトルアルティマニア）
       const near=!stag&&(st.cur-100)>=(lim-100)*(+$("omen").value),launched=$("launched").checked,eneg=st.eneg;
       const C=[];const add=(ok,tx,v)=>{if(ok)C.push([tx,v])};
-      if(!sk.fin&&a.kind==="member"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
+      if(!sk.fin&&a.kind==="member"&&role!=="PRE"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
       // ドライビングモードの召喚獣は、召喚獣用の条件補正（ブレイク中・打ち上げ・ブレイク予兆）が本の値の2倍。弱点は本どおり+0.1（実測）
       // ダイヤモンドダストのヒット（ダメージ前の連続ヒットと攻撃）は本の値のまま（実測：ブレイク予兆+0.5、ブレイク中+0.1）
       const DX=a.kind==="drive"&&!(sk.fin&&EID[$("eid").value].fin.ticks)?2:1;
-      add(weak,"弱点を突く",0.1);
+      if(role!=="PRE")add(weak,"弱点を突く",0.1);
+      // 2章まで：AIメンバー（メンバー2・3）のターン1つ目のコマンドの全ヒットに+0.2、HP満タンならさらに+0.3。リーダーには付かない（実測）
+      if(role==="PRE"&&isM&&M.indexOf(a)>0&&first){add(true,"AIのターン1つ目のコマンド",0.2);add(hp==="full","AIのターン1つ目のコマンド＋HP満タン",0.3)}
       if(role==="COM"){
         add(diff&&hp==="mid","違うコマンド＋HP30〜70%",0.2);
         add(stag&&hp==="mid","ブレイク中の敵＋HP30〜70%",0.3);
@@ -1091,8 +1178,9 @@ function calc(){
       if(firstPending&&dur0){v=0;it.noStart=true}
       else if(firstPending&&!provFail&&!sk.noHit){firstPending=false;starter=v>0;v=0}
       const capV=stag?999.9:lim;
-      const h0=st.cur;st.cur=Math.min(capV,st.cur+v);const real=st.cur-h0;
-      if(!st.stag&&st.cur>=lim){st.stag=true;st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h,hits:hl.length,a,name:it.name}}
+      const h0=st.cur;const over=v>0&&h0+v>lim+1e-9;st.cur=Math.min(capV,st.cur+v);const real=st.cur-h0;
+      // 2章まで：ブレイク値ちょうどではブレイクせず、超えたヒットでブレイク（実測）
+      if(!st.stag&&(PRE()?over:st.cur>=lim)){st.stag=true;onBrk();st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h,hits:hl.length,a,name:it.name}}
       // 斬鉄剣の一撃判定は、斬鉄剣のヒット自身の上昇まで含めたチェーンボーナスで行う（実測）
       if(sk.fin&&h===hl.length-1)it.preHit=st.cur;
       if(dIdx[h]!=null&&stat>0&&!provFail){const t=DI[2],ig=!!DI[3],eidK=a.kind!=="member";
@@ -1106,7 +1194,7 @@ function calc(){
         if(a.kind==="member"&&a.db&&ehpMax&&hpRem>0&&hpRem<1.2*d)d*=1.5;
         const TFd={null:0,res:.1,half:.5,norm:1,weak:2},EFd={abs:0,null:0,res:.1,half:.5,norm:1,weak:2};
         let tm=ig?1:TFd[tres[t==="m"?"M":"P"]];tm+=(t==="m"?desh():deps())?.89:0;
-        let ef=hE?EFd[er(hE)]:1;if(eidK&&hE&&ef<1)ef=1;d*=tm*ef;
+        let ef=hE?EFd[er(hE)]:1;if(eidK&&hE&&ef<1)ef=1;d*=tm*ef;if(guardOn())d*=0.1;
         d=Math.min(d,eidK||$("capUp").checked?999999:99999);d=Math.floor(Math.max(0,d));
         if(sk.fin&&$("eid").value==="odin"&&h===hl.length-1&&ehpMax){const th=3*eidStat("odin",0).pa*Math.pow(st.cur/100,2);zanKill={th,rem:hpRem,ok:hpRem<th};if(hpRem<th)d=Math.max(d,hpRem)}
         dmgAct+=d;if(ehpMax){hpRem=Math.max(0,hpRem-d);if(hpRem===0&&!killAt)killAt={idx,name:it.name,a}}}
@@ -1119,7 +1207,7 @@ function calc(){
       if((swRav||hsOn)&&!detSw&&h>0){detSw={b,mods,resK,C,elK,v,stag,role};swFrom=h+1}
     });
     // ルーラーフィスト・ハイウィンド：チェーンボーナスを100.0%にもどす
-    if(sk.reset){st.cur=100;st.stag=false;it.resetDone=true}
+    if(sk.reset){st.cur=100;st.stag=false;offBrk();it.resetDone=true}
     if(sk.sab&&!sk.dispel&&landed){st.applied.add(sk.st);if(!reapply)st.eneg=Math.min(8,st.eneg+1)}
     lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
     per.set(a,per.get(a)+sum);
@@ -1174,7 +1262,7 @@ function calc(){
     row("行動",`${o.a.label}（${ROLE_JP[o.a.role]}）`);
     if(o.it.swAt)row("途中でブラスターに切り替え",`${o.it.swAt}ヒット目から（Lv${o.it.swLv||5}）`);
     if(o.ko){row("戦闘不能のため行動しない","0.00");d.append(det);box.append(d);return}
-    if(o.cancel){row("オプティマチェンジの時点で行動が決まっていなかったため取り消し","0.00");d.append(det);box.append(d);return}
+    if(o.cancel){row("オプティマチェンジで取り消し（実行中の1発しか出ない）","0.00");d.append(det);box.append(d);return}
     if(o.shifted)row("オプティマチェンジのあとに当たる",`${ROLE_JP[o.shRoleNow]}として計算`);
     if(o.dmg!=null)row("ダメージ（"+({min:"最小",avg:"平均",max:"最大"})[$("dmgV").value]+"、ヒット時点のチェーンボーナスで計算）",o.dmg.toLocaleString("ja-JP")+(o.hpAfter!=null?`（残りHP ${o.hpAfter.toLocaleString("ja-JP")}）`:""));
     else if(o.noStat)row("ダメージ",o.a.kind==="member"?"攻撃力が未入力":"召喚獣ランクが未選択");
@@ -1211,11 +1299,12 @@ function calc(){
     cb.disabled=!!it.dup;const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"付与済み":"成功";lab.style.opacity=it.dup?.55:1;const ex=r.querySelectorAll("input[type=checkbox]")[1];if(ex&&it.sk.sab&&!it.sk.dispel)ex.parentNode.hidden=!(it.dup||it.expired)});
 
   {const bh=$("bonusHint");bh.hidden=true;
+   if(PRE()){bh.hidden=false;bh.textContent="2章まで（オプティマ解禁前）の計算：ロールのボーナスや条件補正はなく、1ヒットごとに「チェーンボーナス×(100−チェーン耐性)/100」だけ上がります。ATBはキャラで決まります（ヴァニラ3、ガドー・レブロ3.5、ほかは2。ガドーのたたかうはATB3、レブロは2）。AIメンバー（メンバー2・3）は、ターンの1つ目のコマンドの全ヒットに+0.2、HPが満タンならさらに+0.3。リーダー（メンバー1）には付きません。ブレイク値ちょうどではブレイクせず、超えたヒットでブレイクします（いずれも実測）。"}
    if(mode==="drive"){const rv=M.filter(o=>o.on&&o.role==="RAV");const tot=rv.reduce((s2,o)=>s2+RAV_PARTY[o.rlv],0);
     bh.textContent=`召喚獣に付くブラスターボーナス：+${f(tot,1)}（${rv.length?rv.map(o=>o.label+" Lv"+o.rlv).join("・"):"ブラスターなし"}）。変えるときは「通常バトル」の各メンバーで設定してください。`}}
   endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy,koed:new Set(M.filter(m=>m.ko>0&&m.ko<=seq.length))};
   $("diff").disabled=!!A().last;
-  $("carryNote").textContent=list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
+  $("carryNote").textContent=PRE()?"":list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
   $("nextTurn").disabled=!seq.length;
   const tb=$("toBreak");
   const zt=out.find(o=>o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit);
@@ -1224,7 +1313,7 @@ function calc(){
   else if(total<=0)tb.textContent="ゲージが上がりません。";
   else if(mode==="drive")tb.textContent=`残り ${f(lim-st.cur,1)}%。ドライビングモード終了後はチェーンがリセットされます。`;
   else{const need=lim-st.cur;tb.textContent=`このターン後の残り ${f(need,1)}%。同じ並びならあと約 ${Math.ceil(need/total-1e-9)} ターン（2ターン目以降は条件補正が変わる場合あり）。`}
-  {const dn=$("dmgSum");if(ehpMax||dmgTotal){dn.hidden=false;dn.textContent=`このターンのダメージ合計 ${Math.floor(dmgTotal).toLocaleString("ja-JP")}`+(ehpMax?`／残りHP ${Math.floor(hpStart).toLocaleString("ja-JP")} → ${Math.floor(hpRem).toLocaleString("ja-JP")}`+(killAt?`（${killAt.a.label}の「${killAt.name}」で撃破）`:""):"")}else dn.hidden=true}
+  {const dn=$("dmgSum");if(!PRE()&&(ehpMax||dmgTotal)){dn.hidden=false;dn.textContent=`このターンのダメージ合計 ${Math.floor(dmgTotal).toLocaleString("ja-JP")}`+(ehpMax?`／残りHP ${Math.floor(hpStart).toLocaleString("ja-JP")} → ${Math.floor(hpRem).toLocaleString("ja-JP")}`+(killAt?`（${killAt.a.label}の「${killAt.name}」で撃破）`:""):"")}else dn.hidden=true}
   endState.hp=ehpMax?hpRem:null;
   if(zt){const c=zt.it.preHit/100,pa=eidStat("odin",0).pa;tb.textContent+=` 斬鉄剣が当たった時点のチェーンボーナスは ${f(zt.it.preHit,1)}%`+(pa?`：敵の残りHPが ${Math.floor(3*pa*c*c)} 未満なら一撃で倒せます。`:"（オーディンの召喚獣ランクを選ぶと、一撃で倒せる残りHPを表示します）。")}
   quickTable(lim);
@@ -1232,7 +1321,7 @@ function calc(){
 
 // 現在のチェーンボーナスを変えたら、100.0%ならチェーンゲージが空（チェックを入れる）、100%より上なら外す
 $("cur").addEventListener("input",()=>{$("chainEmpty").checked=!$("stag").checked&&(+$("cur").value||100)<=100;calc()});
-["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","epos","noLaunch","lim","eRank","ehp","ehpCur","dmgV","capUp"].forEach(id=>$(id).addEventListener("input",calc));
+["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","guard","epos","noLaunch","lim","eRank","ehp","ehpCur","dmgV","capUp"].forEach(id=>$(id).addEventListener("input",calc));
 document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",calc));
 
 // 例：通常バトル＝ブラスター/アタッカー/ブラスター、召喚中＝各召喚獣のAIの基本行動、ドライビング＝空
@@ -1253,17 +1342,41 @@ const OPT_NAMES={"COM,COM":"デュアルアサルト","COM,RAV":"アサルト＋
 // ロールの組み合わせからオプティマ名を自動で決める（並び順は関係なし。1人ならロール名）
 const OPT_ORD=["COM","RAV","SEN","SAB","SYN","MED"];
 function optAutoName(r){const k=r.filter(Boolean).sort((a,b)=>OPT_ORD.indexOf(a)-OPT_ORD.indexOf(b));if(!k.length)return "（ロールなし）";if(k.length===1)return ROLE_JP[k[0]];return OPT_NAMES[k.join(",")]||k.map(x=>ROLE_JP[x]).join("／")}
-const OPT_DEF=[{r:["RAV","RAV","RAV"]},{r:["COM","RAV","RAV"]}].map(o=>({n:optAutoName(o.r),r:o.r,auto:true}));
+const OPT_DEF=[];
+// よく使うオプティマ（名前を選んだあと、誰がどのロールかを選ぶ）
+const OPT_FAV=["ケルベロス","フューリアス","揺るぎなき覇者","躍動の両雄","ラッシュアサルト","撃滅の戦鬼","勇戦の凱歌","逆襲の魁","トライディザスター","ヴァンガード","カタストロフィ","魔道のパレード","精霊のオラトリオ","マタドール","迎撃のマーチ","謀略のラプソディ","不落の砦","アサルト＋バスター","アサルト＆キュア","アサルト＆ジャム","アサルト＆サポート","バスター＆ジャム","シールド＆ジャム","ジャム／サポート","サポート／キュア","デュアルフォース"];
 let OPT=(()=>{try{const v=JSON.parse(localStorage.getItem("ff13cc_optima")||"null");if(Array.isArray(v))return v}catch(e){}return OPT_DEF.map(o=>({n:o.n,r:o.r.slice()}))})();
 const optSave=()=>{try{localStorage.setItem("ff13cc_optima",JSON.stringify(OPT))}catch(e){}};
 const optLabel=o=>`${o.n}（${o.r.map(x=>x?ROLE_JP[x]:"—").join("／")}）`;
+// すべてのオプティマ：パーティにいるメンバーのロールの全部の並び（誰がどのロールか）を、オプティマ名ごとにまとめて出す
+// 3章では、キャラごとに使えるロールだけで組めるオプティマに絞る
+const optRolesFor=k=>{const R=typeof chRoles==="function"?chRoles(M[k].chr):null;return R?OPT_ORD.filter(r=>R.includes(r)):OPT_ORD};
+const optUsable=o=>{const F=typeof fixOpt==="function"?fixOpt():null;if(F)return F.some(r=>[0,1,2].every(k=>(r[k]||"")===(o.r[k]||"")));return M.every((m,k)=>!m.on||!o.r[k]||optRolesFor(k).includes(o.r[k]))};
+function optAllTuples(){const F=typeof fixOpt==="function"?fixOpt():null;if(F)return F.map(r=>r.slice());const idx=M.map((m,k)=>m.on?k:-1).filter(k=>k>=0);let out=[[]];idx.forEach(k=>{out=out.flatMap(t=>optRolesFor(k).map(r=>t.concat(r)))});
+  return out.map(t=>{const r=["","",""];idx.forEach((k,j)=>r[k]=t[j]);return r})}
 function optRenderSelects(){
   const now=$("optNow"),to=$("shiftTo"),nv=now.value,tv=to.value;
-  now.innerHTML='<option value="">選ばない（メンバーごとに設定）</option>'+OPT.map((o,i)=>`<option value="${i}"></option>`).join("");
-  to.innerHTML='<option value="">選ばない（メンバーごとに設定）</option>'+OPT.map((o,i)=>`<option value="${i}"></option>`).join("");
-  [now,to].forEach(sel=>[...sel.options].slice(1).forEach((op,i)=>op.textContent=optLabel(OPT[i])));
-  now.value=OPT[nv]?nv:"";to.value=OPT[tv]?tv:"";
+  const reg=OPT.map((o,i)=>optUsable(o)?`<option value="${i}"></option>`:"").join("");
+  const groups={};optAllTuples().forEach(r=>{const n=optAutoName(r);(groups[n]=groups[n]||[]).push(r)});
+  const nm=k=>M[k].on?CHR_JP[M[k].chr]:"";
+  OPT_GROUPS=groups;
+  const all=`<optgroup label="${fixOpt()?"この敵で使えるオプティマ":"すべてのオプティマ（次で誰がどのロールかを選ぶ）"}">`+Object.keys(groups).map(n=>`<option value="name:${n}">${n}（${groups[n][0].filter(Boolean).slice().sort((x,y)=>OPT_ORD.indexOf(x)-OPT_ORD.indexOf(y)).map(x=>ROLE_JP[x]).join("・")}）</option>`).join("")+"</optgroup>";
+  const favs=fixOpt()?[]:OPT_FAV.filter(n=>groups[n]);
+  const fav=favs.length?`<optgroup label="よく使うオプティマ">`+favs.map(n=>`<option value="name:${n}">${n}（${groups[n][0].filter(Boolean).slice().sort((x,y)=>OPT_ORD.indexOf(x)-OPT_ORD.indexOf(y)).map(x=>ROLE_JP[x]).join("・")}）</option>`).join("")+"</optgroup>":"";
+  const html='<option value="">選ばない（メンバーごとに設定）</option>'+fav+(reg?`<optgroup label="登録したオプティマ">${reg}</optgroup>`:"")+all;
+  [now,to].forEach(sel=>{sel.innerHTML=html;[...sel.querySelectorAll('option[value]:not([value=""]):not([value^="name:"])')].forEach((op)=>op.textContent=optLabel(OPT[+op.value]))});
+  const ok=(sel,v)=>[...sel.options].some(o=>o.value===v);now.value=ok(now,nv)?nv:"";to.value=ok(to,tv)?tv:"";
+  // 同じ名前が「よく使う」と「すべて」の両方にあるときは、「よく使う」のほうを選んだ表示にする
+  [now,to].forEach(sel=>{const o=[...sel.options].find(x=>x.value===sel.value);if(o)o.selected=true});
+  optArr("optNow","optNowArr");optArr("shiftTo","shiftToArr");
 }
+let OPT_GROUPS={};
+// 「すべてのオプティマ」から名前を選んだら、誰がどのロールかの並びを選ぶ
+function optArr(selId,arrId,want){const v=$(selId).value,w=$(arrId+"W"),a=$(arrId);if(!v.startsWith("name:")){w.hidden=true;return}
+  const n=v.slice(5),list=OPT_GROUPS[n]||[];const nm=k=>M[k].on?CHR_JP[M[k].chr]:"";const prev=want||a.value;
+  a.innerHTML=list.map(r=>`<option value="${r.join(",")}">${r.map((x,k)=>x?`${nm(k)} ${ROLE_JP[x]}`:"").filter(Boolean).join("／")}</option>`).join("");
+  if([...a.options].some(o=>o.value===prev))a.value=prev;w.hidden=list.length<2}
+const optRoles=(v,arr)=>v.startsWith("name:")?($(arr).value||"").split(","):v.startsWith("all:")?v.slice(4).split(","):(OPT[v]?OPT[v].r:null);
 function optRenderList(){
   $("optEdSum").textContent=`✎ オプティマを登録・編集（${OPT.length}件登録）${$("optEd").open?" ▲閉じる":" ▼開く"}`;
   const box=$("optList");box.innerHTML="";
@@ -1276,21 +1389,469 @@ function optRenderList(){
     const del=document.createElement("button");del.type="button";del.className="x";del.textContent="×";del.setAttribute("aria-label","削除");
     del.onclick=()=>{OPT.splice(i,1);optSave();optRenderList();optRenderSelects()};row.append(del);box.append(row)});
 }
+// 今のオプティマ：3人のロールをまとめて設定（ロールが変わったメンバーのATBは空になる）
 $("optAdd").onclick=()=>{const r=["RAV","RAV","RAV"];OPT.push({n:optAutoName(r),r,auto:true});optSave();optRenderList();optRenderSelects()};
 $("optFromParty").onclick=()=>{const r=M.map(m=>m.on?m.role:"");OPT.push({n:optAutoName(r),r,auto:true});optSave();optRenderList();optRenderSelects()};
-// 今のオプティマ：3人のロールをまとめて設定（ロールが変わったメンバーのATBは空になる）
-function optApplyNow(i){const o=OPT[i];if(!o)return;M.forEach((m,k)=>{const r=o.r[k];if(!r){return}if(m.role!==r){m.role=r;m.queue=[]}});loadActor();render()}
-$("optNow").addEventListener("input",()=>optApplyNow($("optNow").value));
+function optApplyNow(i){const rr=optRoles(i,"optNowArr");if(!rr)return;const o={r:rr};M.forEach((m,k)=>{const r=o.r[k];if(!r){return}if(m.role!==r){m.role=r;m.queue=[]}});loadActor();render()}
+$("optNow").addEventListener("input",()=>{optArr("optNow","optNowArr");optApplyNow($("optNow").value)});
+$("optNowArr").addEventListener("input",()=>optApplyNow($("optNow").value));
 // ターン途中のチェンジ先：3人のチェンジ後のロールをまとめて設定
-$("shiftTo").addEventListener("input",()=>{const o=OPT[$("shiftTo").value];M.forEach((m,k)=>{m.shRole=o&&o.r[k]&&o.r[k]!==m.role?o.r[k]:""});loadActor();render()});
+const shiftToApply=()=>{const rr=optRoles($("shiftTo").value,"shiftToArr");const o=rr?{r:rr}:null;M.forEach((m,k)=>{m.shRole=o&&o.r[k]&&o.r[k]!==m.role?o.r[k]:""});loadActor();render()};
+$("shiftTo").addEventListener("input",()=>{optArr("shiftTo","shiftToArr");shiftToApply()});$("shiftToArr").addEventListener("input",shiftToApply);
 // 3人のロールが登録したオプティマと同じなら、そのオプティマを選んだ表示にする
 const optFind=rs=>OPT.findIndex(o=>[0,1,2].every(k=>(o.r[k]||"")===(rs[k]||"")));
-function optSync(){const now=M.map(m=>m.on?m.role:"");const i=optFind(now);$("optNow").value=i>=0?String(i):"";
-  const after=M.map(m=>m.on?(m.shRole||m.role):"");const j=optFind(after);if($("shiftTo").value!==""||M.some(m=>m.shRole))$("shiftTo").value=j>=0?String(j):""}
-$("role").addEventListener("input",optSync);$("shRole").addEventListener("input",optSync);$("mOn").addEventListener("input",optSync);$("shiftAt").addEventListener("input",()=>{syncVis();calc()});
+function optSync(){if(PRE())return;optRenderSelects();
+  const set=(sel,arr,rs)=>{const i=optFind(rs);if(i>=0){$(sel).value=String(i);optArr(sel,arr);return}$(sel).value="name:"+optAutoName(rs);optArr(sel,arr,rs.join(","))};
+  set("optNow","optNowArr",M.map(m=>m.on?m.role:""));
+  if($("shiftTo").value!==""||M.some(m=>m.shRole))set("shiftTo","shiftToArr",M.map(m=>m.on?(m.shRole||m.role):""))}
+// パーティの人数：メンバー1から順に、その人数だけパーティに入れる
+$("pCount").addEventListener("input",()=>{const n=+$("pCount").value;M.forEach((m,k)=>{m.on=k<n});
+  M.forEach((m,k)=>{if(!m.on)return;if(M.some(o=>o!==m&&o.on&&o.chr===m.chr)){const free=CHR_OK(m).find(c=>!M.some(o=>o!==m&&o.on&&o.chr===c));if(free)m.chr=free}});
+  cur=0;loadActor();optSync();render()});
+const pCountSync=()=>{$("pCount").value=String(Math.max(1,M.filter(m=>m.on).length))};
+$("mOn").addEventListener("input",()=>setTimeout(pCountSync,0));
+$("role").addEventListener("input",optSync);$("shRole").addEventListener("input",optSync);$("mOn").addEventListener("input",optSync);$("chr").addEventListener("input",()=>setTimeout(optSync,0));$("shiftAt").addEventListener("input",()=>{syncVis();calc()});
 $("optEd").addEventListener("toggle",optRenderList);
-optRenderSelects();optRenderList();
-loadActor();render();
+
+// ===== 敵の登録 =====
+// 状態の切り替え（立ち上がり・リミッター解除・形態変化）。HP全回復やチェーンボーナスのリセットも一緒に入れる
+function enNxRender(o){const w=$("enNx");if(!w)return;w.innerHTML="";const L=(o&&o.nx||[]).filter(t=>ENM.some(y=>y.en===t.to));w.hidden=!L.length;if(!L.length)return;
+  const lb=document.createElement("span");lb.className="hint";lb.textContent="状態を切り替える：";w.append(lb);
+  L.forEach(t=>{const b=document.createElement("button");b.type="button";b.className="lbtn";b.textContent=t.l;b.onclick=()=>{const k=ENM.findIndex(y=>y.en===t.to);if(k<0)return;
+    $("enSel").value=String(k);enApply(k);
+    if(t.hp){$("ehpCur").value=""}
+    if(t.ch){$("cur").value=100;exactCur=null;$("stag").checked=false;$("chainEmpty").checked=true}
+    render()};w.append(b)})}
+const EN_F=["cres","lim","omen","ehp","tresP","tresM","noLaunch"];
+// 内蔵データ：値はバトルアルティマニア参照、日本語名は Final Fantasy Wiki の対訳表
+const EN_PRE=[{"n":"ＰＳＩＣＯＭ治安兵","en":"PSICOM Enforcer","c":[1,3],"v":{"cres":"20","omen":"0.90","ehp":"171","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"ＰＳＩＣＯＭ治安猟兵","en":"PSICOM Warden","c":[1,3],"v":{"cres":"0","omen":"0.90","ehp":"84","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"ＰＳＩＣＯＭ飛空偵察兵","en":"PSICOM Aerial Recon","c":[1],"v":{"cres":"80","omen":"0.90","ehp":"189","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"110"},"pre":1},{"n":"ＰＳＩＣＯＭ特殊戦術士","en":"PSICOM Marauder","c":[1],"v":{"cres":"0","omen":"0.90","ehp":"600","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"104"},"pre":1},{"n":"機甲兵クリーガー","en":"Myrmidon","c":[1,2],"v":{"cres":"0","omen":"0.90","ehp":"1260","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"110"},"pre":1},{"n":"ゲパルト烈爪","en":"Pantheron","c":[1,2,3,4],"v":{"cres":"0","omen":"0.90","ehp":"375","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"103"},"pre":1},{"n":"ベヒーモス改","en":"Beta Behemoth","c":[1],"v":{"cres":"70","omen":"0.90","ehp":"1800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"重攻撃騎マナスヴィン（1回目）","en":"Manasvin Warmech（HP360）","c":[1],"v":{"cres":"0","omen":"0.90","ehp":"360","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"重攻撃騎マナスヴィン（2回目）","en":"Manasvin Warmech（HP990）","c":[1],"v":{"cres":"0","omen":"0.90","ehp":"990","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"ツヴェルク探査型","en":"Zwerg Scandroid","c":[2],"v":{"cres":"0","omen":"0.90","ehp":"57","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"グール","en":"Ghoul","c":[2,3],"v":{"cres":"0","omen":"0.90","ehp":"330","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"norm"},"lim":"110"},"pre":1},{"n":"ガスト","en":"Ghast","c":[2,3],"v":{"cres":"0","omen":"0.90","ehp":"900","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"norm"},"lim":"120"},"pre":1},{"n":"ワイト","en":"Wight","c":[2,3],"v":{"cres":"0","omen":"0.90","ehp":"270","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"110"},"pre":1},{"n":"ファルシ=アニマ","en":"Anima","c":[2],"v":{"cres":"100","omen":"0.90","ehp":"3300","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"ファルシ右触肢","en":"Right Manipulator","c":[2],"v":{"cres":"100","omen":"0.90","ehp":"300","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"ファルシ左触肢","en":"Left Manipulator","c":[2],"v":{"cres":"100","omen":"0.90","ehp":"300","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"ＰＳＩＣＯＭ特務兵","en":"PSICOM Tracker","c":[3,4],"v":{"cres":"50","omen":"0.90","ehp":"1296","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ＰＳＩＣＯＭ特務猟兵","en":"PSICOM Ranger","c":[3,4],"v":{"cres":"50","omen":"0.90","ehp":"324","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ＰＳＩＣＯＭ強攻戦術士","en":"PSICOM Executioner","c":[3],"v":{"cres":"90","omen":"0.90","ehp":"4050","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"機甲兵ヴァッヘ","en":"Watchdrone","c":[3,4],"v":{"cres":"90","omen":"0.90","ehp":"1890","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"110"},"pre":1},{"n":"機甲兵ケンプファー","en":"Crusader","c":[3],"v":{"cres":"0","omen":"0.90","ehp":"7290","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"快速機シュトルヒ（通常時）","en":"Ciconia Velocycle","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"7290","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"160"},"pre":1,"note":"ビームガンを構えている間は物理・魔法とも耐久になる"},{"n":"快速機シュトルヒ（ビームガン構え中）","en":"Ciconia Velocycle（ビームガン構え中）","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"7290","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"160"},"pre":1,"note":"ビームガン構え中：物理・魔法とも耐久"},{"n":"ベヒーモス剛","en":"Alpha Behemoth","c":[3,5],"v":{"cres":"0","omen":"0.90","ehp":"20250","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"500"},"pre":1},{"n":"重攻撃騎マナスヴィン（3回目）","en":"Manasvin Warmech（HP32400）","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"32400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"160"},"pre":1},{"n":"戦闘爆撃騎カルラ（1回目）","en":"Garuda Interceptor（HP8000）","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"8000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"weak","E":"null"},"lim":"170"},"pre":1},{"n":"戦闘爆撃騎カルラ（2回目・バリア発生時）","en":"Garuda Interceptor（HP16200）","c":[3],"v":{"cres":"80","omen":"0.90","ehp":"16200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"開始時からバリア状態：チェーン耐性80、物理・魔法とも耐久。ブレイクするとバリアが消えて通常時に戻る","brk":"Garuda Interceptor（HP16200・通常時）"},{"n":"戦闘爆撃騎カルラ（2回目・通常時）","en":"Garuda Interceptor（HP16200・通常時）","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"16200","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"ブレイクでバリアが消えた後：チェーン耐性50、物理・魔法とも標準"},{"n":"ビルジバス","en":"Breshan Bass","c":[3],"v":{"cres":"50","omen":"0.90","ehp":"2430","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"ブラッドバス","en":"Bloodfang Bass","c":[3],"v":{"cres":"0","omen":"0.90","ehp":"81","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"シヴァ・ニクス","en":"Nix","c":[3],"v":{"cres":"70","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1},{"n":"警備軍一般兵","en":"Corps Regular","c":[4],"v":{"cres":"20","omen":"0.90","ehp":"1560","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"half","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"警備軍一般兵射手","en":"Corps Gunner","c":[4,8],"v":{"cres":"20","omen":"0.90","ehp":"1092","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"half","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"誘導ビーコン","en":"Targeting Beacon","c":[4],"v":{"cres":"100","omen":"0.90","ehp":"975","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ゲパルト猛牙","en":"Thexteron","c":[4,5],"v":{"cres":"70","omen":"0.90","ehp":"3120","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"機甲兵ウーラン","en":"Uhlan","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"10842","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"140"},"pre":1},{"n":"インキュバス","en":"Incubus","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"2964","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"サキュバス","en":"Succubus","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"975","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"バルバロイ（通常時）","en":"Pulsework Soldier","c":[4],"v":{"cres":"70","omen":"0.90","ehp":"7410","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1,"note":"通常時は物理・魔法とも半減。ブレイクすると標準になる","brk":"Pulsework Soldier（ブレイク時）"},{"n":"バルバロイ（ブレイク時）","en":"Pulsework Soldier（ブレイク時）","c":[4],"v":{"cres":"70","omen":"0.90","ehp":"7410","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1,"note":"ブレイク中：物理・魔法とも標準"},{"n":"ボム","en":"Bomb","c":[4],"v":{"cres":"90","omen":"0.90","ehp":"1248","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"weak","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"グレムリン","en":"Gremlin","c":[4,6],"v":{"cres":"90","omen":"0.90","ehp":"896","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"half","T":"weak","W":"half","A":"weak","E":"norm"},"lim":"130"},"pre":1},{"n":"ドレッドノート（1回目）","en":"Dreadnought（HP17940）","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"17940","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ドレッドノート（2回目）","en":"Dreadnought（HP44850）","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"44850","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"オーディン","en":"Odin","c":[4],"v":{"cres":"80","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1},{"n":"警備軍巡視兵","en":"Corps Watchman","c":[5],"v":{"cres":"30","omen":"0.90","ehp":"6048","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"weak","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"警備軍巡視兵射手","en":"Corps Marksman","c":[5],"v":{"cres":"30","omen":"0.90","ehp":"2205","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"weak","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"シルバリオ","en":"Silver Lobo","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"6300","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"half","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"ヴェスペ葉隠","en":"Vespid","c":[5],"v":{"cres":"25","omen":"0.90","ehp":"6930","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"230"},"pre":1},{"n":"エーゲル自律機雷","en":"Frag Leech","c":[5],"v":{"cres":"0","omen":"0.90","ehp":"1575","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"快速機ミーラン（通常時）","en":"Milvus Velocycle","c":[5],"v":{"cres":"50","omen":"0.90","ehp":"25200","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"220"},"pre":1,"note":"トライビームを構えている間は物理・魔法とも耐久になる"},{"n":"快速機ミーラン（トライビーム構え中）","en":"Milvus Velocycle（トライビーム構え中）","c":[5],"v":{"cres":"50","omen":"0.90","ehp":"25200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"220"},"pre":1,"note":"トライビーム構え中：物理・魔法とも耐久"},{"n":"クロウラー","en":"Crawler","c":[5],"v":{"cres":"50","omen":"0.90","ehp":"2363","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"half","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ドレイナー","en":"Barbed Specter","c":[5],"v":{"cres":"50","omen":"0.90","ehp":"9009","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"half","W":"norm","A":"norm","E":"norm"},"lim":"210"},"pre":1},{"n":"ベヒーモス","en":"Feral Behemoth","c":[5],"v":{"cres":"90","omen":"0.90","ehp":"23625","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"norm","T":"half","W":"weak","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"試作騎ユイジンシャン（初期）","en":"Aster Protoflorian（初期）","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"129600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"最初はどのモードでもない（全属性半減）。モードに入ると弱点・吸収の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"試作騎ユイジンシャン（耐火炎モード）","en":"Aster Protoflorian（耐火炎モード）","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"129600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"weak","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"試作騎ユイジンシャン（耐氷雪モード）","en":"Aster Protoflorian（耐氷雪モード）","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"129600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"試作騎ユイジンシャン（耐雷光モード）","en":"Aster Protoflorian（耐雷光モード）","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"129600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"abs","W":"weak","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"試作騎ユイジンシャン（耐水流モード）","en":"Aster Protoflorian（耐水流モード）","c":[5],"v":{"cres":"80","omen":"0.90","ehp":"129600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"weak","W":"abs","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"ヘッジフロッグ","en":"Hedge Frog","c":[6],"v":{"cres":"10","omen":"0.90","ehp":"513","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"null","A":"weak","E":"norm"},"lim":"120"},"pre":1},{"n":"マッドフロッグ","en":"Mud Frog","c":[6],"v":{"cres":"40","omen":"0.90","ehp":"9450","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"null","A":"weak","E":"norm"},"lim":"160"},"pre":1},{"n":"ガルキマセラ","en":"Garchimacera","c":[6],"v":{"cres":"45","omen":"0.90","ehp":"3510","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"half","T":"weak","W":"half","A":"weak","E":"norm"},"lim":"120"},"pre":1},{"n":"ワイバーン","en":"Wyvern","c":[6],"v":{"cres":"30","omen":"0.90","ehp":"48600","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"norm","A":"weak","E":"null"},"lim":"200"},"pre":1},{"n":"ベジタプリン","en":"Flandragora","c":[6],"v":{"cres":"0","omen":"0.90","ehp":"7290","tresP":"null","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"null","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"スケイルビースト（通常時）","en":"Scalebeast","c":[6],"v":{"cres":"95","omen":"0.90","ehp":"37125","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"null","T":"half","W":"half","A":"half","E":"null"},"lim":"115"},"pre":1,"note":"ブレイクすると耐性が変わる（火弱点・氷半減・雷弱点・水弱点・土半減）","brk":"Scalebeast（ブレイク時）"},{"n":"スケイルビースト（ブレイク時）","en":"Scalebeast（ブレイク時）","c":[6],"v":{"cres":"95","omen":"0.90","ehp":"37125","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"half","T":"weak","W":"weak","A":"half","E":"half"},"lim":"115"},"pre":1,"note":"ブレイク中：火弱点・氷半減・雷弱点・水弱点・土半減"},{"n":"エンキ","en":"Enki","c":[6],"v":{"cres":"65","omen":"0.90","ehp":"75600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"null","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"エンリル","en":"Enlil","c":[6],"v":{"cres":"65","omen":"0.90","ehp":"70200","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"null","W":"weak","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"ＰＳＩＣＯＭ駆逐兵","en":"PSICOM Scavenger","c":[7],"v":{"cres":"50","omen":"0.90","ehp":"9660","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1},{"n":"ＰＳＩＣＯＭ駆逐猟兵","en":"PSICOM Predator","c":[7],"v":{"cres":"70","omen":"0.90","ehp":"3780","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1},{"n":"ＰＳＩＣＯＭ飛空狙撃兵","en":"PSICOM Aerial Sniper","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"7350","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"110"},"pre":1},{"n":"ＰＳＩＣＯＭ特火駆逐兵","en":"PSICOM Bombardier","c":[7],"v":{"cres":"50","omen":"0.90","ehp":"11340","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1},{"n":"ＰＳＩＣＯＭ教導戦術士","en":"PSICOM Warlord","c":[7],"v":{"cres":"85","omen":"0.90","ehp":"22680","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"警備軍保安兵","en":"Corps Pacifex","c":[7],"v":{"cres":"10","omen":"0.90","ehp":"5670","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"警備軍保安兵射手","en":"Corps Tranquifex","c":[7],"v":{"cres":"0","omen":"0.90","ehp":"3612","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"135"},"pre":1},{"n":"機甲兵イェーガー","en":"Orion","c":[7,8],"v":{"cres":"60","omen":"0.90","ehp":"25200","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"250"},"pre":1},{"n":"快速機ファルケ（通常時）","en":"Falco Velocycle","c":[7],"v":{"cres":"85","omen":"0.90","ehp":"14700","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1,"note":"ガトリングガンを構えている間はチェーン耐性100、物理・魔法とも耐久になる"},{"n":"快速機ファルケ（ガトリングガン構え中）","en":"Falco Velocycle（ガトリングガン構え中）","c":[7],"v":{"cres":"100","omen":"0.90","ehp":"14700","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1,"note":"ガトリングガン構え中：チェーン耐性100、物理・魔法とも耐久"},{"n":"シルトパット月光（通常時）","en":"Lucidon","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"10080","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"120"},"pre":1,"note":"ブレイクすると耐性が変わる（物理・魔法・全属性が標準）","brk":"Lucidon（ブレイク時）"},{"n":"シルトパット月光（ブレイク時）","en":"Lucidon（ブレイク時）","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"10080","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"120"},"pre":1,"note":"ブレイク中：物理・魔法・全属性が標準"},{"n":"プリン衛生兵","en":"Flanitor","c":[7,9],"v":{"cres":"85","omen":"0.90","ehp":"3780","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"115"},"pre":1},{"n":"ベヒーモス魁星（初期状態）","en":"Lodestar Behemoth","c":[7],"v":{"cres":"40","omen":"0.90","ehp":"37800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1,"note":"残りHPが40%以下になるか、戦闘開始から約2分15秒たつと立ち上がる。そのときチェーンボーナスが100.0%に戻り、自分にヘイストがかかる。立ち上がるとチェーン耐性が85に上がる（ブレイク値は同じ）","nx":[{"to":"Lodestar Behemoth（立ち上がり後）","l":"立ち上がり（チェーンボーナス100%に戻る）","ch":1}]},{"n":"ベヒーモス魁星（立ち上がり後）","en":"Lodestar Behemoth（立ち上がり後）","c":[7],"v":{"cres":"85","omen":"0.90","ehp":"37800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1,"note":"立ち上がった後：チェーン耐性85（ブレイク値は同じ）。立ち上がったときにチェーンボーナスは100.0%に戻る"},{"n":"侵攻制圧騎ウシュムガル（1回目・通常時）","en":"Ushumgal Subjugator（HP126000）","c":[7],"v":{"cres":"95","omen":"0.90","ehp":"126000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1,"note":"オーバードライブを使った後は、自分にブレイブ・デプロテ・デシェルをかけ、チェーン耐性が70に下がる","nx":[{"to":"Ushumgal Subjugator（HP126000・オーバードライブ後）","l":"オーバードライブ後"}]},{"n":"侵攻制圧騎ウシュムガル（1回目・オーバードライブ後）","en":"Ushumgal Subjugator（HP126000・オーバードライブ後）","c":[7],"v":{"cres":"70","omen":"0.90","ehp":"126000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150","deb":["デプロテ","デシェル"]},"pre":1,"note":"オーバードライブ後：チェーン耐性70。自分にブレイブ・デプロテ・デシェルがかかっている（デプロテ・デシェルは最初からかかっているものとして計算）"},{"n":"侵攻制圧騎ウシュムガル（2回目・3回目）","en":"Ushumgal Subjugator（HP378000）","c":[7],"v":{"cres":"70","omen":"0.90","ehp":"378000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"250"},"pre":1},{"n":"飛空戦車グライフ（主砲出現前）","en":"Havoc Skytank","c":[7],"v":{"cres":"95","omen":"0.90","ehp":"441000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"999"},"pre":1,"note":"パーツを1個倒すごとに本体に88,200ダメージ"},{"n":"飛空戦車グライフ（主砲出現後）","en":"Havoc Skytank（主砲出現後）","c":[7],"v":{"cres":"0","omen":"0.90","ehp":"441000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"200"},"pre":1,"note":"パーツ4個を倒し、HP73,500以下で主砲が出現するとチェーン耐性0。残りHPは「このターン開始時の残りHP」に入れてください"},{"n":"グライフ右舷","en":"Starboard Hull","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"12600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"999"},"pre":1},{"n":"右機関砲","en":"Starboard Turret","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"10710","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"999"},"pre":1},{"n":"グライフ左舷","en":"Portside Hull","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"12600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"999"},"pre":1},{"n":"左機関砲","en":"Portside Turret","c":[7],"v":{"cres":"90","omen":"0.90","ehp":"12600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"null","E":"norm"},"lim":"999"},"pre":1},{"n":"突撃砲レーヴェ","en":"Midlight Reaper","c":[8],"v":{"cres":"50","omen":"0.90","ehp":"100800","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"weak","T":"null","W":"norm","A":"norm","E":"norm"},"lim":"160"},"pre":1},{"n":"ツヴェルク市街型","en":"Zwerg Metrodroid","c":[8],"v":{"cres":"20","omen":"0.90","ehp":"2160","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"null","W":"null","A":"weak","E":"norm"},"lim":"200"},"pre":1},{"n":"ブリュンヒルデ","en":"Brynhildr","c":[8],"v":{"cres":"70","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"weak","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1},{"n":"ＰＳＩＣＯＭ強襲兵","en":"PSICOM Raider","c":[9],"v":{"cres":"10","omen":"0.90","ehp":"20592","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"195"},"pre":1,"guard":1},{"n":"ＰＳＩＣＯＭ強襲猟兵","en":"PSICOM Infiltrator","c":[9],"v":{"cres":"10","omen":"0.90","ehp":"9504","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"160"},"pre":1},{"n":"ＰＳＩＣＯＭ特火強襲兵","en":"PSICOM Destroyer","c":[9],"v":{"cres":"20","omen":"0.90","ehp":"23760","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"ＰＳＩＣＯＭ飛空竜騎兵","en":"PSICOM Dragoon","c":[9],"v":{"cres":"90","omen":"0.90","ehp":"12024","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"half","E":"norm"},"lim":"110"},"pre":1},{"n":"ＰＳＩＣＯＭ機動コマンド","en":"PSICOM Huntress","c":[9],"v":{"cres":"45","omen":"0.90","ehp":"11960","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"180"},"pre":1},{"n":"ＰＳＩＣＯＭ戦術導士","en":"PSICOM Reaver","c":[9],"v":{"cres":"30","omen":"0.90","ehp":"59400","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"norm"},"lim":"250"},"pre":1},{"n":"機甲兵マトローゼ","en":"Deckdrone","c":[9],"v":{"cres":"90","omen":"0.90","ehp":"15840","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"null","W":"norm","A":"half","E":"norm"},"lim":"113"},"pre":1},{"n":"機甲兵ヴィーキング","en":"Viking","c":[9],"v":{"cres":"83","omen":"0.90","ehp":"140976","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"norm","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"160"},"pre":1},{"n":"ヴェスペ陣風","en":"Vespid Soldier","c":[9],"v":{"cres":"20","omen":"0.90","ehp":"12960","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"norm","A":"null","E":"norm"},"lim":"220"},"pre":1},{"n":"シルトパット陽炎（通常時）","en":"Thermadon","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"43200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"165"},"pre":1,"note":"ブレイクすると耐性が変わる（物理半減・魔法半減・水弱点）","brk":"Thermadon（ブレイク時）"},{"n":"シルトパット陽炎（ブレイク時）","en":"Thermadon（ブレイク時）","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"43200","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"165"},"pre":1,"note":"ブレイク中：物理半減・魔法半減・水弱点"},{"n":"プリン電機兵","en":"Flanborg","c":[9],"v":{"cres":"0","omen":"0.90","ehp":"12600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"null","W":"weak","A":"norm","E":"norm"},"lim":"190"},"pre":1},{"n":"襲撃騎カラヴィンカ（1回目）","en":"Kalavinka Striker（HP108000）","c":[9],"v":{"cres":"25","omen":"0.90","ehp":"108000","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"norm","A":"half","E":"norm"},"lim":"300"},"pre":1},{"n":"襲撃騎カラヴィンカ（2回目）","en":"Kalavinka Striker（HP122400）","c":[9],"v":{"cres":"70","omen":"0.90","ehp":"122400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"バルトアンデルス（1回目・パーツ消滅前）","en":"Barthandelus（パーツ消滅前）","c":[9],"v":{"cres":"100","omen":"0.90","ehp":"462000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"res","E":"res"},"lim":"999"},"pre":1,"note":"4つのパーツ（ファルシ右外装・右副次装・左外装・左副次装）が全部消えると、ステータスが変わる"},{"n":"バルトアンデルス（1回目・パーツ消滅後）","en":"Barthandelus（パーツ消滅後）","c":[9],"v":{"cres":"75","omen":"0.90","ehp":"462000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"250"},"pre":1,"note":"パーツが全部消えた後。残りHPは「このターン開始時の残りHP」に入れてください"},{"n":"ファルシ右外装","en":"Right Pauldron","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"50400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"weak","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1},{"n":"ファルシ右副次装","en":"Right Ailette","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"50400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"abs","W":"weak","A":"half","E":"half"},"lim":"150"},"pre":1},{"n":"ファルシ左外装","en":"Left Pauldron","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"50400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"weak","W":"abs","A":"half","E":"half"},"lim":"150"},"pre":1},{"n":"ファルシ左副次装","en":"Left Ailette","c":[9],"v":{"cres":"80","omen":"0.90","ehp":"50400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1},{"n":"インプ","en":"Imp","c":[10],"v":{"cres":"20","omen":"0.90","ehp":"5880","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"half","T":"norm","W":"half","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"アーリマン","en":"Ahriman","c":[10],"v":{"cres":"90","omen":"0.90","ehp":"15120","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"スカテネ","en":"Skata'ne","c":[10,11],"v":{"cres":"80","omen":"0.90","ehp":"23520","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1,"g":["mh"]},{"n":"スティキニ","en":"Stikini","c":[10],"v":{"cres":"50","omen":"0.90","ehp":"16800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"ノクチルカ","en":"Noctilucale","c":[10],"v":{"cres":"50","omen":"0.90","ehp":"5040","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"norm","W":"half","A":"norm","E":"norm"},"lim":"500"},"pre":1},{"n":"ルミネスゼリー","en":"Phosphoric Ooze","c":[10],"v":{"cres":"20","omen":"0.90","ehp":"6720","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"アルケミックゼリー","en":"Alchemic Ooze","c":[10],"v":{"cres":"70","omen":"0.90","ehp":"67200","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"グランベヒーモス","en":"Greater Behemoth","c":[10],"v":{"cres":"70","omen":"0.90","ehp":"75600","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1},{"n":"イェニチェリ（通常時）","en":"Pulsework Knight","c":[10],"v":{"cres":"90","omen":"0.90","ehp":"25200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1,"note":"ブレイクすると耐性が変わる（物理標準・魔法標準）","brk":"Pulsework Knight（ブレイク時）"},{"n":"イェニチェリ（ブレイク時）","en":"Pulsework Knight（ブレイク時）","c":[10],"v":{"cres":"90","omen":"0.90","ehp":"25200","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1,"note":"ブレイク中：物理標準・魔法標準"},{"n":"バーサーカー","en":"Berserker","c":[10],"v":{"cres":"80","omen":"0.90","ehp":"142800","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"null","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"飛燕剣（バーサーカー）","en":"Centaurion Blade","c":[10],"v":{"cres":"70","omen":"0.90","ehp":"20008","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"ヒューズ","en":"Circuitron","c":[10],"v":{"cres":"30","omen":"0.90","ehp":"5040","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"abs","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"シド・レインズ（アタックシフト・ヒールシフト）","en":"Cid Raines（アタックシフト・ヒールシフト）","c":[10],"v":{"cres":"90","omen":"0.90","ehp":"226800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1,"note":"アタックシフト・ヒールシフト中は物理・魔法とも標準","guard":1},{"n":"シド・レインズ（ディフェンスシフト・メタモルフォーゼ後）","en":"Cid Raines（ディフェンスシフト・メタモルフォーゼ後）","c":[10],"v":{"cres":"90","omen":"0.90","ehp":"226800","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1,"note":"ディフェンスシフト中とメタモルフォーゼ後は物理・魔法とも半減","guard":1},{"n":"バハムート","en":"Bahamut","c":[10],"v":{"cres":"80","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1},{"n":"ゴルゴノプス","en":"Gorgonopsid","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"30600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"res","I":"weak","T":"half","W":"norm","A":"norm","E":"norm"},"lim":"160"},"pre":1,"g":["as","ym"]},{"n":"ウリディシム","en":"Uridimmu","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"45900","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"null","T":"weak","W":"norm","A":"res","E":"norm"},"lim":"200"},"pre":1,"g":["mi"]},{"n":"アーマーン","en":"Amam","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"446250","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"abs","W":"norm","A":"null","E":"weak"},"lim":"270"},"pre":1,"g":["mi"]},{"n":"マーナガルム","en":"Mánagarmr","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"155232","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"weak","A":"norm","E":"norm"},"lim":"400"},"pre":1,"g":["tt"]},{"n":"ウガルルム","en":"Ugallu","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"282960","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"null","W":"norm","A":"weak","E":"norm"},"lim":"210"},"pre":1,"g":["mi"]},{"n":"メギストテリウム","en":"Megistotherian","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"438480","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"null","T":"norm","W":"norm","A":"res","E":"norm"},"lim":"450"},"pre":1,"g":["as"]},{"n":"ケラトサウルス","en":"Ceratosaur","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"35100","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"300"},"pre":1,"g":["ss","mi"]},{"n":"ケラトラプトル","en":"Ceratoraptor","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"70200","tresP":"half","tresM":"res","noLaunch":false,"er":{"F":"weak","I":"abs","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"150"},"pre":1,"g":["ss"]},{"n":"レヤック","en":"Leyak","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"15300","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"weak","T":"norm","W":"weak","A":"abs","E":"norm"},"lim":"150"},"pre":1,"g":["as","ym"]},{"n":"ランダ","en":"Rangda","c":[11],"v":{"cres":"30","omen":"0.90","ehp":"27000","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"weak","T":"norm","W":"weak","A":"abs","E":"norm"},"lim":"170"},"pre":1,"g":["as","ym"]},{"n":"アドゥロ","en":"Adroa","c":[11],"v":{"cres":"75","omen":"0.90","ehp":"21600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"abs","E":"res"},"lim":"110"},"pre":1,"g":["mi"]},{"n":"ヴェルデレト","en":"Verdelet","c":[11],"v":{"cres":"99","omen":"0.90","ehp":"38880","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"null","T":"null","W":"null","A":"abs","E":"null"},"lim":"103"},"pre":1,"g":["mi"]},{"n":"ヤシャ","en":"Yaksha","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"61446","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"weak","A":"norm","E":"weak"},"lim":"280"},"pre":1,"g":["mh","tt"]},{"n":"ヤクシニー","en":"Yakshini","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"58212","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"weak","A":"half","E":"weak"},"lim":"150"},"pre":1,"g":["mh","tt"]},{"n":"ラクシャーサ","en":"Rakshasa","c":[11],"v":{"cres":"90","omen":"0.90","ehp":"162000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"half","E":"norm"},"lim":"185"},"pre":1,"g":["mi"]},{"n":"トリフィド","en":"Triffid","c":[11],"v":{"cres":"75","omen":"0.90","ehp":"56160","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"weak","E":"null"},"lim":"180"},"pre":1,"g":["as","ym"]},{"n":"ムシュフシュ","en":"Mushussu","c":[11],"v":{"cres":"20","omen":"0.90","ehp":"121275","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"abs","T":"abs","W":"abs","A":"res","E":"null"},"lim":"185"},"pre":1,"g":["mi"]},{"n":"グランガッチ（通常時）","en":"Gurangatch","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"242550","tresP":"null","tresM":"res","noLaunch":false,"er":{"F":"null","I":"half","T":"null","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"g":["mi"],"note":"ブレイクすると耐性が変わる（物理半減・魔法半減・火半減・氷標準・雷半減・水標準・風標準）","brk":"Gurangatch（ブレイク時）"},{"n":"グランガッチ（ブレイク時）","en":"Gurangatch（ブレイク時）","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"242550","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"norm","T":"half","W":"norm","A":"norm","E":"half"},"lim":"200"},"pre":1,"g":["mi"],"note":"ブレイク中：物理半減・魔法半減・火半減・氷標準・雷半減・水標準・風標準"},{"n":"ランドガレオン（通常時）","en":"Navidon","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"242550","tresP":"null","tresM":"res","noLaunch":false,"er":{"F":"null","I":"half","T":"null","W":"half","A":"half","E":"half"},"lim":"125"},"pre":1,"g":["as"],"note":"ブレイクすると耐性が変わる（物理標準・魔法半減・火弱点・雷弱点・水標準・風標準）","brk":"Navidon（ブレイク時）"},{"n":"ランドガレオン（ブレイク時）","en":"Navidon（ブレイク時）","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"242550","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"half","T":"weak","W":"norm","A":"norm","E":"half"},"lim":"125"},"pre":1,"g":["as"],"note":"ブレイク中：物理標準・魔法半減・火弱点・雷弱点・水標準・風標準"},{"n":"アルラウネ","en":"Alraune","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"18000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"norm","W":"abs","A":"null","E":"weak"},"lim":"290"},"pre":1,"g":["vm","ym"]},{"n":"ラフレシア","en":"Rafflesia","c":[11],"v":{"cres":"75","omen":"0.90","ehp":"127500","tresP":"norm","tresM":"null","noLaunch":false,"er":{"F":"weak","I":"abs","T":"abs","W":"abs","A":"abs","E":"weak"},"lim":"350"},"pre":1,"g":["mi"]},{"n":"スヴァローグ","en":"Svarog","c":[11],"v":{"cres":"75","omen":"0.90","ehp":"226800","tresP":"res","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"weak","T":"norm","W":"norm","A":"weak","E":"null"},"lim":"280"},"pre":1,"g":["ym"]},{"n":"アンフィスバエナ","en":"Amphisbaena","c":[11,12],"v":{"cres":"20","omen":"0.90","ehp":"360000","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"weak","E":"null"},"lim":"350"},"pre":1,"g":["as","tt"]},{"n":"ジルニトラ","en":"Zirnitra","c":[11],"v":{"cres":"97","omen":"0.90","ehp":"2475000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"abs","W":"abs","A":"weak","E":"null"},"lim":"180"},"pre":1,"g":["mi"]},{"n":"アダマンタイマイ（通常時）","en":"Adamantoise","c":[11,12],"v":{"cres":"100","omen":"0.90","ehp":"5343000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"res","E":"res"},"lim":"500"},"pre":1,"g":["as"],"note":"倒れこむとチェーン耐性・耐性が変わる"},{"n":"アダマンタイマイ（倒れこみ時）","en":"Adamantoise（倒れこみ時）","c":[11,12],"v":{"cres":"30","omen":"0.90","ehp":"5343000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"500"},"pre":1,"g":["as"],"note":"倒れこみ時：チェーン耐性30、属性・物理・魔法すべて半減"},{"n":"左前脚（アダマンタイマイ）","en":"Left Foreleg（Adamantoise）","c":[11,12],"v":{"cres":"20","omen":"0.90","ehp":"356200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1,"g":["as"]},{"n":"右前脚（アダマンタイマイ）","en":"Right Foreleg（Adamantoise）","c":[11,12],"v":{"cres":"20","omen":"0.90","ehp":"356200","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1,"g":["as"]},{"n":"アダマントータス（通常時）","en":"Adamantortoise","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"3699000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"res","E":"res"},"lim":"250"},"pre":1,"g":["mi"],"note":"倒れこむとチェーン耐性・耐性が変わる"},{"n":"アダマントータス（倒れこみ時）","en":"Adamantortoise（倒れこみ時）","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"3699000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"250"},"pre":1,"g":["mi"],"note":"倒れこみ時：チェーン耐性60、属性・物理・魔法すべて半減"},{"n":"左前脚（アダマントータス）","en":"Left Foreleg（Adamantortoise）","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"246600","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1,"g":["mi"]},{"n":"右前脚（アダマントータス）","en":"Right Foreleg（Adamantortoise）","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"246600","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1,"g":["mi"]},{"n":"アダマンケリス","en":"Adamanchelid","c":[11,12],"v":{"cres":"25","omen":"0.90","ehp":"956250","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"weak","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"450"},"pre":1,"g":["as","mi"]},{"n":"ロングイ（通常時）","en":"Long Gui","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"16200000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"700"},"pre":1,"g":["as"],"note":"倒れこむとチェーン耐性が変わる（属性・物理・魔法の耐性は変わらない）"},{"n":"ロングイ（倒れこみ時）","en":"Long Gui（倒れこみ時）","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"16200000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"700"},"pre":1,"g":["as"],"note":"倒れこみ時：チェーン耐性10（属性・物理・魔法の耐性は通常時と同じ）"},{"n":"左前脚（ロングイ）","en":"Left Foreleg（Long Gui）","c":[11],"v":{"cres":"20","omen":"0.90","ehp":"1080000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"450"},"pre":1,"g":["as"]},{"n":"右前脚（ロングイ）","en":"Right Foreleg（Long Gui）","c":[11],"v":{"cres":"20","omen":"0.90","ehp":"1080000","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"450"},"pre":1,"g":["as"]},{"n":"シャオロングイ","en":"Shaolong Gui","c":[11],"v":{"cres":"40","omen":"0.90","ehp":"10800000","tresP":"half","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1,"g":["as"]},{"n":"カラメルムース","en":"Flan","c":[11],"v":{"cres":"40","omen":"0.90","ehp":"28800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"abs","W":"null","A":"norm","E":"norm"},"lim":"200"},"pre":1,"g":["vm","as"]},{"n":"ミックスムース","en":"Dire Flan","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"169200","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"abs","W":"null","A":"norm","E":"norm"},"lim":"200"},"pre":1,"g":["vm","as"]},{"n":"ジャンボムース","en":"Monstrous Flan","c":[11],"v":{"cres":"90","omen":"0.90","ehp":"247500","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"abs","W":"null","A":"norm","E":"norm"},"lim":"200"},"pre":1,"g":["as"]},{"n":"ラスティプリン","en":"Rust Pudding","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"46800","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"150"},"pre":1,"g":["mh"]},{"n":"オクサイドプリン","en":"Ferruginous Pudding","c":[11],"v":{"cres":"95","omen":"0.90","ehp":"93600","tresP":"half","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"150"},"pre":1,"g":["mh"]},{"n":"ギガントメタル","en":"Corrosive Custard","c":[11],"v":{"cres":"99","omen":"0.90","ehp":"263250","tresP":"half","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"half","A":"norm","E":"norm"},"lim":"150"},"pre":1,"g":["mi"]},{"n":"メガハーヴェスト","en":"Hybrid Flora","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"216000","tresP":"null","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"null","A":"weak","E":"norm"},"lim":"190"},"pre":1,"g":["ym"]},{"n":"ギガゼラチン","en":"Gelatitan","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"679140","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"weak","W":"abs","A":"norm","E":"norm"},"lim":"300"},"pre":1,"g":["mi"]},{"n":"グランプリン","en":"Ectopudding","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"133200","tresP":"null","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"weak","W":"abs","A":"norm","E":"norm"},"lim":"600"},"pre":1,"g":["mi"]},{"n":"カイザーベヒーモス（初期状態）","en":"Kaiser Behemoth","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"196560","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"norm","A":"null","E":"weak"},"lim":"500"},"pre":1,"g":["mi"],"note":"残りHPが60%以下になると立ち上がり、HPが全回復する（最大HP293,760）。耐性などは変わらない","nx":[{"to":"Kaiser Behemoth（立ち上がり後）","l":"立ち上がり（HP全回復）","hp":1}]},{"n":"カイザーベヒーモス（立ち上がり後）","en":"Kaiser Behemoth（立ち上がり後）","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"293760","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"norm","A":"null","E":"weak"},"lim":"500"},"pre":1,"g":["mi"],"note":"立ち上がった後：最大HP293,760（立ち上がるときに全回復）。耐性などは初期状態と同じ"},{"n":"キングベヒーモス（初期状態）","en":"Behemoth King","c":[11,12],"v":{"cres":"60","omen":"0.90","ehp":"487620","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"norm","A":"null","E":"norm"},"lim":"650"},"pre":1,"g":["as","ym"],"note":"残りHPが40%以下になると立ち上がる。そのときHPが全回復し、自分の状態変化（強化・弱体）が解除される。立ち上がるとチェーン耐性が95に上がる（ブレイク値は同じ）","nx":[{"to":"Behemoth King（立ち上がり後）","l":"立ち上がり（HP全回復）","hp":1}]},{"n":"キングベヒーモス（立ち上がり後）","en":"Behemoth King（立ち上がり後）","c":[11,12],"v":{"cres":"95","omen":"0.90","ehp":"487620","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"abs","W":"norm","A":"null","E":"norm"},"lim":"650"},"pre":1,"g":["as","ym"],"note":"立ち上がった後：チェーン耐性95（ブレイク値は同じ）。立ち上がったときにHPが全回復し、自分の状態変化が解除される"},{"n":"フンババ","en":"Humbaba","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"1320000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"half","T":"norm","W":"null","A":"norm","E":"norm"},"lim":"700"},"pre":1,"g":["mi"]},{"n":"ゴブリン","en":"Goblin","c":[11],"v":{"cres":"30","omen":"0.90","ehp":"86400","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"half","W":"norm","A":"half","E":"null"},"lim":"250"},"pre":1,"g":["as","fw"]},{"n":"ゴブリンチーフ","en":"Goblin Chieftan","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"216000","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"res","W":"norm","A":"res","E":"null"},"lim":"250"},"pre":1,"g":["as","mi"]},{"n":"マンチキン","en":"Munchkin","c":[11],"v":{"cres":"40","omen":"0.90","ehp":"25920","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"null","W":"norm","A":"weak","E":"norm"},"lim":"250"},"pre":1,"g":["ym","fw"]},{"n":"マンチキンスター","en":"Munchkin Maestro","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"90720","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"null","W":"norm","A":"weak","E":"norm"},"lim":"250"},"pre":1,"g":["ym","mi"]},{"n":"バグベア","en":"Borgbear","c":[11],"v":{"cres":"20","omen":"0.90","ehp":"396000","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"null","T":"norm","W":"half","A":"norm","E":"weak"},"lim":"140"},"pre":1,"g":["fw"]},{"n":"バグベアヒーロー","en":"Borgbear Hero","c":[11],"v":{"cres":"20","omen":"0.90","ehp":"792000","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"weak","I":"null","T":"norm","W":"half","A":"norm","E":"weak"},"lim":"200"},"pre":1,"g":["mi"]},{"n":"サハギン","en":"Sahagin","c":[11],"v":{"cres":"25","omen":"0.90","ehp":"64800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"res","T":"weak","W":"null","A":"norm","E":"norm"},"lim":"220"},"pre":1,"g":["as","mi"]},{"n":"オロボン","en":"Orobon","c":[11,12],"v":{"cres":"90","omen":"0.90","ehp":"257400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"weak","W":"null","A":"norm","E":"norm"},"lim":"125"},"pre":1,"g":["as","ss"]},{"n":"オチュー","en":"Ochu","c":[11],"v":{"cres":"95","omen":"0.90","ehp":"892500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"888"},"pre":1,"g":["as","fw","mi"]},{"n":"コチュー","en":"Microchu","c":[11],"v":{"cres":"4","omen":"0.90","ehp":"114750","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"444"},"pre":1,"g":["as","fw"]},{"n":"ネオチュー","en":"Neochu","c":[11],"v":{"cres":"95","omen":"0.90","ehp":"2625000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"abs","A":"half","E":"weak"},"lim":"888"},"pre":1,"g":["mi"]},{"n":"ピコチュー","en":"Picochu","c":[11],"v":{"cres":"4","omen":"0.90","ehp":"262500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"444"},"pre":1,"g":["mi"]},{"n":"サボテンダー","en":"Cactuar","c":[11],"v":{"cres":"77","omen":"0.90","ehp":"777777","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"777"},"pre":1,"g":["as"]},{"n":"ザ・サボテンダー","en":"Giant Cactuar","c":[11],"v":{"cres":"87","omen":"0.90","ehp":"777777","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"777"},"pre":1,"g":["as"]},{"n":"サボテンマスター","en":"Cactuar Prime","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"777777","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"777"},"pre":1,"g":["as"]},{"n":"サポテンダー","en":"Flowering Cactuar","c":[11],"v":{"cres":"11","omen":"0.90","ehp":"123750","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"111"},"pre":1,"g":["fw"]},{"n":"ジャボテンダー","en":"Gigantuar","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"1111111","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"abs","A":"norm","E":"weak"},"lim":"777"},"pre":1,"g":["mi"]},{"n":"トンベリ","en":"Tonberry","c":[11],"v":{"cres":"66","omen":"0.90","ehp":"742500","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"half","A":"norm","E":"weak"},"lim":"666"},"pre":1,"g":["mi"]},{"n":"クシャトリヤ（通常時）","en":"Pulsework Gladiator","c":[11],"v":{"cres":"40","omen":"0.90","ehp":"36221","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"norm","A":"res","E":"res"},"lim":"145"},"pre":1,"g":["tt"],"note":"ブレイクすると耐性が変わる（物理・魔法・全属性が標準）","brk":"Pulsework Gladiator（ブレイク時）"},{"n":"クシャトリヤ（ブレイク時）","en":"Pulsework Gladiator（ブレイク時）","c":[11],"v":{"cres":"40","omen":"0.90","ehp":"36221","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"145"},"pre":1,"g":["tt"],"note":"ブレイク中：物理・魔法・全属性が標準"},{"n":"マムルーク（通常時）","en":"Pulsework Centurion","c":[11],"v":{"cres":"30","omen":"0.90","ehp":"39780","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"res","I":"abs","T":"norm","W":"res","A":"res","E":"weak"},"lim":"300"},"pre":1,"g":["mh"],"note":"ブレイクすると耐性が変わる（物理半減・魔法半減・火半減・雷弱点・水半減・風半減）","brk":"Pulsework Centurion（ブレイク時）"},{"n":"マムルーク（ブレイク時）","en":"Pulsework Centurion（ブレイク時）","c":[11],"v":{"cres":"30","omen":"0.90","ehp":"39780","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"abs","T":"weak","W":"half","A":"half","E":"weak"},"lim":"300"},"pre":1,"g":["mh"],"note":"ブレイク中：物理半減・魔法半減・火半減・雷弱点・水半減・風半減"},{"n":"アタナトイ（通常時）","en":"Pulsework Champion","c":[11],"v":{"cres":"95","omen":"0.90","ehp":"187500","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"null","I":"null","T":"null","W":"null","A":"null","E":"null"},"lim":"110"},"pre":1,"g":["mi"],"note":"ブレイクすると耐性が変わる（物理・魔法が標準、全属性が耐久）","brk":"Pulsework Champion（ブレイク時）"},{"n":"アタナトイ（ブレイク時）","en":"Pulsework Champion（ブレイク時）","c":[11],"v":{"cres":"95","omen":"0.90","ehp":"187500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"res","E":"res"},"lim":"110"},"pre":1,"g":["mi"],"note":"ブレイク中：物理・魔法が標準、全属性が耐久"},{"n":"ファランクス","en":"Boxed Phalanx","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"94770","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"weak","A":"norm","E":"weak"},"lim":"300"},"pre":1,"g":["mh"]},{"n":"ホプリタイ","en":"Hoplite","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"33638","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"norm","A":"norm","E":"weak"},"lim":"270"},"pre":1,"g":["mh"]},{"n":"スパルタン","en":"Ambling Bellows","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"270000","tresP":"res","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"res","T":"weak","W":"weak","A":"norm","E":"weak"},"lim":"400"},"pre":1,"g":["mi"]},{"n":"クリュプキア","en":"Cryptos","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"17700","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"res","I":"norm","T":"weak","W":"weak","A":"norm","E":"weak"},"lim":"300"},"pre":1,"g":["mi"]},{"n":"タイラント","en":"Tyrant","c":[11,12],"v":{"cres":"95","omen":"0.90","ehp":"792000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"null","T":"weak","W":"weak","A":"norm","E":"norm"},"lim":"150"},"pre":1,"g":["mh","tt","mi"]},{"n":"飛燕剣（タイラント）","en":"Centaurion Blade（11章）","c":[11,12],"v":{"cres":"90","omen":"0.90","ehp":"202400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1,"g":["mh","tt"]},{"n":"アバランチ","en":"Cryohedron","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"35100","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"norm","W":"half","A":"norm","E":"weak"},"lim":"250"},"pre":1,"g":["mh"]},{"n":"ジャガーノート","en":"Juggernaut","c":[11,12],"v":{"cres":"95","omen":"0.90","ehp":"1584000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1,"g":["mh","mi"]},{"n":"ストリゴイ","en":"Strigoi","c":[11],"v":{"cres":"25","omen":"0.90","ehp":"363825","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"350"},"pre":1,"g":["as","mh"]},{"n":"タキシム","en":"Taxim","c":[11],"v":{"cres":"75","omen":"0.90","ehp":"237600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"125"},"pre":1,"g":["as","ym","ob"]},{"n":"ノスフェラトゥ","en":"Vampire","c":[11,12],"v":{"cres":"90","omen":"0.90","ehp":"349272","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"255"},"pre":1,"g":["ym","tt","ob"]},{"n":"ピジャヴィカ","en":"Pijavica","c":[11],"v":{"cres":"25","omen":"0.90","ehp":"236250","tresP":"half","tresM":"weak","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"280"},"pre":1,"g":["as"]},{"n":"ネラプシ","en":"Nelapsi","c":[11],"v":{"cres":"25","omen":"0.90","ehp":"86400","tresP":"norm","tresM":"weak","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"150"},"pre":1,"g":["ym"]},{"n":"ヴァルコラキ","en":"Varcolaci","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"40425","tresP":"norm","tresM":"weak","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"180"},"pre":1,"g":["ym","tt","ob"]},{"n":"エディンム","en":"Edimmu","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"116640","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"null"},"lim":"300"},"pre":1,"g":["mi"]},{"n":"チョンチョン","en":"Chonchon","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"16979","tresP":"norm","tresM":"weak","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"350"},"pre":1,"g":["tt","ob"]},{"n":"ペナンガラン","en":"Penanggalan","c":[11],"v":{"cres":"90","omen":"0.90","ehp":"252252","tresP":"norm","tresM":"weak","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"230"},"pre":1,"g":["mi"]},{"n":"ヴェーターラ（通常時）","en":"Vetala","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"480249","tresP":"norm","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"null"},"lim":"200"},"pre":1,"g":["ym","mh","ob","mi"],"note":"物理障壁（バリア）を張ると、物理無効・魔法耐久・土無効・ほかの属性半減になる。ブレイクするとバリアが消えて通常時に戻る"},{"n":"ヴェーターラ（バリア発生時）","en":"Vetala（バリア発生時）","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"480249","tresP":"null","tresM":"res","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"null"},"lim":"200"},"pre":1,"g":["ym","mh","ob","mi"],"note":"バリア発生時：物理無効・魔法耐久・土無効・ほかの属性半減。ブレイクするとバリアが消えて通常時に戻る","brk":"Vetala"},{"n":"ラクタヴィージャ（通常時）","en":"Raktavija","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"2062500","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"130"},"pre":1,"g":["mi"],"note":"戦闘開始直後とブレイク終了時にバリアを張る（全属性耐久・物理無効・魔法耐久）。ブレイクするとバリアが消える"},{"n":"ラクタヴィージャ（バリア発生時）","en":"Raktavija（バリア発生時）","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"2062500","tresP":"null","tresM":"res","noLaunch":false,"er":{"F":"res","I":"res","T":"res","W":"res","A":"res","E":"res"},"lim":"130"},"pre":1,"g":["mi"],"note":"バリア発生時：全属性耐久、物理無効、魔法耐久。戦闘開始直後とブレイク終了時に張り、ブレイクすると消える","brk":"Raktavija"},{"n":"ラルヴァ","en":"Seeker","c":[11],"v":{"cres":"10","omen":"0.90","ehp":"34175","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"260"},"pre":1,"g":["as","ob"]},{"n":"ミトリダテス","en":"Mithridates","c":[11],"v":{"cres":"55","omen":"0.90","ehp":"1587600","tresP":"res","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"weak","T":"null","W":"weak","A":"weak","E":"null"},"lim":"500"},"pre":1,"g":["mi"]},{"n":"ビトゥイトス","en":"Bituitus","c":[11],"v":{"cres":"80","omen":"0.90","ehp":"324000","tresP":"half","tresM":"weak","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"null"},"lim":"380"},"pre":1,"g":["mi"]},{"n":"ガイセリック","en":"Geiseric","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"702000","tresP":"res","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"200"},"pre":1,"g":["mi"]},{"n":"巨拳","en":"Geiseric's Fist","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"26000","tresP":"res","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"150"},"pre":1,"g":["mi"]},{"n":"シュファクス","en":"Syphax","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2024000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"weak","E":"norm"},"lim":"200"},"pre":1,"g":["mi"]},{"n":"ヌミダエ","en":"Numidia","c":[11],"v":{"cres":"50","omen":"0.90","ehp":"17600","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"weak","E":"norm"},"lim":"150"},"pre":1,"g":["mi"]},{"n":"スパルタクス","en":"Attacus","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"9135000","tresP":"half","tresM":"res","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"999"},"pre":1,"g":["mi"]},{"n":"ウェルキンゲトリクス（通常時）","en":"Vercingetorix","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"15840000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"300"},"pre":1,"g":["mi"],"note":"バリアを張ると、チェーン耐性100、物理・魔法・全属性が無効になる"},{"n":"ウェルキンゲトリクス（バリア発生時）","en":"Vercingetorix（バリア発生時）","c":[11],"v":{"cres":"100","omen":"0.90","ehp":"15840000","tresP":"null","tresM":"null","noLaunch":false,"er":{"F":"null","I":"null","T":"null","W":"null","A":"null","E":"null"},"lim":"300"},"pre":1,"g":["mi"],"note":"バリア発生時：チェーン耐性100、物理・魔法・全属性が無効"},{"n":"ファルシ=ダハーカ（初期状態）","en":"Dahaka","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2314800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"320"},"pre":1,"g":["tt"],"note":"技によって属性耐性が変わる（焦熱の劫雷中：火・雷吸収／極寒の怒涛中：氷・水吸収／疫病の氾濫中：全属性半減／倒れこみ中：全属性標準）。物理・魔法耐性はどの状態でも同じ","brk":"Dahaka（倒れこみ中）"},{"n":"ファルシ=ダハーカ（焦熱の劫雷中）","en":"Dahaka（焦熱の劫雷中）","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2314800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"norm","T":"abs","W":"norm","A":"norm","E":"norm"},"lim":"320"},"pre":1,"g":["tt"],"note":"焦熱の劫雷中：火・雷吸収（ほかは初期状態と同じ）","brk":"Dahaka（倒れこみ中）"},{"n":"ファルシ=ダハーカ（極寒の怒涛中）","en":"Dahaka（極寒の怒涛中）","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2314800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"abs","T":"norm","W":"abs","A":"norm","E":"norm"},"lim":"320"},"pre":1,"g":["tt"],"note":"極寒の怒涛中：氷・水吸収（ほかは初期状態と同じ）","brk":"Dahaka（倒れこみ中）"},{"n":"ファルシ=ダハーカ（疫病の氾濫中）","en":"Dahaka（疫病の氾濫中）","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2314800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"320"},"pre":1,"g":["tt"],"note":"疫病の氾濫中：全属性半減","brk":"Dahaka（倒れこみ中）"},{"n":"ファルシ=ダハーカ（倒れこみ中）","en":"Dahaka（倒れこみ中）","c":[11],"v":{"cres":"70","omen":"0.90","ehp":"2314800","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"320"},"pre":1,"g":["tt"],"note":"倒れこみ中（ブレイクすると倒れこむ）：全属性標準"},{"n":"バルトアンデルス（2回目）","en":"Barthandelus（11章）","c":[11],"v":{"cres":"60","omen":"0.90","ehp":"3307500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"g":["ob"]},{"n":"アレキサンダー","en":"Alexander","c":[11],"v":{"cres":"85","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1,"g":["vm"]},{"n":"ヘカトンケイル","en":"Hecatoncheir","c":[11],"v":{"cres":"90","omen":"0.90","ehp":"","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"}},"pre":1,"g":["mh"]},{"n":"警備軍首都兵射手","en":"Corps Defender","c":[12],"v":{"cres":"70","omen":"0.90","ehp":"26400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"half","T":"norm","W":"half","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"警備軍首都兵","en":"Corps Steward","c":[12],"v":{"cres":"70","omen":"0.90","ehp":"66000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"half","T":"norm","W":"half","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"聖府親衛兵","en":"Sanctum Seraph","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"140800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"聖府親衛猟兵","en":"Sanctum Archangel","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"528000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1,"guard":1},{"n":"誘導ビーコン（12章）","en":"Targeting Beacon（12章）","c":[12],"v":{"cres":"100","omen":"0.90","ehp":"15840","tresP":"weak","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"ゲパルト金剛","en":"Adamantheron","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"96800","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"weak","T":"half","W":"weak","A":"norm","E":"norm"},"lim":"120"},"pre":1},{"n":"機甲兵キュラシェーア","en":"Bulwarker","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"264000","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"150"},"pre":1},{"n":"守護騎アナヴァタプタ（通常時）","en":"Anavatapta Warmech","c":[12],"v":{"cres":"20","omen":"0.90","ehp":"280500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"weak","W":"norm","A":"norm","E":"norm"},"lim":"250"},"pre":1,"note":"ライトニングとオーディンのドライビングモード（フィニッシュ技Lv3）で戦闘開始。全ダメージ無効の状態になることがあり、ブレイクさせるまで解けない"},{"n":"守護騎アナヴァタプタ（無敵状態）","en":"Anavatapta Warmech（無敵状態）","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"280500","tresP":"null","tresM":"null","noLaunch":false,"er":{"F":"null","I":"null","T":"null","W":"null","A":"null","E":"null"},"lim":"250"},"pre":1,"note":"無敵状態：全ダメージ無効、チェーン耐性90。ブレイクさせると解ける","brk":"Anavatapta Warmech"},{"n":"ベヒーモス零式（初期状態）","en":"Proto-behemoth","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"484000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"weak","T":"half","W":"weak","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"残りHPが60%以下になると立ち上がり、自分にブレイブ・プロテス・ヘイストをかける。立ち上がると物理・魔法とも半減になる（属性は同じ）","nx":[{"to":"Proto-behemoth（立ち上がり後）","l":"立ち上がり"}]},{"n":"ベヒーモス零式（立ち上がり後）","en":"Proto-behemoth（立ち上がり後）","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"484000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"weak","T":"half","W":"weak","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"立ち上がった後：物理・魔法とも半減（属性は同じ）。自分にブレイブ・プロテス・ヘイストがかかっている"},{"n":"プラウド・クラッド（1回目）","en":"The Proudclad（HP1530000）","c":[12],"v":{"cres":"90","omen":"0.90","ehp":"1530000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1},{"n":"聖府親衛コマンド","en":"Sanctum Inquisitrix","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"132000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"130"},"pre":1},{"n":"防衛騎スウェリエン（初期）","en":"Vernal Harvester（初期）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"924000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"最初はどのモードでもない（全属性標準）。モードに入ると弱点・吸収・無効の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"防衛騎スウェリエン（耐火炎モード）","en":"Vernal Harvester（耐火炎モード）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"924000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"abs","I":"null","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収・無効の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"防衛騎スウェリエン（耐氷雪モード）","en":"Vernal Harvester（耐氷雪モード）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"924000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"weak","I":"abs","T":"null","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収・無効の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"防衛騎スウェリエン（耐雷光モード）","en":"Vernal Harvester（耐雷光モード）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"924000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"weak","T":"abs","W":"null","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収・無効の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"防衛騎スウェリエン（耐水流モード）","en":"Vernal Harvester（耐水流モード）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"924000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"null","I":"norm","T":"weak","W":"abs","A":"norm","E":"norm"},"lim":"200"},"pre":1,"note":"モードによって弱点・吸収・無効の属性が変わる（チェーン耐性とブレイク値は変わらない）"},{"n":"聖府親衛特火兵","en":"Sanctum Celebrant","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"88000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"140"},"pre":1},{"n":"サクリファイス","en":"Sacrifice","c":[12,13],"v":{"cres":"50","omen":"0.90","ehp":"452000","tresP":"half","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"プラウド・クラッド（2回目・地上形態・初期状態）","en":"The Proudclad（HP3570000）","c":[12],"v":{"cres":"70","omen":"0.90","ehp":"3570000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1,"note":"地上形態で7回行動すると飛行形態になる（チェーン耐性80）。残りHP60%以下で一度だけリミッター解除を使い、HPが全回復して、自分にデプロテ・デシェル・ブレイブ・ヘイスト・ガッツをかける。ブレイク値と耐性はどの状態でも同じ","nx":[{"to":"The Proudclad（HP3570000・飛行形態・初期状態）","l":"飛行形態へ"},{"to":"The Proudclad（HP3570000・地上形態・リミッター解除後）","l":"リミッター解除（HP全回復）","hp":1}]},{"n":"プラウド・クラッド（2回目・飛行形態・初期状態）","en":"The Proudclad（HP3570000・飛行形態・初期状態）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"3570000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150"},"pre":1,"note":"飛行形態：チェーン耐性80（地上形態で7回行動すると飛行形態になる）","nx":[{"to":"The Proudclad（HP3570000）","l":"地上形態へ"},{"to":"The Proudclad（HP3570000・飛行形態・リミッター解除後）","l":"リミッター解除（HP全回復）","hp":1}]},{"n":"プラウド・クラッド（2回目・地上形態・リミッター解除後）","en":"The Proudclad（HP3570000・地上形態・リミッター解除後）","c":[12],"v":{"cres":"70","omen":"0.90","ehp":"3570000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150","deb":["デプロテ","デシェル"]},"pre":1,"note":"リミッター解除後（地上形態）：リミッター解除でHP全回復。チェーン耐性70。自分にデプロテ・デシェル・ブレイブ・ヘイスト・ガッツがかかっている（デプロテ・デシェルは最初からかかっているものとして計算）","nx":[{"to":"The Proudclad（HP3570000・飛行形態・リミッター解除後）","l":"飛行形態へ"}]},{"n":"プラウド・クラッド（2回目・飛行形態・リミッター解除後）","en":"The Proudclad（HP3570000・飛行形態・リミッター解除後）","c":[12],"v":{"cres":"80","omen":"0.90","ehp":"3570000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"150","deb":["デプロテ","デシェル"]},"pre":1,"note":"リミッター解除後（飛行形態）：リミッター解除でHP全回復。チェーン耐性80。自分にデプロテ・デシェル・ブレイブ・ヘイスト・ガッツがかかっている（デプロテ・デシェルは最初からかかっているものとして計算）","nx":[{"to":"The Proudclad（HP3570000・地上形態・リミッター解除後）","l":"地上形態へ"}]},{"n":"聖府親衛騎士","en":"Sanctum Templar","c":[13],"v":{"cres":"50","omen":"0.90","ehp":"565000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1},{"n":"バンダースナッチ","en":"Bandersnatch","c":[13],"v":{"cres":"50","omen":"0.90","ehp":"254250","tresP":"null","tresM":"res","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1},{"n":"ジャバウォック","en":"Jabberwocky","c":[13],"v":{"cres":"70","omen":"0.90","ehp":"678000","tresP":"half","tresM":"null","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"300"},"pre":1},{"n":"ダゴン","en":"Dagonite","c":[13],"v":{"cres":"70","omen":"0.90","ehp":"203400","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"half","T":"weak","W":"abs","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"快速機アドラー（通常時）","en":"Aquila Velocycle","c":[13],"v":{"cres":"100","omen":"0.90","ehp":"282500","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"250"},"pre":1,"note":"プラズマキャノンを構えている間はチェーン耐性が20に下がる"},{"n":"快速機アドラー（プラズマキャノン構え中）","en":"Aquila Velocycle（プラズマキャノン構え中）","c":[13],"v":{"cres":"20","omen":"0.90","ehp":"282500","tresP":"res","tresM":"res","noLaunch":false,"er":{"F":"weak","I":"norm","T":"norm","W":"weak","A":"norm","E":"norm"},"lim":"250"},"pre":1,"note":"プラズマキャノン構え中：チェーン耐性20"},{"n":"突撃砲ティーガー","en":"Megrim Thresher","c":[13],"v":{"cres":"80","omen":"0.90","ehp":"1017000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"half","I":"norm","T":"half","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1},{"n":"インヴィンシブル","en":"Immortal","c":[13],"v":{"cres":"90","omen":"0.90","ehp":"1695000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"200"},"pre":1},{"n":"飛燕剣（インヴィンシブル）","en":"Centaurion Blade（13章）","c":[13],"v":{"cres":"90","omen":"0.90","ehp":"169500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"300"},"pre":1,"note":"インヴィンシブルが呼び出す。インヴィンシブルを倒すと消える"},{"n":"ヴラディスラウス","en":"Wladislaus","c":[13],"v":{"cres":"95","omen":"0.90","ehp":"734500","tresP":"norm","tresM":"half","noLaunch":false,"er":{"F":"weak","I":"weak","T":"weak","W":"weak","A":"weak","E":"weak"},"lim":"999"},"pre":1},{"n":"決戦騎ティアマット（飛行形態）","en":"Tiamat Eliminator","c":[13],"v":{"cres":"75","omen":"0.90","ehp":"3825000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"飛行形態はチェーン耐性75、地上形態はチェーン耐性80（ほかの値は同じ）","nx":[{"to":"Tiamat Eliminator（地上形態）","l":"地上形態へ"}]},{"n":"決戦騎ティアマット（地上形態）","en":"Tiamat Eliminator（地上形態）","c":[13],"v":{"cres":"80","omen":"0.90","ehp":"3825000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"200"},"pre":1,"note":"地上形態：チェーン耐性80（ほかの値は飛行形態と同じ）","nx":[{"to":"Tiamat Eliminator","l":"飛行形態へ"}]},{"n":"バルトアンデルス（3回目）","en":"Barthandelus（13章）","c":[13],"v":{"cres":"70","omen":"0.90","ehp":"5227500","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"half","I":"half","T":"half","W":"half","A":"half","E":"half"},"lim":"250"},"pre":1},{"n":"オーファン（第一形態）","en":"Orphan（第一形態）","c":[13],"v":{"cres":"70","omen":"0.90","ehp":"6780000","tresP":"half","tresM":"half","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"400"},"pre":1},{"n":"オーファン（第二形態・通常時）","en":"Orphan（第二形態）","c":[13],"v":{"cres":"50","omen":"0.90","ehp":"3390000","tresP":"null","tresM":"null","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1,"note":"通常時は物理・魔法とも無効。ブレイクすると標準になる","brk":"Orphan（第二形態・ブレイク時）"},{"n":"オーファン（第二形態・ブレイク時）","en":"Orphan（第二形態・ブレイク時）","c":[13],"v":{"cres":"50","omen":"0.90","ehp":"3390000","tresP":"norm","tresM":"norm","noLaunch":false,"er":{"F":"norm","I":"norm","T":"norm","W":"norm","A":"norm","E":"norm"},"lim":"500"},"pre":1,"note":"ブレイク中：物理・魔法とも標準"}];
+// 11章は地域ごと＋ミッションに分けて表示
+const G11=[["vm","メディア峡谷"],["as","アルカキルティ大平原"],["ym","ヤシャス山"],["mh","マハーバラ坑道"],["ss","スーリヤ湖"],["tt","テージンタワー"],["ob","ヲルバ郷"],["fw","淘汰の断層"],["mi","ミッション"],["etc","その他"]];
+// ミッションはミッション番号の順。名前の前に「ミッション○」を付ける（一緒に出る敵は本体のミッション番号）
+const COMP_P={"Kaiser Behemoth（立ち上がり後）": "Kaiser Behemoth", "Vercingetorix（バリア発生時）": "Vercingetorix", "Vetala（バリア発生時）": "Vetala", "Gurangatch（ブレイク時）": "Gurangatch", "Pulsework Champion（ブレイク時）": "Pulsework Champion", "Raktavija（バリア発生時）": "Raktavija", "Adamantortoise（倒れこみ時）": "Adamantortoise", "Picochu": "Neochu", "Cryptos": "Ambling Bellows", "Geiseric's Fist": "Geiseric", "Numidia": "Syphax", "Left Foreleg（Adamantortoise）": "Adamantortoise", "Right Foreleg（Adamantortoise）": "Adamantortoise"};
+const MI_NUM={"Ectopudding":["01"],"Uridimmu":["02","19"],"Ugallu":["03","56"],"Adroa":["04","11"],"Edimmu":["05"],"Munchkin Maestro":["06"],"Bituitus":["07"],"Rakshasa":["08"],"Kaiser Behemoth":["09"],"Ambling Bellows":["10","18","22"],"Geiseric":["12"],"Goblin Chieftan":["13","15","20"],"Sahagin":["14","16","57"],"Pulsework Champion":["17","31"],"Gelatitan":["21","60"],"Gurangatch":["23","35"],"Mushussu":["24"],"Vetala":["25"],"Penanggalan":["26"],"Mithridates":["27"],"Ceratosaur":["28"],"Juggernaut":["29","61"],"Syphax":["30"],"Amam":["32","36"],"Adamanchelid":["33"],"Rafflesia":["37"],"Verdelet":["38","40","48"],"Ochu":["39"],"Tonberry":["41"],"Borgbear Hero":["42","43"],"Corrosive Custard":["44"],"Neochu":["45","55"],"Zirnitra":["46","52","53","59"],"Raktavija":["47","62"],"Tyrant":["49"],"Humbaba":["50","58"],"Attacus":["51"],"Gigantuar":["54"],"Adamantortoise":["63"],"Vercingetorix":["64"],"Picochu":["45","55"],"Cryptos":["22"],"Geiseric's Fist":["12"],"Numidia":["30"],"Left Foreleg（Adamantortoise）":["63"],"Right Foreleg（Adamantortoise）":["63"],"Adamantortoise（倒れこみ時）":["63"],"Raktavija（バリア発生時）":["47","62"]};
+const CH_JP={1:"1章 ハングドエッジ",2:"2章 パルスの異跡",3:"3章 ビルジ湖",4:"4章 ヴァイルピークス",5:"5章 ガプラ樹林",6:"6章 サンレス水郷",7:"7章 パルムポルム",8:"8章 ノーチラス",9:"9章 パラメキア",10:"10章 フィフス・アーク",11:"11章 グラン=パルス",12:"12章 エデン",13:"13章 オーファンズ・クレイドル"};
+let ENM=(()=>{let v=[];try{const x=JSON.parse(localStorage.getItem("ff13cc_enemy")||"null");if(Array.isArray(x))v=x}catch(e){}
+  let seed=0;try{seed=+localStorage.getItem("ff13cc_enemy_seed")||0}catch(e){}
+  if(seed<1){const has=new Set(v.filter(o=>o.en).map(o=>o.en));EN_PRE.forEach(o=>{if(!has.has(o.en))v.push(JSON.parse(JSON.stringify(o)))})}
+  // 2：内蔵データの名前を日本語に（自分で変えていない名前だけ）
+  if(seed<2){v.forEach(o=>{if(!o.en||o.n!==o.en)return;const q=EN_PRE.find(x=>x.en===o.en);if(q)o.n=q.n})}
+  // 3：同じ名前の敵はHPではなく何回目かで区別
+  if(seed<3){const R3={"重攻撃騎マナスヴィン（HP360）": "重攻撃騎マナスヴィン（1回目）", "重攻撃騎マナスヴィン（HP990）": "重攻撃騎マナスヴィン（2回目）", "重攻撃騎マナスヴィン（HP32400）": "重攻撃騎マナスヴィン（3回目）", "戦闘爆撃騎カルラ（HP8000）": "戦闘爆撃騎カルラ（1回目）", "戦闘爆撃騎カルラ（HP16200）": "戦闘爆撃騎カルラ（2回目）"};v.forEach(o=>{if(R3[o.n])o.n=R3[o.n]})}
+  // 4：4〜7章の敵を追加。既存の内蔵データは出てくる章を更新
+  if(seed<4){const has=new Set(v.filter(o=>o.en).map(o=>o.en));EN_PRE.forEach(o=>{const x=v.find(y=>y.en===o.en);if(x){if(x.pre)x.c=o.c.slice()}else v.push(JSON.parse(JSON.stringify(o)))})}
+  // 5：ウシュムガルの2回目（すぐ終わる戦闘）を外し、1回目の名前から「（1回目）」を取る
+  if(seed<5){v=v.filter(o=>!(o.pre&&o.en==="Ushumgal Subjugator（HP378000）"));v.forEach(o=>{if(o.en==="Ushumgal Subjugator（HP126000）"&&o.n==="侵攻制圧騎ウシュムガル（1回目）")o.n="侵攻制圧騎ウシュムガル"})}
+  // 6：ウシュムガルの2回目・3回目（同じ敵）を戻す
+  if(seed<6){if(!v.some(o=>o.en==="Ushumgal Subjugator（HP378000）")){const q=EN_PRE.find(o=>o.en==="Ushumgal Subjugator（HP378000）");const k=v.findIndex(o=>o.en==="Ushumgal Subjugator（HP126000）");v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(q)))}
+    v.forEach(o=>{if(o.en==="Ushumgal Subjugator（HP126000）"&&o.n==="侵攻制圧騎ウシュムガル")o.n="侵攻制圧騎ウシュムガル（1回目）";if(o.en==="Ushumgal Subjugator（HP378000）"&&o.n==="侵攻制圧騎ウシュムガル（2回目）")o.n="侵攻制圧騎ウシュムガル（2回目・3回目）"})}
+  // 7：飛空戦車グライフを主砲出現前・後に分ける
+  if(seed<7){const a=v.find(o=>o.en==="Havoc Skytank");const qa=EN_PRE.find(o=>o.en==="Havoc Skytank"),qb=EN_PRE.find(o=>o.en==="Havoc Skytank（主砲出現後）");
+    if(a){if(a.n==="飛空戦車グライフ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 8：飛空戦車グライフのブレイク値（主砲出現前999.0%、出現後200.0%）
+  if(seed<8){v.forEach(o=>{if(!o.pre)return;const q=EN_PRE.find(x=>x.en===o.en);if(q&&/^Havoc Skytank/.test(o.en)&&!o.v.lim)o.v.lim=q.v.lim})}
+  // 9：主砲出現前のブレイク値は999.0%
+  if(seed<9){v.forEach(o=>{if(o.pre&&o.en==="Havoc Skytank"&&o.v.lim==="999.9")o.v.lim="999"})}
+  // 10：シヴァ・スティリアはスノウの攻撃対象にならないので外す
+  if(seed<10){v=v.filter(o=>!(o.pre&&o.en==="Stiria"))}
+  // 11：8〜10章の敵を追加。既存の内蔵データは出てくる章を更新
+  if(seed<11){EN_PRE.forEach(o=>{const x=v.find(y=>y.en===o.en);if(x){if(x.pre)x.c=o.c.slice()}else v.push(JSON.parse(JSON.stringify(o)))})}
+  // 12：ユイジンシャンをモード別4つ、バルトアンデルスをパーツ消滅前・後に分ける（自分で名前を変えていなければ元の1つは置き換え）
+  if(seed<12){[["Aster Protoflorian","試作騎ユイジンシャン"],["Barthandelus","バルトアンデルス"]].forEach(([en,jp])=>{const k=v.findIndex(o=>o.pre&&o.en===en);const add=EN_PRE.filter(o=>o.en.startsWith(en+"（")&&!v.some(y=>y.en===o.en)).map(o=>JSON.parse(JSON.stringify(o)));
+    if(k>=0&&v[k].n===jp)v.splice(k,1,...add);else v.splice(k>=0?k+1:v.length,0,...add)})}
+  // 13：ユイジンシャンの初期状態（全属性半減）を追加
+  if(seed<13){const q=EN_PRE.find(o=>o.en==="Aster Protoflorian（初期）");if(!v.some(o=>o.en===q.en)){const k=v.findIndex(o=>o.en==="Aster Protoflorian（耐火炎モード）");v.splice(k>=0?k:v.length,0,JSON.parse(JSON.stringify(q)))}}
+  // 14：シド・レインズを状態別に2つに分ける（物理・魔法耐性が変わる）
+  if(seed<14){const en="Cid Raines",jp="シド・レインズ";const k=v.findIndex(o=>o.pre&&o.en===en);const add=EN_PRE.filter(o=>o.en.startsWith(en+"（")&&!v.some(y=>y.en===o.en)).map(o=>JSON.parse(JSON.stringify(o)));
+    if(k>=0&&v[k].n===jp)v.splice(k,1,...add);else v.splice(k>=0?k+1:v.length,0,...add)}
+  // 15：11章の敵を追加
+  if(seed<15){EN_PRE.forEach(o=>{const x=v.find(y=>y.en===o.en);if(x){if(x.pre)x.c=o.c.slice()}else v.push(JSON.parse(JSON.stringify(o)))})}
+  // 16：11章の地域・ミッションの分類
+  if(seed<16){v.forEach(o=>{if(!o.pre)return;const q=EN_PRE.find(x=>x.en===o.en);if(q&&q.g)o.g=q.g.slice()})}
+  // 17：バルトアンデルスを1回目（9章）・2回目（11章）と表記
+  if(seed<17){const R17={"バルトアンデルス（パーツ消滅前）": "バルトアンデルス（1回目・パーツ消滅前）", "バルトアンデルス（パーツ消滅後）": "バルトアンデルス（1回目・パーツ消滅後）", "バルトアンデルス（11章）": "バルトアンデルス（2回目）"};v.forEach(o=>{if(R17[o.n])o.n=R17[o.n]})}
+  // 18：アダマントータスを通常時・倒れこみ時に分ける
+  if(seed<18){const a=v.find(o=>o.en==="Adamantortoise");const qa=EN_PRE.find(o=>o.en==="Adamantortoise"),qb=EN_PRE.find(o=>o.en==="Adamantortoise（倒れこみ時）");
+    if(a){if(a.n==="アダマントータス")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 19：アダマンタイマイを通常時・倒れこみ時に分ける
+  if(seed<19){const a=v.find(o=>o.en==="Adamantoise");const qa=EN_PRE.find(o=>o.en==="Adamantoise"),qb=EN_PRE.find(o=>o.en==="Adamantoise（倒れこみ時）");
+    if(a){if(a.n==="アダマンタイマイ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 20：ロングイを通常時・倒れこみ時に分ける
+  if(seed<20){const a=v.find(o=>o.en==="Long Gui");const qa=EN_PRE.find(o=>o.en==="Long Gui"),qb=EN_PRE.find(o=>o.en==="Long Gui（倒れこみ時）");
+    if(a){if(a.n==="ロングイ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 21：ラクタヴィージャを通常時・バリア発生時に分ける
+  if(seed<21){const a=v.find(o=>o.en==="Raktavija");const qa=EN_PRE.find(o=>o.en==="Raktavija"),qb=EN_PRE.find(o=>o.en==="Raktavija（バリア発生時）");
+    if(a){if(a.n==="ラクタヴィージャ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 22：12章の敵を追加
+  if(seed<22){EN_PRE.filter(o=>o.c.includes(12)).forEach(o=>{if(!v.some(y=>y.en===o.en))v.push(JSON.parse(JSON.stringify(o)))})}
+  // 23：11章の敵の一部が12章にも出る。飛燕剣（11章）を「飛燕剣（タイラント）」に
+  if(seed<23){EN_PRE.filter(o=>o.c.includes(12)).forEach(o=>{const x=v.find(y=>y.en===o.en);if(x&&x.pre){x.c=o.c.slice();if(o.en==="Centaurion Blade（11章）"&&x.n==="飛燕剣")x.n=o.n}})}
+  // 24：10章の飛燕剣を「飛燕剣（バーサーカー）」に
+  if(seed<24){const x=v.find(y=>y.en==="Centaurion Blade");if(x&&x.pre&&x.n==="飛燕剣")x.n="飛燕剣（バーサーカー）"}
+  // 25：13章の敵を追加（サクリファイスは13章にも出る）
+  if(seed<25){EN_PRE.filter(o=>o.c.includes(13)).forEach(o=>{const x=v.find(y=>y.en===o.en);if(x){if(x.pre)x.c=o.c.slice()}else v.push(JSON.parse(JSON.stringify(o)))})}
+  // 26：ヴラディスラウスのブレイク値999%。オーファン第二形態を通常時とブレイク時に分ける
+  if(seed<26){const w=v.find(o=>o.en==="Wladislaus"),qw=EN_PRE.find(o=>o.en==="Wladislaus");if(w&&w.pre){w.v.lim=qw.v.lim;delete w.note}
+    const a=v.find(o=>o.en==="Orphan（第二形態）"),qa=EN_PRE.find(o=>o.en==="Orphan（第二形態）"),qb=EN_PRE.find(o=>o.en==="Orphan（第二形態・ブレイク時）");
+    if(a&&a.pre){if(a.n==="オーファン（第二形態）")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 27：キングベヒーモスを初期状態と立ち上がり後に分ける
+  if(seed<27){const a=v.find(o=>o.en==="Behemoth King"),qa=EN_PRE.find(o=>o.en==="Behemoth King"),qb=EN_PRE.find(o=>o.en==="Behemoth King（立ち上がり後）");
+    if(a&&a.pre){if(a.n==="キングベヒーモス")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 28：ベヒーモス魁星を初期状態と立ち上がり後に分ける
+  if(seed<28){const a=v.find(o=>o.en==="Lodestar Behemoth"),qa=EN_PRE.find(o=>o.en==="Lodestar Behemoth"),qb=EN_PRE.find(o=>o.en==="Lodestar Behemoth（立ち上がり後）");
+    if(a&&a.pre){if(a.n==="ベヒーモス魁星")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 29：キングベヒーモスの説明を更新
+  if(seed<29){["Behemoth King","Behemoth King（立ち上がり後）"].forEach(en=>{const a=v.find(o=>o.en===en),q=EN_PRE.find(o=>o.en===en);if(a&&a.pre)a.note=q.note})}
+  // 30：グライフの部位とスパルタクスのブレイク値999%
+  if(seed<30){["Starboard Hull","Starboard Turret","Portside Hull","Portside Turret","Attacus"].forEach(en=>{const a=v.find(o=>o.en===en);if(a&&a.pre){if(!a.v.lim)a.v.lim="999";if(a.note==="ブレイク値のデータなし")delete a.note}})}
+  // 31：バルバロイを通常時とブレイク時に分ける
+  if(seed<31){const a=v.find(o=>o.en==="Pulsework Soldier"),qa=EN_PRE.find(o=>o.en==="Pulsework Soldier"),qb=EN_PRE.find(o=>o.en==="Pulsework Soldier（ブレイク時）");
+    if(a&&a.pre){if(a.n==="バルバロイ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 32：ブレイクすると耐性が変わる敵を、通常時とブレイク時に分ける
+  if(seed<32){["Scalebeast", "Lucidon", "Thermadon", "Pulsework Knight", "Pulsework Centurion", "Gurangatch", "Pulsework Champion", "Pulsework Gladiator", "Navidon"].forEach(en=>{const a=v.find(o=>o.en===en),qa=EN_PRE.find(o=>o.en===en),qb=EN_PRE.find(o=>o.en===en+"（ブレイク時）");
+    if(a&&a.pre){if(a.n+"（通常時）"===qa.n)a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}})}
+  // 33：カルラ（2回目）をバリア発生時と通常時に分ける
+  if(seed<33){const a=v.find(o=>o.en==="Garuda Interceptor（HP16200）"),qa=EN_PRE.find(o=>o.en==="Garuda Interceptor（HP16200）"),qb=EN_PRE.find(o=>o.en==="Garuda Interceptor（HP16200・通常時）");
+    if(a&&a.pre){if(a.n==="戦闘爆撃騎カルラ（2回目）")a.n=qa.n;a.v.cres=qa.v.cres;a.v.tresP=qa.v.tresP;a.v.tresM=qa.v.tresM;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 34：快速機ミーランを通常時とトライビーム構え中に分ける
+  if(seed<34){const a=v.find(o=>o.en==="Milvus Velocycle"),qa=EN_PRE.find(o=>o.en==="Milvus Velocycle"),qb=EN_PRE.find(o=>o.en==="Milvus Velocycle（トライビーム構え中）");
+    if(a&&a.pre){if(a.n==="快速機ミーラン")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 35：快速機ファルケを通常時とガトリングガン構え中に分ける
+  if(seed<35){const a=v.find(o=>o.en==="Falco Velocycle"),qa=EN_PRE.find(o=>o.en==="Falco Velocycle"),qb=EN_PRE.find(o=>o.en==="Falco Velocycle（ガトリングガン構え中）");
+    if(a&&a.pre){if(a.n==="快速機ファルケ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 36：ウシュムガル（1回目）を通常時とオーバードライブ後に分ける
+  if(seed<36){const a=v.find(o=>o.en==="Ushumgal Subjugator（HP126000）"),qa=EN_PRE.find(o=>o.en==="Ushumgal Subjugator（HP126000）"),qb=EN_PRE.find(o=>o.en==="Ushumgal Subjugator（HP126000・オーバードライブ後）");
+    if(a&&a.pre){if(a.n==="侵攻制圧騎ウシュムガル（1回目）")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 37：ヴェーターラを通常時とバリア発生時に分ける
+  if(seed<37){const a=v.find(o=>o.en==="Vetala"),qa=EN_PRE.find(o=>o.en==="Vetala"),qb=EN_PRE.find(o=>o.en==="Vetala（バリア発生時）");
+    if(a&&a.pre){if(a.n==="ヴェーターラ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 38：ヴェーターラの説明を更新
+  if(seed<38){["Vetala","Vetala（バリア発生時）"].forEach(en=>{const a=v.find(o=>o.en===en),q=EN_PRE.find(o=>o.en===en);if(a&&a.pre)a.note=q.note})}
+  // 39：ファルシ=ダハーカを状態ごとに分ける
+  if(seed<39){const a=v.find(o=>o.en==="Dahaka"),qa=EN_PRE.find(o=>o.en==="Dahaka");if(a&&a.pre){if(a.n==="ファルシ=ダハーカ")a.n=qa.n;a.note=qa.note}
+    let k=v.indexOf(a);["Dahaka（焦熱の劫雷中）", "Dahaka（極寒の怒涛中）", "Dahaka（疫病の氾濫中）", "Dahaka（倒れこみ中）"].forEach(en=>{const q=EN_PRE.find(o=>o.en===en);const x=v.findIndex(o=>o.en===en);if(x>=0){k=x;return}k=k>=0?k+1:v.length;v.splice(k,0,JSON.parse(JSON.stringify(q)))})}
+  // 40：ベヒーモス零式を初期状態と立ち上がり後に分ける
+  if(seed<40){const a=v.find(o=>o.en==="Proto-behemoth"),qa=EN_PRE.find(o=>o.en==="Proto-behemoth"),qb=EN_PRE.find(o=>o.en==="Proto-behemoth（立ち上がり後）");
+    if(a&&a.pre){if(a.n==="ベヒーモス零式")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 41：防衛騎スウェリエンをモードごとに分ける（ユイジンシャンと同じ）
+  if(seed<41){const a=v.find(o=>o.en==="Vernal Harvester"),qa=EN_PRE.find(o=>o.en==="Vernal Harvester（初期）");
+    if(a&&a.pre){a.en=qa.en;if(a.n==="防衛騎スウェリエン")a.n=qa.n;a.note=qa.note}
+    let k=a?v.indexOf(a):-1;["Vernal Harvester（耐火炎モード）", "Vernal Harvester（耐氷雪モード）", "Vernal Harvester（耐雷光モード）", "Vernal Harvester（耐水流モード）"].forEach(en=>{const q=EN_PRE.find(o=>o.en===en);if(v.some(o=>o.en===en))return;if(k>=0){k++;v.splice(k,0,JSON.parse(JSON.stringify(q)))}else v.push(JSON.parse(JSON.stringify(q)))})}
+  // 42：プラウド・クラッド（2回目）を形態とリミッター解除で4つに分ける
+  if(seed<42){const a=v.find(o=>o.en==="The Proudclad（HP3570000）"),qa=EN_PRE.find(o=>o.en==="The Proudclad（HP3570000）");
+    if(a&&a.pre){if(a.n==="プラウド・クラッド（2回目）")a.n=qa.n;a.note=qa.note}
+    let k=a?v.indexOf(a):-1;["The Proudclad（HP3570000・飛行形態・初期状態）", "The Proudclad（HP3570000・地上形態・リミッター解除後）", "The Proudclad（HP3570000・飛行形態・リミッター解除後）"].forEach(en=>{const q=EN_PRE.find(o=>o.en===en);if(v.some(o=>o.en===en))return;if(k>=0){k++;v.splice(k,0,JSON.parse(JSON.stringify(q)))}else v.push(JSON.parse(JSON.stringify(q)))})}
+  // 43：プラウド・クラッド（2回目）の説明を更新（リミッター解除でHP全回復）
+  if(seed<43){v.forEach(o=>{if(!o.pre||!o.en.startsWith("The Proudclad（HP3570000"))return;const q=EN_PRE.find(y=>y.en===o.en);if(q)o.note=q.note})}
+  // 44：プラウド・クラッド（2回目）の説明の「フェイス」を「ガッツ」に
+  if(seed<44){v.forEach(o=>{if(!o.pre||!o.en.startsWith("The Proudclad（HP3570000"))return;const q=EN_PRE.find(y=>y.en===o.en);if(q)o.note=q.note})}
+  // 45：快速機アドラー・決戦騎ティアマット・カイザーベヒーモス・ウェルキンゲトリクスを状態ごとに分ける。ラクタヴィージャの説明を更新
+  if(seed<45){const D={"new": [["Aquila Velocycle（プラズマキャノン構え中）", "Aquila Velocycle"], ["Tiamat Eliminator（地上形態）", "Tiamat Eliminator"], ["Kaiser Behemoth（立ち上がり後）", "Kaiser Behemoth"], ["Vercingetorix（バリア発生時）", "Vercingetorix"]], "ren": {"Aquila Velocycle": ["快速機アドラー", "快速機アドラー（通常時）"], "Tiamat Eliminator": ["決戦騎ティアマット", "決戦騎ティアマット（飛行形態）"], "Kaiser Behemoth": ["カイザーベヒーモス", "カイザーベヒーモス（初期状態）"], "Vercingetorix": ["ヴェルキンゲトリクス", "ウェルキンゲトリクス（通常時）"]}, "notes": ["Raktavija", "Raktavija（バリア発生時）"]};
+    Object.entries(D.ren).forEach(([en,[o0,n1]])=>{const a=v.find(o=>o.en===en),q=EN_PRE.find(o=>o.en===en);if(a&&a.pre){if(a.n===o0)a.n=n1;a.note=q.note}});
+    D.notes.forEach(en=>{const a=v.find(o=>o.en===en),q=EN_PRE.find(o=>o.en===en);if(a&&a.pre)a.note=q.note});
+    D.new.forEach(([en,par])=>{if(v.some(o=>o.en===en))return;const q=EN_PRE.find(o=>o.en===en),a=v.find(o=>o.en===par),k=a?v.indexOf(a):-1;v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(q)))})}
+  // 46：ブレイク後の状態（brk）と、状態の切り替え（nx）を付ける
+  if(seed<46){v.forEach(o=>{if(!o.pre)return;const q=EN_PRE.find(y=>y.en===o.en);if(!q)return;if(q.brk)o.brk=q.brk;if(q.nx)o.nx=JSON.parse(JSON.stringify(q.nx))})}
+  // 47：快速機シュトルヒを通常時とビームガン構え中に分ける
+  if(seed<47){const a=v.find(o=>o.en==="Ciconia Velocycle"),qa=EN_PRE.find(o=>o.en==="Ciconia Velocycle"),qb=EN_PRE.find(o=>o.en==="Ciconia Velocycle（ビームガン構え中）");
+    if(a&&a.pre){if(a.n==="快速機シュトルヒ")a.n=qa.n;a.note=qa.note}
+    if(!v.some(o=>o.en===qb.en)){const k=v.indexOf(a);v.splice(k>=0?k+1:v.length,0,JSON.parse(JSON.stringify(qb)))}}
+  // 48：ガードを使う敵（シド・レインズ、PSICOM強襲兵、聖府親衛猟兵）
+  if(seed<48){["PSICOM Raider", "Cid Raines（アタックシフト・ヒールシフト）", "Cid Raines（ディフェンスシフト・メタモルフォーゼ後）", "Sanctum Archangel"].forEach(en=>{const a=v.find(o=>o.en===en);if(a&&a.pre)a.guard=1})}
+  if(seed<48){try{localStorage.setItem("ff13cc_enemy_seed","48");localStorage.setItem("ff13cc_enemy",JSON.stringify(v))}catch(e){}}
+  return v})();
+const enSave=()=>{try{localStorage.setItem("ff13cc_enemy",JSON.stringify(ENM))}catch(e){}};
+const enGet=()=>{const v={};EN_F.forEach(id=>{const el=$(id);v[id]=el.type==="checkbox"?el.checked:el.value});v.er={};document.querySelectorAll(".eres").forEach(el=>v.er[el.dataset.e]=el.value);return v};
+const enEq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const enMatch=(pv,cur)=>Object.keys(pv).every(k=>k==="er"?Object.keys(pv.er||{}).every(e=>pv.er[e]===cur.er[e]):String(pv[k])===String(cur[k]));
+const chOf=o=>Array.isArray(o.c)&&o.c.length?o.c:[0];
+const chName=c=>c?(CH_JP[c]||c+"章"):"章なし（自分で登録）";
+const ER_JP={abs:"吸収",null:"無効",res:"耐久",half:"半減",weak:"弱点"},TR_JP={weak:"弱点",half:"半減",res:"耐久",null:"無効"};
+const enDesc=v=>{const t=[`チェーン耐性${v.cres}`];if(v.lim)t.push(`ブレイク値${v.lim}%`);if(v.ehp)t.push(`HP${(+v.ehp).toLocaleString("ja-JP")}`);if(TR_JP[v.tresP])t.push("物理"+TR_JP[v.tresP]);if(TR_JP[v.tresM])t.push("魔法"+TR_JP[v.tresM]);Object.entries(v.er||{}).forEach(([e,r])=>{if(ER_JP[r])t.push(EN[e]+ER_JP[r])});if(v.noLaunch)t.push("打ち上げ不可");return t.join("・")};
+// 敵の説明・ブレイク後の切り替え・状態の切り替えボタンを表示
+function enNoteSet(o){const gw=$("guardW");if(gw){gw.hidden=!(o&&o.guard);if(gw.hidden)$("guard").checked=false}const bo=o&&o.brk?ENM.find(y=>y.en===o.brk):null;const nt=(o&&o.note||"")+(bo?(o.note?"／":"")+"ブレイクした行動から先は「"+bo.n+"」の耐性で計算します":"");$("enNote").textContent=nt;$("enNote").hidden=!nt;enNxRender(o)}
+function enApply(i){const o=ENM[i];if(!o)return;enNoteSet(o);const v=o.v;EN_F.forEach(id=>{if(v[id]===undefined)return;const el=$(id);if(el.type==="checkbox")el.checked=!!v[id];else el.value=v[id]});document.querySelectorAll(".eres").forEach(el=>{if(v.er&&v.er[el.dataset.e])el.value=v.er[el.dataset.e]});if(v.ehp){$("ehpCur").value=""}calc();stSaveSoon()}
+function enRenderSel(){const sel=$("enSel"),keep=sel.value;sel.innerHTML='<option value="">選ばない（手で入力）</option>';
+  const chs=[...new Set(ENM.flatMap(chOf))].sort((a,b)=>(a||99)-(b||99));
+  // 同じ種類の敵は並べて表示（例：9章のプリン衛生兵とプリン電機兵）
+  // 前の章から続けて出る敵の位置：章ごとに「この敵の後ろ」を指定（9章のプリン衛生兵はＰＳＩＣＯＭの後）
+  const NEAR={"Flanborg":"Flanitor","Behemoth King（立ち上がり後）":"Behemoth King","Lodestar Behemoth（立ち上がり後）":"Lodestar Behemoth","Pulsework Soldier（ブレイク時）":"Pulsework Soldier","Milvus Velocycle（トライビーム構え中）":"Milvus Velocycle","Ciconia Velocycle（ビームガン構え中）":"Ciconia Velocycle","Falco Velocycle（ガトリングガン構え中）":"Falco Velocycle","Vetala（バリア発生時）":"Vetala","Proto-behemoth（立ち上がり後）":"Proto-behemoth","Aquila Velocycle（プラズマキャノン構え中）":"Aquila Velocycle","Tiamat Eliminator（地上形態）":"Tiamat Eliminator","Kaiser Behemoth（立ち上がり後）":"Kaiser Behemoth","Vercingetorix（バリア発生時）":"Vercingetorix","The Proudclad（HP3570000・飛行形態・初期状態）":"The Proudclad（HP3570000）","The Proudclad（HP3570000・地上形態・リミッター解除後）":"The Proudclad（HP3570000・飛行形態・初期状態）","The Proudclad（HP3570000・飛行形態・リミッター解除後）":"The Proudclad（HP3570000・地上形態・リミッター解除後）","Vernal Harvester（耐火炎モード）":"Vernal Harvester（初期）","Vernal Harvester（耐氷雪モード）":"Vernal Harvester（耐火炎モード）","Vernal Harvester（耐雷光モード）":"Vernal Harvester（耐氷雪モード）","Vernal Harvester（耐水流モード）":"Vernal Harvester（耐雷光モード）","Dahaka（焦熱の劫雷中）":"Dahaka","Dahaka（極寒の怒涛中）":"Dahaka（焦熱の劫雷中）","Dahaka（疫病の氾濫中）":"Dahaka（極寒の怒涛中）","Dahaka（倒れこみ中）":"Dahaka（疫病の氾濫中）","Ushumgal Subjugator（HP126000・オーバードライブ後）":"Ushumgal Subjugator（HP126000）","Garuda Interceptor（HP16200・通常時）":"Garuda Interceptor（HP16200）","Scalebeast（ブレイク時）":"Scalebeast","Lucidon（ブレイク時）":"Lucidon","Thermadon（ブレイク時）":"Thermadon","Pulsework Knight（ブレイク時）":"Pulsework Knight","Pulsework Centurion（ブレイク時）":"Pulsework Centurion","Gurangatch（ブレイク時）":"Gurangatch","Pulsework Champion（ブレイク時）":"Pulsework Champion","Pulsework Gladiator（ブレイク時）":"Pulsework Gladiator","Navidon（ブレイク時）":"Navidon"},AFTER={9:{"Flanitor":"PSICOM Reaver"},12:{"Behemoth King":"Sacrifice","Amphisbaena":"Behemoth King","Orobon":"Amphisbaena","Adamanchelid":"Orobon","Vampire":"Adamanchelid","Tyrant":"Vampire","Centaurion Blade（11章）":"Tyrant","Juggernaut":"Centaurion Blade（11章）","Adamantoise":"Juggernaut","Adamantoise（倒れこみ時）":"Adamantoise","Left Foreleg（Adamantoise）":"Adamantoise（倒れこみ時）","Right Foreleg（Adamantoise）":"Left Foreleg（Adamantoise）"}};
+  const grpList=c=>{const ix=ENM.map((o,i)=>i).filter(i=>chOf(ENM[i]).includes(c));if(c!==11)return[[chName(c),ix]];
+    const gOf=o=>{const P=EN_PRE.find(x=>x.en===o.en);const g=o.g||(P&&P.g)||[];return g.length?g:["etc"]};
+    // 一緒に出る敵は本体のすぐ後ろ（クリュプキアはミッション22だけだが、スパルタンの後ろに並べる）
+    const mo=i=>{const en=ENM[i].en,par=COMP_P[en],n=MI_NUM[par||en];return n?+n[0]+(par?0.5:0):999};
+    return G11.map(([k,l])=>{let g=ix.filter(i=>gOf(ENM[i]).includes(k));if(k==="mi")g=g.slice().sort((a,b)=>mo(a)-mo(b));return[chName(11)+"・"+l,g,k==="mi"]}).filter(x=>x[1].length)};
+  chs.forEach(c=>grpList(c).forEach(([lab,ix0,isMi])=>{const g=document.createElement("optgroup");g.label=lab;g.dataset.ch=String(c);let ix=ix0.slice();
+    Object.entries(AFTER[c]||{}).forEach(([en,t])=>{const i=ix.find(k=>ENM[k].en===en);if(i==null||!ix.some(k=>ENM[k].en===t))return;ix=ix.filter(k=>k!==i);ix.splice(ix.findIndex(k=>ENM[k].en===t)+1,0,i)});
+    ix.slice().forEach(i=>{const t=NEAR[ENM[i].en];if(!t)return;const j=ix.findIndex(k=>ENM[k].en===t);if(j<0)return;ix=ix.filter(k=>k!==i);ix.splice(ix.findIndex(k=>ENM[k].en===t)+1,0,i)});
+    ix.forEach(i=>{const o=ENM[i];const op=document.createElement("option");op.value=String(i);op.dataset.en=o.en||"";op.textContent=(isMi&&MI_NUM[o.en]?"ミッション"+MI_NUM[o.en].join("・")+" ":"")+(o.n||"（名前なし）");g.append(op)});sel.append(g)}));
+  sel.value=keep!==""&&ENM[+keep]?keep:"";enSync()}
+function enSync(){const sel=$("enSel"),cur=enGet();const i=sel.value!==""?+sel.value:-1;if(i>=0&&ENM[i]&&enMatch(ENM[i].v,cur)){enNoteSet(ENM[i]);return}const j=ENM.findIndex(o=>enMatch(o.v,cur));sel.value=j>=0?String(j):"";const o=j>=0?ENM[j]:null;enNoteSet(o);if(typeof ch3Vis==="function")ch3Vis()}
+function enRenderList(){$("enEdSum").textContent=`✎ 敵を登録・編集（${ENM.length}件登録）${$("enEd").open?" ▲閉じる":" ▼開く"}`;const box=$("enList");box.innerHTML="";
+  if(!ENM.length){const p=document.createElement("p");p.className="note";p.textContent="まだ登録されていません。敵の値を入れてから、名前を付けて「今の設定で登録」を押してください。";box.append(p);return}
+  const chs=[...new Set(ENM.map(o=>chOf(o)[0]))].sort((a,b)=>(a||99)-(b||99));
+  chs.forEach(c=>{const h=document.createElement("div");h.className="sub";h.style.margin="6px 0 0";h.textContent=chName(c)+(c?"（初めて出る章）":"");box.append(h);
+  ENM.forEach((o,i)=>{if(chOf(o)[0]!==c)return;const row=document.createElement("div");row.className="enRow";
+    const nm=document.createElement("input");nm.type="text";nm.value=o.n;nm.setAttribute("aria-label","敵の名前");nm.oninput=()=>{o.n=nm.value;enSave();enRenderSel()};row.append(nm);
+    const cs=document.createElement("select");cs.style.width="auto";cs.setAttribute("aria-label","章");cs.innerHTML='<option value="">章なし</option>'+Array.from({length:13},(_,k)=>`<option value="${k+1}">${k+1}章</option>`).join("");
+    if(chOf(o).length>1){cs.innerHTML=`<option>${chOf(o).join("・")}章</option>`;cs.disabled=true}else cs.value=o.c&&o.c[0]?String(o.c[0]):"";
+    cs.oninput=()=>{o.c=cs.value?[+cs.value]:[];enSave();enRenderList();enRenderSel()};row.append(cs);
+    const up=document.createElement("button");up.type="button";up.className="lbtn";up.textContent="今の設定で上書き";up.onclick=()=>{const db=o.v&&o.v.deb;o.v=enGet();if(db)o.v.deb=db;enSave();enRenderList();enRenderSel()};row.append(up);
+    const del=document.createElement("button");del.type="button";del.className="x";del.textContent="×";del.setAttribute("aria-label","削除");del.onclick=()=>{ENM.splice(i,1);enSave();enRenderList();enRenderSel()};row.append(del);
+    const d=document.createElement("span");d.className="note";d.textContent=(o.en&&o.en!==o.n?`英語名 ${o.en.replace(/（.*）$/,"")}・`:"")+enDesc(o.v)+(o.note?`・${o.note}`:"")+(chOf(o).length>1?`・${chOf(o).join("・")}章に出る`:"");row.append(d);box.append(row)})})}
+$("enAdd").onclick=()=>{const n=$("enName").value.trim()||("敵"+(ENM.length+1));const c=$("enCh").value;ENM.push({n,c:c?[+c]:[],v:enGet()});$("enName").value="";enSave();enRenderList();enRenderSel()};
+$("enSel").addEventListener("input",()=>{if($("enSel").value==="")return;
+  // 1・2章の一覧から選んだら「2章まで（オプティマ解禁前）」に自動でチェック
+  const og=$("enSel").selectedOptions[0]&&$("enSel").selectedOptions[0].parentNode,ch=og&&og.dataset?+og.dataset.ch:0;
+  if((ch===1||ch===2)&&!$("preOpt").checked){$("preOpt").checked=true;$("preOpt").dispatchEvent(new Event("input"))}
+  // 3章以降の一覧から選んだら自動で外す
+  else if(ch>=3&&$("preOpt").checked){$("preOpt").checked=false;$("preOpt").dispatchEvent(new Event("input"))}
+  // 3章の一覧から選んだら、3章のパーティ（3通り）に合わせる
+  // 敵によってパーティが決まっている場合（シヴァ・ニクスはスノウ1人）
+  const o0=ENM[+$("enSel").value],fx=FIXP[ch]&&o0&&FIXP[ch][o0.en]||"";
+  const wasCfg=!!CH_ROLES[CK()];enCh=ch;
+  if(ch===3){const cur=ch3Cur();$("ch3P").value=fx||cur||"light,snow,vanille";ch3Apply()}
+  else if(ch===9){const ph=o0&&CH9_PH[o0.en];if(ph)$("ch9P").value=ph;ch9Apply()}
+  else if(fx)partyApply(fx);
+  else{ch3Vis();if(wasCfg||CH_ROLES[ch])optSync()}
+  // 守護騎アナヴァタプタは、ライトニングとオーディンのドライビングモード（フィニッシュ技Lv3）で戦闘開始
+  if(o0&&o0.en==="Anavatapta Warmech"){if(M[0].chr!=="light"){const o=M.find(m=>m!==M[0]&&m.chr==="light");if(o)o.chr=M[0].chr;M[0].chr="light";M[0].queue=[];M[0].last=null}
+    $("gc").value="30";$("gc").dispatchEvent(new Event("input"));const b=$("modeSeg").querySelector('[data-m="drive"]');if(b&&mode!=="drive")b.click();else{loadActor();render()}}
+  enApply(+$("enSel").value)});
+$("enEd").addEventListener("toggle",enRenderList);
+[...EN_F,"ehpCur"].forEach(id=>$(id).addEventListener("input",()=>setTimeout(enSync,0)));document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",()=>setTimeout(enSync,0)));
+
+// ===== 章ごとのパーティ・ロールの制限 =====
+let enCh=0;
+// 9章は場面（合流前の2組／6人合流後）で制限が変わる
+const CK=()=>enCh===9?"9"+$("ch9P").value:enCh;
+const CH9_PARTY={L:"light,hope,fang",S:"sazh,vanille"};
+// 場面が決まっている敵（カラヴィンカはライトニング組、バルトアンデルスは6人合流後）
+const CH9_PH={"Kalavinka Striker（HP108000）":"L","Kalavinka Striker（HP122400）":"L","Barthandelus（パーツ消滅前）":"A","Barthandelus（パーツ消滅後）":"A","Right Pauldron":"A","Right Ailette":"A","Left Pauldron":"A","Left Ailette":"A"};
+const ch9Fixed=()=>{if(enCh!==9)return"";const v=$("enSel").value;const o=v!==""?ENM[+v]:null;return o&&CH9_PH[o.en]||""};
+function ch9Apply(){const ph=$("ch9P").value;if(CH9_PARTY[ph])partyApply(CH9_PARTY[ph]);else{ch3Vis();optSync()}}
+// パーティが決まっている敵（章ごと）
+const FIXP={3:{"Nix":"snow","Manasvin Warmech（HP32400）":"light,snow,vanille","Alpha Behemoth":"light,vanille,sazh","Garuda Interceptor（HP8000）":"light,vanille,sazh","Garuda Interceptor（HP16200）":"light,vanille,sazh","Garuda Interceptor（HP16200・通常時）":"light,vanille,sazh"},
+  4:{"Dreadnought（HP17940）":"sazh,light,vanille","Dreadnought（HP44850）":"sazh,light,vanille","Odin":"light,hope"},
+  10:{"Bahamut":"fang,light,vanille"},
+  11:{"Alexander":"hope,light,fang","Hecatoncheir":"vanille,fang"}};
+// オプティマが決まっている敵（メンバー1・2・3のロール。並びはゲームのオプティマ一覧の順）
+const FIXO={"Alexander":[["RAV","MED","SEN"],["SYN","MED","SEN"],["MED","COM","SEN"],["MED","MED","SEN"],["RAV","COM","SEN"],["RAV","RAV","COM"]],
+  "Bahamut":[["COM","RAV","RAV"],["COM","RAV","MED"],["SEN","COM","RAV"],["SEN","MED","MED"],["SAB","COM","RAV"],["SAB","COM","MED"]],
+  "Hecatoncheir":[["RAV","COM",""],["MED","SEN",""],["SAB","COM",""],["SAB","SEN",""]]};
+// 章ごとに使えるロール（キャラごと）。載っていないキャラはその章の戦闘に参加できない
+const CH_ROLES={3:{light:["COM","RAV"],snow:["COM","RAV","SEN"],sazh:["RAV"],vanille:["RAV","MED"]},
+  4:{light:["COM","RAV","MED"],sazh:["COM","RAV","SYN"],vanille:["RAV","SAB","MED"],hope:["RAV","SYN","MED"]},
+  // 5章：ライトニングとホープだけ
+  5:{light:["COM","RAV","MED"],hope:["RAV","SYN","MED"]},
+  // 6章：ヴァニラ（リーダー）とサッズだけ
+  6:{vanille:["RAV","SAB","MED"],sazh:["COM","RAV","SYN"]},
+  8:{vanille:["RAV","SAB","MED"],sazh:["COM","RAV","SYN"]},
+  "9L":{light:["COM","RAV","MED"],hope:["RAV","SYN","MED"],fang:["COM","SEN","SAB"]},
+  "9S":{vanille:["RAV","SAB","MED"],sazh:["COM","RAV","SYN"]},
+  10:{light:["COM","RAV","SEN","SYN","SAB","MED"],snow:["COM","RAV","SEN","SYN","SAB","MED"],sazh:["COM","RAV","SEN","SYN","SAB","MED"],hope:["COM","RAV","SEN","SYN","SAB","MED"],vanille:["COM","RAV","SEN","SYN","SAB","MED"],fang:["COM","RAV","SEN","SYN","SAB","MED"]},
+  11:{light:["COM","RAV","SEN","SYN","SAB","MED"],snow:["COM","RAV","SEN","SYN","SAB","MED"],sazh:["COM","RAV","SEN","SYN","SAB","MED"],hope:["COM","RAV","SEN","SYN","SAB","MED"],vanille:["COM","RAV","SEN","SYN","SAB","MED"],fang:["COM","RAV","SEN","SYN","SAB","MED"]},
+  "9A":{light:["COM","RAV","MED"],snow:["COM","RAV","SEN"],sazh:["COM","RAV","SYN"],hope:["RAV","SYN","MED"],vanille:["RAV","SAB","MED"],fang:["COM","SEN","SAB"]},
+  // 7章：ライトニング・スノウ・ホープ・ファング（サッズとヴァニラは参加しない）
+  7:{light:["COM","RAV","MED"],snow:["COM","RAV","SEN"],hope:["RAV","SYN","MED"],fang:["COM","SEN","SAB"]}};
+// 章ごとのパーティの人数（決まっている場合）
+const CH_SIZE={5:[2],6:[2],8:[2],"9L":[3],"9S":[2],"9A":[3],10:[3]};
+const CH3_ROLES=CH_ROLES[3];
+// リーダー（メンバー1）にしかなれないキャラ（章ごと）
+const CH_LEAD={4:["sazh"],6:["vanille"],8:["sazh"],"9S":["sazh"]};
+// 同じパーティにならないキャラの組（章ごと）
+const CH_EXCL={};
+// リーダーによって一緒に組めるキャラが決まる場合（章ごと）。メンバー2・3の枠ごとに、入れるキャラを並べる
+// 4章：ライトニングがリーダーならホープだけ。サッズがリーダーならヴァニラ確定、3人目はライトニングかホープ
+const CH_MATE={4:{light:[["hope"]],sazh:[["vanille"],["light","hope"]]},5:{light:[["hope"]],hope:[["light"]]},6:{vanille:[["sazh"]]},8:{sazh:[["vanille"]]},"9L":{light:[["hope","fang"],["hope","fang"]]},"9S":{sazh:[["vanille"]]},"9A":{light:[["snow","sazh","hope","vanille","fang"],["snow","sazh","hope","vanille","fang"]]},10:{light:[["snow","sazh","hope","vanille","fang"],["snow","sazh","hope","vanille","fang"]]},
+  // 7章：ライトニング→ホープ（＋ファング）／スノウ→ホープ（スノウ1人もあり）／ファング→ライトニング（＋ホープ）
+  7:{light:[["hope"],["fang"]],snow:[["hope"]],fang:[["light"],["hope"]]}};
+const mateOf=()=>{const T=CH_MATE[CK()];return T&&M[0]&&T[M[0].chr]||null};
+const exclOf=c=>(CH_EXCL[CK()]||[]).flatMap(p=>p.includes(c)?p.filter(x=>x!==c):[]);
+const chCfgOn=()=>!!CH_ROLES[CK()]&&mode==="normal"&&!PRE();
+const fixOpt=()=>{if(!chCfgOn())return null;const v=$("enSel").value;const o=v!==""?ENM[+v]:null;const F=o&&FIXO[o.en];return F&&ch3Fixed()&&partyNow()===ch3Fixed()?F:null};
+const chRoles=c=>{if(!chCfgOn())return null;const F=fixOpt();if(F){const k=M.findIndex(m=>m.on&&m.chr===c);if(k>=0)return [...new Set(F.map(r=>r[k]))]}return CH_ROLES[CK()][c]};
+const ch3On=chCfgOn;
+// 今選んでいる敵がパーティの決まっている敵なら、その編成を返す
+const ch3Fixed=()=>{const F=FIXP[CK()];if(!F)return"";const v=$("enSel").value;const o=v!==""?ENM[+v]:null;return o&&F[o.en]||""};
+const partyNow=()=>M.filter(m=>m.on).map(m=>m.chr).join(",");
+const ch3Cur=()=>{const on=partyNow();return [...$("ch3P").options].some(o=>o.value===on)?on:""};
+let ch3Busy=false;
+function partyApply(list){const cs=list.split(",");
+  M.forEach((m,k)=>{const want=cs[k];if(want){if(m.chr!==want){const other=M.find(o=>o!==m&&o.chr===want);if(other)other.chr=m.chr;m.chr=want;m.queue=[];m.last=null}m.on=true}else{m.on=false}});
+  M.forEach((m,k)=>{if(!m.on)return;if(M.some(o=>o!==m&&o.on&&o.chr===m.chr)){const free=CHR_OK(m).find(c=>!M.some(o=>o!==m&&o.chr===c));if(free)m.chr=free}});
+  cur=0;loadActor();pCountSync();optSync();render();ch3Vis()}
+const ch3Apply=()=>partyApply($("ch3P").value);
+function ch3Vis(){$("ch3W").hidden=!(enCh===3&&chCfgOn());$("ch9W").hidden=!(enCh===9&&chCfgOn());$("ch9P").disabled=!!ch9Fixed();
+  const on=chCfgOn(),a=A(),RC=on?CH_ROLES[CK()]:null;
+  if(on&&!ch3Busy){let ch=false;const fxp=!!ch3Fixed();
+    // その章で戦闘に参加できないキャラは、参加できるキャラに入れ替える
+    M.forEach(m=>{if(!m.on||RC[m.chr])return;const free=Object.keys(RC).find(c=>!M.some(o=>o!==m&&o.on&&o.chr===c));if(free){m.chr=free;m.queue=[];m.last=null;ch=true}});
+    // リーダーにしかなれないキャラがメンバー2・3にいたら、メンバー1と入れ替える
+    if(!fxp)(CH_LEAD[CK()]||[]).forEach(c=>{const k=M.findIndex(m=>m.on&&m.chr===c);if(k>0){const t=M[0].chr;M[0].chr=c;M[k].chr=t;M[0].queue=[];M[k].queue=[];M[0].last=null;M[k].last=null;ch=true}});
+    // リーダーになれるキャラが決まっている章は、リーダーをそのキャラにする（CH_MATEに載っているキャラだけがリーダーになれる）
+    if(!fxp){const T=CH_MATE[CK()];if(T&&!T[M[0].chr]){const L=Object.keys(T);const k=M.findIndex((m,j)=>j>0&&m.on&&L.includes(m.chr));const want=k>0?M[k].chr:L[0];
+      if(k>0){M[k].chr=M[0].chr;M[k].queue=[];M[k].last=null}else{const o=M.find((m,j)=>j>0&&m.chr===want);if(o)o.chr=M[0].chr}M[0].chr=want;M[0].queue=[];M[0].last=null;ch=true}}
+    // 人数が決まっている章は、その人数にする
+    if(!fxp){const SZ=CH_SIZE[CK()];if(SZ){const n=M.filter(m=>m.on).length;if(!SZ.includes(n)){const t=SZ[0];M.forEach((m,k)=>{const want=k<t;if(m.on!==want){m.on=want;ch=true}})}}}
+    // リーダーで組める相手が決まっているときは、その相手だけにする（人数もその分まで）
+    if(!fxp){const mt=mateOf();if(mt){const n=Math.min(M.filter(m=>m.on).length-1,mt.length);
+      M.forEach((m,k)=>{if(k===0)return;const allow=k<=n?mt[k-1]:null;
+        if(!allow){if(m.on){m.on=false;ch=true}return}
+        if(!allow.includes(m.chr)){const want=allow.find(c=>!M.some(o=>o!==m&&o.on&&o.chr===c))||allow[0];const other=M.find(o=>o!==m&&o.chr===want);if(other)other.chr=m.chr;m.chr=want;m.queue=[];m.last=null;ch=true}
+        if(!m.on){m.on=true;ch=true}})}}
+    // 一緒にならないキャラが同じパーティにいたら、後ろのメンバーを入れ替える
+    M.forEach((m,k)=>{if(!m.on||k===0)return;const bad=exclOf(m.chr);if(!M.some((o,j)=>j<k&&o.on&&bad.includes(o.chr)))return;
+      const free=Object.keys(RC).find(c=>!M.some(o=>o!==m&&o.on&&o.chr===c)&&!exclOf(c).some(x=>M.some(o=>o!==m&&o.on&&o.chr===x))&&!((CH_LEAD[CK()]||[]).includes(c)));if(free){m.chr=free;m.queue=[];m.last=null;ch=true}});
+    // 使えないロールになっていたら、使えるロールに直す（オプティマで選んだ場合も）
+    {const F=fixOpt();if(F&&!F.some(r=>M.every((m,k)=>!m.on||m.role===r[k]))){M.forEach((m,k)=>{if(m.on&&m.role!==F[0][k]){m.role=F[0][k];m.queue=[]}});ch=true}
+     if(F)M.forEach((m,k)=>{if(m.shRole&&!F.some(r=>M.every((x,j)=>!x.on||(j===k?m.shRole:(x.shRole||x.role))===r[j]))){m.shRole="";ch=true}})}
+    M.forEach(m=>{const R=chRoles(m.chr)||RC[m.chr];if(!R)return;if(!R.includes(m.role)){m.role=R[0];m.queue=[];ch=true}if(m.shRole&&!R.includes(m.shRole)){m.shRole="";ch=true}});
+    if(ch){ch3Busy=true;loadActor();if(typeof pCountSync==="function")pCountSync();render();if(typeof optSync==="function")optSync();ch3Busy=false}}
+  const R=on&&a.kind==="member"?(chRoles(a.chr)||RC[a.chr]):null;
+  [...$("role").options].forEach(o=>{const h=!!R&&!R.includes(o.value);o.hidden=h;o.disabled=h});
+  [...$("shRole").options].forEach(o=>{const h=!!R&&o.value!==""&&!R.includes(o.value);o.hidden=h;o.disabled=h});
+  if(on){const lead=CH_LEAD[CK()]||[],notLead=a.kind==="member"&&M.indexOf(a)>0;const others=M.filter(m=>m!==a&&m.on).map(m=>m.chr),mt=mateOf(),LT=CH_MATE[CK()];const fxc=!!ch3Fixed();[...$("chr").options].forEach(o=>{const h=!fxc&&(!RC[o.value]||(notLead&&lead.includes(o.value))||exclOf(o.value).some(x=>others.includes(x))||(notLead&&mt&&!(mt[M.indexOf(a)-1]||[]).includes(o.value))||(!notLead&&a.kind==="member"&&LT&&!LT[o.value]));o.hidden=h;o.disabled=h})}
+  else if(!PRE())[...$("chr").options].forEach(o=>{const h=PRE_ONLY.includes(o.value);o.hidden=h;o.disabled=h});
+  // リーダーで人数が決まるとき、選べる人数を絞る
+  if(!PRE()){const mt=on?mateOf():null,SZ=on?CH_SIZE[CK()]:null;[...$("pCount").options].forEach(o=>{const h=(!!mt&&+o.value>1+mt.length)||(!!SZ&&!SZ.includes(+o.value));o.hidden=h;o.disabled=h})}
+  $("ch3RoleNote").hidden=!on;
+  if(on){const NJ=x=>ROLE_JP[x];const allR=Object.keys(RC).length===6&&Object.values(RC).every(r=>r.length===6);$("ch3RoleNote").textContent=enCh+"章で使えるロール："+(allR?"6人全員、すべてのロール":Object.entries(RC).map(([c,r])=>CHR_JP[c]+"＝"+r.map(NJ).join("・")).join("／"))+((CH_LEAD[CK()]||[]).length?"。"+CH_LEAD[CK()].map(c=>CHR_JP[c]).join("・")+"はリーダー（メンバー1）のみ":"")+((CH_EXCL[CK()]||[]).length?"。"+CH_EXCL[CK()].map(p=>p.map(c=>CHR_JP[c]).join("と")).join("、")+"は同じパーティにならない":"")+(CH_MATE[CK()]?"。"+Object.entries(CH_MATE[CK()]).map(([l,m])=>CHR_JP[l]+"がリーダーのときは"+m.map((x,i)=>"メンバー"+(i+2)+"＝"+x.map(c=>CHR_JP[c]).join("か")).join("・")).join("、"):"")+"（それ以外のロールとキャラは選べません。オプティマの一覧も、使えるロールで組めるものだけになります）"+(fixOpt()?"。この敵はオプティマも決まっています（"+fixOpt().map(optAutoName).join("・")+"）":"")}
+  // パーティが決まっている敵のあいだは、人数・編成・キャラを変えられないようにする
+  const fx=on?ch3Fixed():"";
+  if(fx&&!ch3Busy&&partyNow()!==fx){if(enCh===3)$("ch3P").value=fx;ch3Busy=true;partyApply(fx);ch3Busy=false}
+  ["pCount","ch3P","chr","mOn"].forEach(id=>{$(id).disabled=!!fx});
+  $("ch3FixNote").hidden=!fx;if(fx)$("ch3FixNote").textContent="この敵はパーティが決まっています（"+fx.split(",").map(c=>CHR_JP[c]).join("・")+(fx.split(",").length===1?"の1人":"")+"）。人数とキャラは変えられません。別の敵を選ぶか、敵の値を手で変えると戻ります。"}
+$("ch3P").addEventListener("input",ch3Apply);$("ch9P").addEventListener("input",ch9Apply);
+
+// ===== 2章まで（オプティマ解禁前） =====
+function preVis(){const pre=PRE(),a=A(),isM=a.kind==="member";
+  if(pre){
+    // ライトニング・ヴァニラがリーダーのときは2人以上（1人パーティはない。ヴァニラはホープとの2人だけ）
+    const minN=M[0].chr==="light"||M[0].chr==="vanille"?2:1;if(M.filter(m=>m.on).length<minN)M[1].on=true;
+    preFixAI();if(typeof pCountSync==="function")pCountSync();const n=1+(PRE_PARTY[M[0].chr]||[]).length;
+    [...$("pCount").options].forEach(o=>{const d=+o.value>n||+o.value<minN;o.hidden=d;o.disabled=d});
+    $("onWrap").hidden=true}else [...$("pCount").options].forEach(o=>{o.hidden=false;o.disabled=false});
+  $("preWrap").hidden=mode!=="normal";
+  [...$("chr").options].forEach(op=>{const ok=pre?(isM&&preOkFor(M.indexOf(a)).includes(op.value)):!PRE_ONLY.includes(op.value);op.hidden=!ok;op.disabled=!ok});
+  if(!pre)return;
+  const hide=el=>{if(el)el.hidden=true};
+  ["optNowArrW","optEd","rlvWrap","jeoWrap","hvWrap","ovwWrap","vigWrap","cbbWrap","cbbSub","abSub","shRoleWrap","shComWrap","dmgBoxM","dmgBoxE","tpLabel","tpHint","shiftHint","shiftToWrap","shiftToArrW"].forEach(id=>hide($(id)));
+  ["optNow","role","atb","cpos","cneg","diff","shiftAt","tpQ","tpWhen","tpBase"].forEach(id=>hide($(id).closest("label")));
+  $("modeSeg").querySelectorAll("button").forEach(b=>{b.hidden=b.dataset.m!=="normal"});}
+{const _sv=syncVis;syncVis=function(){_sv();$("modeSeg").querySelectorAll("button").forEach(b=>b.hidden=false);preVis();ch3Vis()}}
+$("preOpt").addEventListener("input",()=>{const on=$("preOpt").checked;
+  if(on){mode="normal";
+    if(!PRE_LEAD.includes(M[0].chr))M[0].chr="light";
+    if(M[0].chr!=="snow")M[2].on=false;
+    M.forEach(m=>{if(m.role!=="PRE"){m.role0=m.role;m.atb0=m.atb}m.role="PRE";m.queue=[];m.shRole="";m.cbb=0;m.last=null});preFixAI();M.forEach(m=>m.atb=PRE_ATB[m.chr]||2);$("shiftAt").value="0";$("tpQ").value="0";manualOrder=[]}
+  else{M.forEach(m=>{m.role=m.role0&&m.role0!=="PRE"?m.role0:"RAV";m.atb=m.atb0||3;m.queue=[];m.last=null});
+    M.forEach(m=>{if(!PRE_ONLY.includes(m.chr))return;const free=CHR_OK(m).find(c=>!M.some(o=>o!==m&&o.chr===c));if(free)m.chr=free});manualOrder=[]}
+  cur=0;loadActor();render();if(!on)optSync()});
+
+
+// ===== 長い一覧を自前の一覧で表示 =====
+// ブラウザ標準の一覧は、マウスを乗せた行が「明るい背景に薄い文字」になって読めないことがあるため、オプティマと敵の一覧は自前で描く
+function fancySelect(sel){if(sel.dataset.fs)return;sel.dataset.fs="1";
+  const w=document.createElement("div");w.className="fs";w.addEventListener("click",e=>{if(e.target!==btn)e.preventDefault()});sel.parentNode.insertBefore(w,sel);w.append(sel);sel.tabIndex=-1;
+  const btn=document.createElement("button");btn.type="button";btn.className="fs-btn";btn.setAttribute("aria-haspopup","listbox");btn.setAttribute("aria-expanded","false");
+  const lab=sel.closest("label");if(lab)btn.setAttribute("aria-label",(lab.firstChild&&lab.firstChild.textContent||"").trim());w.append(btn);
+  let pop=null,items=[],hl=-1;
+  const txt=()=>{const o=sel.options[sel.selectedIndex];btn.textContent=o?o.textContent:""};
+  const close=()=>{if(pop){pop.remove();pop=null}btn.setAttribute("aria-expanded","false")};
+  const pick=i=>{sel.selectedIndex=i;close();txt();sel.dispatchEvent(new Event("input",{bubbles:true}));sel.dispatchEvent(new Event("change",{bubbles:true}));btn.focus()};
+  const setHl=k=>{items.forEach(x=>x.el.classList.remove("hl"));hl=k;if(items[k]){items[k].el.classList.add("hl");items[k].el.scrollIntoView({block:"nearest"})}};
+  // 検索欄つき（敵の一覧）：入れた文字を名前に含むものだけ出す。ひらがなはカタカナとしても探す
+  const SRCH=sel.dataset.search==="1";let q="",qi=null;
+  const kata=t=>t.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));
+  const hit=o=>{if(!q)return true;const t=(o.textContent+" "+(o.dataset.en||"")).toLowerCase();const w=q.toLowerCase();return t.includes(w)||t.includes(kata(w))};
+  const fill=()=>{[...pop.querySelectorAll(".fs-g,.fs-i,.fs-none")].forEach(x=>x.remove());items=[];
+    [...sel.children].forEach(ch=>{const add=(o,top)=>{if(o.hidden||!hit(o))return;const i=[...sel.options].indexOf(o);const el=document.createElement("div");el.className="fs-i"+(top?" top":"")+(o.disabled?" dis":"")+(i===sel.selectedIndex?" sel":"");el.setAttribute("role","option");el.textContent=o.textContent;
+        if(!o.disabled){el.onmousedown=e=>e.preventDefault();el.onclick=e=>{e.preventDefault();e.stopPropagation();pick(i)};items.push({el,i})}pop.append(el)};
+      if(ch.tagName==="OPTGROUP"){const vis=[...ch.children].filter(o=>!o.hidden&&hit(o));if(!vis.length)return;const g=document.createElement("div");g.className="fs-g";g.textContent=ch.label;pop.append(g);vis.forEach(o=>add(o,false))}else add(ch,true)});
+    if(!items.length){const n=document.createElement("div");n.className="fs-none";n.textContent="見つかりません";pop.append(n)}};
+  const open=()=>{close();pop=document.createElement("div");pop.className="fs-pop";pop.setAttribute("role","listbox");items=[];q="";
+    if(SRCH){const qw=document.createElement("div");qw.className="fs-q";qi=document.createElement("input");qi.type="search";qi.placeholder="名前で探す（例：ベヒーモス、かるら）";qi.setAttribute("aria-label","敵を名前で探す");
+      qi.oninput=()=>{q=qi.value.trim();fill();setHl(items.length?0:-1);pop.scrollTop=0};qi.onkeydown=e=>keys(e);qw.append(qi);pop.append(qw)}
+    fill();
+    w.append(pop);btn.setAttribute("aria-expanded","true");const k=items.findIndex(x=>x.i===sel.selectedIndex);setHl(k);
+    if(k>=0){const el=items[k].el;pop.scrollTop=el.offsetTop-pop.clientHeight/3}
+    if(SRCH&&qi)qi.focus({preventScroll:true})};
+  btn.onclick=()=>pop?close():open();
+  const keys=e=>{const inQ=e.target===qi;if(!pop&&(e.key==="ArrowDown"||e.key==="Enter"||e.key===" ")){e.preventDefault();open();return}if(!pop)return;
+    if(e.isComposing)return;
+    if(e.key==="ArrowDown"){e.preventDefault();setHl(Math.min(items.length-1,hl+1))}else if(e.key==="ArrowUp"){e.preventDefault();setHl(Math.max(0,hl-1))}
+    else if(e.key==="Enter"||(e.key===" "&&!inQ)){e.preventDefault();if(items[hl])pick(items[hl].i)}else if(e.key==="Escape"||e.key==="Tab"){close();if(inQ)btn.focus()}};
+  btn.onkeydown=keys;
+  document.addEventListener("mousedown",e=>{if(pop&&!w.contains(e.target))close()});
+  btn.addEventListener("blur",()=>setTimeout(()=>{if(pop&&!w.contains(document.activeElement))close()},150));
+  w.addEventListener("focusout",()=>setTimeout(()=>{if(pop&&!w.contains(document.activeElement))close()},150));
+  sel.addEventListener("input",txt);
+  // 計算機の中から値や選択肢が変わったときも表示を合わせる
+  new MutationObserver(txt).observe(sel,{childList:true,subtree:true,attributes:true,characterData:true});
+  w._fsSync=()=>{txt();w.hidden=sel.hidden;btn.disabled=sel.disabled;btn.style.opacity=sel.disabled?.5:1;btn.style.cursor=sel.disabled?"not-allowed":"pointer";if(sel.disabled)close()};txt();
+}
+const FS_IDS=["optNow","optNowArr","shiftTo","shiftToArr","enSel","ch3P","ch9P"];
+FS_IDS.forEach(id=>fancySelect($(id)));
+setInterval(()=>FS_IDS.forEach(id=>{const w=$(id).parentNode;if(w._fsSync)w._fsSync()}),250);
+
+// ===== 入力の自動保存 =====
+const ST_KEY="ff13cc_state";let stOff=false,stT=null;
+const ST_SKIP=new Set(["mOn","chr","role","rlv","atb","hp","cpos","cneg","shRole","shCom","mpa","mma","mbr","mfa","mpp","mak","mgen","mkiki","med","medE","mdn","men","mab1","mab2","mab3","mab4","mdb","ko","diff","jeo","hv","ovwOn","vigor","cbb","eid","pCount","optNow","optNowArr","shiftTo","shiftToArr","enSel","enName"]);
+const stFields=()=>[...document.querySelectorAll(".inputs input[id],.inputs select[id]")].filter(el=>!ST_SKIP.has(el.id)&&!el.closest("#optEd")&&!el.closest("#enEd"));
+const allActors=()=>[...M,...Object.keys(EA).flatMap(k=>EA[k]),...Object.keys(DR).map(k=>DR[k])];
+const skRef=sk=>sk.id==="custom"?{c:sk}:sk.id==="fin"?{fin:1}:{id:sk.id};
+function skFind(a,r){if(!r)return null;if(r.c)return r.c;if(r.fin)return a.fin?{id:"fin",n:a.fin.n,fin:true,launch:true,parts:a.fin.parts}:null;
+  const lists=a.kind==="member"?[SK[a.role],...Object.values(SK)]:[a.skills||[]];for(const l of lists){const s=(l||[]).find(x=>x.id===r.id);if(s)return s}return null}
+const ST_OPEN=["dmgBoxM","dmgBoxE","customBox"];
+function stSave(){if(stOff)return;try{const acts=allActors();
+  const s={v:1,mode,cur,turn,exactCur,carried,enCh,f:{},er:{},open:{},
+    act:acts.map(a=>{const o={};Object.keys(a).forEach(k=>{if(k==="queue")o.queue=a.queue.map(q=>{const x={};Object.keys(q).forEach(kk=>{if(kk!=="sk")x[kk]=q[kk]});x.sk=skRef(q.sk);return x});else if(!["skills","fin","label","kind"].includes(k))o[k]=a[k]});return o}),
+    ord:manualOrder.map(it=>{for(let i=0;i<acts.length;i++){const j=acts[i].queue.indexOf(it);if(j>=0)return[i,j]}return null}).filter(Boolean)};
+  stFields().forEach(el=>s.f[el.id]=el.type==="checkbox"?el.checked:el.value);
+  document.querySelectorAll(".eres").forEach(el=>s.er[el.dataset.e]=el.value);
+  ST_OPEN.forEach(id=>s.open[id]=$(id).open);
+  localStorage.setItem(ST_KEY,JSON.stringify(s))}catch(e){}}
+const stSaveSoon=()=>{clearTimeout(stT);stT=setTimeout(stSave,300)};
+function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}catch(e){return false}if(!s||s.v!==1)return false;
+  try{const acts=allActors();
+    (s.act||[]).forEach((o,i)=>{const a=acts[i];if(!a)return;Object.keys(o).forEach(k=>{if(k!=="queue")a[k]=o[k]});
+      a.queue=(o.queue||[]).map(x=>{const sk=skFind(a,x.sk);return sk?Object.assign({},x,{sk}):null}).filter(Boolean)});
+    Object.entries(s.f||{}).forEach(([id,v])=>{const el=$(id);if(!el||ST_SKIP.has(id))return;if(el.type==="checkbox")el.checked=!!v;else el.value=v});
+    document.querySelectorAll(".eres").forEach(el=>{if(s.er&&s.er[el.dataset.e])el.value=s.er[el.dataset.e]});
+    Object.entries(s.open||{}).forEach(([id,v])=>{if($(id))$(id).open=!!v});
+    enCh=+s.enCh||0;
+    if(["normal","summon","drive"].includes(s.mode))mode=s.mode;cur=+s.cur||0;turn=+s.turn||1;exactCur=typeof s.exactCur==="number"?s.exactCur:null;if(s.carried&&Array.isArray(s.carried.applied))carried=s.carried;
+    manualOrder=(s.ord||[]).map(([i,j])=>acts[i]&&acts[i].queue[j]).filter(Boolean);
+    return true}catch(e){return false}}
+let stResetArm=false;
+$("stReset").onclick=()=>{const b=$("stReset");if(!stResetArm){stResetArm=true;b.textContent="もう一度押すと初期値に戻ります";setTimeout(()=>{stResetArm=false;b.textContent="入力を初期値に戻す"},4000);return}
+  stOff=true;clearTimeout(stT);try{localStorage.removeItem(ST_KEY)}catch(e){}location.reload()};
+["input","change"].forEach(ev=>document.addEventListener(ev,stSaveSoon,true));document.addEventListener("click",stSaveSoon,true);
+ST_OPEN.forEach(id=>$(id).addEventListener("toggle",stSaveSoon));
+window.addEventListener("pagehide",stSave);
+function dmgBoxSync(){const a=A();const m=a.kind==="member"&&(a.pa||a.ma);$("dmgBoxMT").textContent="ダメージ用（チェーンボーナスだけなら入力不要）"+(m?"・入力あり":"");$("dmgBoxET").textContent="ダメージ用（敵の最大HP・残りHP・見積もり）"+(+$("ehp").value?"・入力あり":"")}
+$("ehp").addEventListener("input",dmgBoxSync);["mpa","mma"].forEach(id=>$(id).addEventListener("input",dmgBoxSync));
+const stLoaded=stLoad();
+pCountSync();optRenderSelects();optRenderList();enRenderSel();enRenderList();
+loadActor();render();if(stLoaded)optSync();dmgBoxSync();
 </script>
+
 </body>
 </html>
