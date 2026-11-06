@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>*,*::before,*::after{box-sizing:border-box}html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>FFXIII チェーンボーナス計算機</title>
+<title>FF13 チェーンボーナス計算機</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<script>document.documentElement.dataset.skin="ff13"</script>
 <style>
 /* Layout: 左にATBコマンド組み立てと状況入力、右にチェーンゲージ風の結果パネル（スティッキー）。狭い画面では縦積み。 */
 :root{
   --bg:#eef2f4; --panel:#ffffff; --ink:#16232b; --muted:#5b6b75; --line:#d3dce1;
   --accent:#0e7c8c; --accent-soft:#d8eef1; --atb:#2f6fd0; --atb-soft:#dbe6f7;
   --gauge:#e0832b; --gauge-hot:#d33b2c; --good:#2f8a4d;
-  --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --sans:"UD Digi Kyokasho NK-R","UD デジタル 教科書体 NK-R","UD Digi Kyokasho NK","UD Digi Kyokasho N-R","UD デジタル 教科書体 N-R","Klee One","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -32,7 +33,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 header h1{font-size:1.6rem;margin:0;text-wrap:balance;letter-spacing:.02em}
 header p{margin:4px 0 0;color:var(--muted);max-width:70ch}
 .formula{font-family:var(--mono);font-size:.82rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,380px);gap:12px;align-items:start}
 @media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 .inputs{display:flex;flex-direction:column;gap:14px;min-width:0}
 fieldset{border:1px solid var(--line);background:var(--panel);border-radius:8px;margin:0;padding:12px 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px;min-width:0}
@@ -60,6 +61,18 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .fs-i.dis{opacity:.45;cursor:default}
 .dbox{border:1px solid var(--line);border-radius:6px;padding:6px 10px}.dbox>summary{grid-template-columns:1fr;font-size:.8rem;font-weight:700;color:var(--muted)}.dbox[open]>summary{margin-bottom:8px}.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 14px}
 .enRow input,#enName{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}.enRow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.enRow input{flex:1 1 9em;min-width:7em}.enRow .note{flex:1 1 100%}
+details.intro{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px}details.intro>summary{cursor:pointer;font-size:.85rem;font-weight:600;color:var(--accent)}details.intro[open]>summary{margin-bottom:8px}details.intro .formula{margin-top:8px}
+.xh{display:none}fieldset.help .xh{display:block}
+.hbtn{font:inherit;font-size:.7rem;font-weight:600;letter-spacing:0;margin-left:6px;padding:1px 8px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer;vertical-align:middle}fieldset.help .hbtn{color:var(--accent);border-color:var(--accent)}
+details.enRes{border-top:1px dashed var(--line);padding-top:8px}details.enRes>summary{cursor:pointer;font-size:.82rem;font-weight:600;color:var(--accent)}details.enRes[open]>summary{margin-bottom:8px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px 14px}
+.mbar{display:none}
+@media (max-width:900px){
+ .mbar{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--panel);border-top:2px solid var(--accent);padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 14px rgba(0,0,0,.15)}
+ .mbar .mb1{display:flex;gap:10px;align-items:baseline;min-width:0}.mbar .mbt{font-size:1.25rem;font-weight:800;color:var(--accent)}.mbar .mbg{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mbar .mb2{grid-column:1;font-size:.75rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mbar #mbGo{grid-column:2;grid-row:1/3}
+ body{padding-bottom:84px}
+}
 .hint{grid-column:1/-1;font-size:.75rem;color:var(--muted);margin:0}
 .sub{grid-column:1/-1;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:4px 0 -4px}
 
@@ -138,6 +151,97 @@ details[open] summary .nm::before{content:"▾ "}
 .notes ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px;font-size:.84rem;line-height:1.65;color:var(--ink)}
 .notes b{font-weight:700}
 @media (prefers-reduced-motion:no-preference){.gauge .add{transition:width .2s}}
+/* ===== FF13風デザイン（data-skin="ff13"）：暗い紺の背景、シアンの光る枠、チェーンゲージは橙〜赤 ===== */
+:root[data-skin="ff13"]{
+  --bg:#050a14; --panel:rgba(12,24,44,.82); --ink:#e4efff; --muted:#8aa3c4; --line:rgba(110,190,255,.28);
+  --accent:#62d6ff; --accent-soft:rgba(98,214,255,.14); --atb:#4da6ff; --atb-soft:rgba(77,166,255,.2);
+  --gauge:#ffb23f; --gauge-hot:#ff5a36; --good:#7fe3a8; --glow:0 0 14px rgba(70,170,255,.22);
+  --disp:"Exo 2","UD Digi Kyokasho NK-R","UD デジタル 教科書体 NK-R","UD Digi Kyokasho NK","UD Digi Kyokasho N-R","UD デジタル 教科書体 N-R","Klee One","Hiragino Sans","Noto Sans JP",system-ui,sans-serif; color-scheme:dark}
+:root[data-skin="ff13"] body{background:
+  radial-gradient(1200px 600px at 15% -10%,rgba(40,120,200,.28),transparent 60%),
+  radial-gradient(900px 500px at 110% 110%,rgba(120,60,200,.18),transparent 60%),
+  repeating-linear-gradient(115deg,rgba(120,190,255,.035) 0 1px,transparent 1px 22px),
+  linear-gradient(180deg,#07101f,#03060d);background-attachment:fixed}
+:root[data-skin="ff13"] header h1{font-family:var(--disp);font-weight:700;letter-spacing:.06em;
+  background:linear-gradient(180deg,#ffffff 0%,#cfe8ff 45%,#7cc4ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px rgba(90,180,255,.35))}
+:root[data-skin="ff13"] fieldset,:root[data-skin="ff13"] .result,:root[data-skin="ff13"] details.intro,:root[data-skin="ff13"] .formula,:root[data-skin="ff13"] .notes{
+  background:linear-gradient(160deg,rgba(18,36,64,.86),rgba(8,16,32,.86));border:1px solid var(--line);box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,.05);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+:root[data-skin="ff13"] fieldset{border-color:rgba(110,190,255,.4)}
+:root[data-skin="ff13"] legend{font-family:var(--disp);color:var(--accent);text-shadow:0 0 8px rgba(98,214,255,.6);letter-spacing:.14em}
+:root[data-skin="ff13"] legend::before{content:"◆";font-size:.6rem;margin-right:6px;vertical-align:2px;color:#bfefff}
+:root[data-skin="ff13"] input:not([type="checkbox"]),:root[data-skin="ff13"] select,:root[data-skin="ff13"] .fs-btn{background:rgba(2,8,20,.75)!important;color:var(--ink)!important;border-color:rgba(110,190,255,.35)!important}
+:root[data-skin="ff13"] input:not([type="checkbox"]):focus,:root[data-skin="ff13"] select:focus,:root[data-skin="ff13"] .fs-btn:focus{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(98,214,255,.25),0 0 10px rgba(98,214,255,.35)}
+:root[data-skin="ff13"] .fs-pop{background:#0a1628;box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 12px rgba(98,214,255,.2)}
+:root[data-skin="ff13"] .lbtn,:root[data-skin="ff13"] .seg button,:root[data-skin="ff13"] .tab,:root[data-skin="ff13"] .hbtn{background:linear-gradient(180deg,rgba(40,70,110,.55),rgba(12,24,44,.7));color:var(--ink);border-color:rgba(110,190,255,.4)}
+:root[data-skin="ff13"] .lbtn:hover,:root[data-skin="ff13"] .seg button:hover,:root[data-skin="ff13"] .tab:hover{border-color:var(--accent);box-shadow:0 0 10px rgba(98,214,255,.35)}
+:root[data-skin="ff13"] .seg{border-color:rgba(110,190,255,.4)}
+:root[data-skin="ff13"] .seg button[aria-pressed="true"],:root[data-skin="ff13"] .lbtn.primary,:root[data-skin="ff13"] .tab[aria-selected="true"]{background:linear-gradient(180deg,#5fd0ff,#2a7fd6);color:#04101e;border-color:#9fe6ff;box-shadow:0 0 12px rgba(98,214,255,.55);font-weight:700}
+:root[data-skin="ff13"] .big .n{font-family:var(--disp);font-weight:700;color:#fff;text-shadow:0 0 12px rgba(255,178,63,.75),0 0 2px #ffcf7a}
+:root[data-skin="ff13"] .gauge{height:16px;background:rgba(0,0,0,.55);border:1px solid rgba(255,190,90,.45);box-shadow:inset 0 0 6px rgba(0,0,0,.8)}
+:root[data-skin="ff13"] .gauge .cur{background:linear-gradient(90deg,#c55a10,#ff9a2e);opacity:.55}
+:root[data-skin="ff13"] .gauge .add{background:linear-gradient(90deg,#ffb23f,#ff5a36);box-shadow:0 0 10px rgba(255,120,50,.8)}
+:root[data-skin="ff13"] .atbbar .slot{background:rgba(0,0,0,.45);border-color:rgba(77,166,255,.35)}
+:root[data-skin="ff13"] .atbbar .slot.on{background:linear-gradient(180deg,#7cc8ff,#2f7fe0);color:#03101f;border-color:#a8dcff;box-shadow:0 0 8px rgba(77,166,255,.7)}
+:root[data-skin="ff13"] .pill{background:linear-gradient(180deg,#ff8a4a,#e2341c);box-shadow:0 0 10px rgba(255,90,54,.7)}
+:root[data-skin="ff13"] .cap,:root[data-skin="ff13"] .sub{color:#9fd8ff;letter-spacing:.08em}
+:root[data-skin="ff13"] .mbar{background:linear-gradient(180deg,#0e2038,#060d1a);border-top-color:var(--accent);box-shadow:0 -4px 18px rgba(0,0,0,.6),0 -1px 10px rgba(98,214,255,.3)}
+:root[data-skin="ff13"] .mbar .mbt{font-family:var(--disp);color:#fff;text-shadow:0 0 10px rgba(255,178,63,.8)}
+:root[data-skin="ff13"] .tab[aria-selected="true"] span{color:#062a52;font-weight:600}
+:root[data-skin="ff13"] .seg button[aria-pressed="true"] *,:root[data-skin="ff13"] .lbtn.primary *{color:inherit}
+
+/* ===== 仕上げ（FF13風） ===== */
+/* メンバーの色：M1 青・M2 緑・M3 紫（タブと内訳でそろえる） */
+:root{--m0:#5aa9ff;--m1:#63e0a0;--m2:#c49bff}
+.who{font-style:normal}
+:root .who.m0,:root .who.m1,:root .who.m2{outline:0;border:1px solid currentColor;background:rgba(0,0,0,.25)}
+:root .who.m0{color:var(--m0)}:root .who.m1{color:var(--m1)}:root .who.m2{color:var(--m2)}
+:root .tab.m0,:root .tab.m1,:root .tab.m2{border-top-width:3px;border-top-style:solid}
+:root .tab.m0{border-top-color:var(--m0)}:root .tab.m1{border-top-color:var(--m1)}:root .tab.m2{border-top-color:var(--m2)}
+.tab b .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:.85rem;color:inherit;font-weight:700}
+ @media (max-width:600px){.tab{padding:6px 7px}.tab b{gap:4px}:root .tab b .nm{font-size:.76rem}.tab b .who{font-size:.62rem;padding:0 3px}}
+.tab b{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;min-width:0}.tab b .who,.tab b em.rl{flex:0 0 auto}.tab b .nm{flex:0 1 auto}
+.tab b .who{margin:0}
+.tab b em.rl{font-style:normal;font-size:.68rem;font-weight:600;padding:0 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:auto}
+:root[data-skin="ff13"] .tab[aria-selected="true"] .who{color:#062a52;border-color:#062a52;background:rgba(255,255,255,.35)}
+:root[data-skin="ff13"] .tab[aria-selected="true"] em.rl{color:#062a52;border-color:rgba(6,42,82,.5);background:rgba(255,255,255,.3)}
+/* 2. チェックボックス */
+input[type="checkbox"]{-webkit-appearance:none;appearance:none;flex:0 0 auto;width:18px;height:18px;margin:0;border:1.5px solid rgba(110,190,255,.6);border-radius:4px;background:rgba(2,8,20,.75);display:inline-grid;place-content:center;cursor:pointer;transition:box-shadow .15s}
+input[type="checkbox"]::before{content:"";width:10px;height:10px;transform:scale(0);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0,43% 62%);background:#04101e;transition:transform .12s}
+input[type="checkbox"]:checked{background:linear-gradient(180deg,#7fdcff,#2a86e0);border-color:#a8e6ff;box-shadow:0 0 8px rgba(98,214,255,.6)}
+input[type="checkbox"]:checked::before{transform:scale(1)}
+input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type="checkbox"]:disabled{opacity:.45;cursor:not-allowed}
+/* 5. 使い方の帯はリンク風に */
+details.intro{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+details.intro>summary{display:inline-block;padding:3px 12px;border:1px solid var(--line);border-radius:999px;font-size:.8rem}
+details.intro[open]{background:var(--panel)!important;border:1px solid var(--line)!important;padding:10px 12px!important;border-radius:6px}
+/* 1. 計算の前提 */
+.notesD>summary{cursor:pointer;font-weight:700;font-size:.95rem;color:var(--accent)}
+.notesD[open]>summary{margin-bottom:10px}
+.notesD .ngrid{display:flex;flex-direction:column;gap:6px}
+.nsec{border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:rgba(0,0,0,.18)}
+.nsec>summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#9fd8ff;letter-spacing:.06em}
+.nsec[open]>summary{margin-bottom:6px}
+/* 3. スマホでは押しやすく */
+@media (max-width:900px){
+ input[type="checkbox"]{width:22px;height:22px}input[type="checkbox"]::before{width:12px;height:12px}
+ label.chk{min-height:36px}
+ .hbtn{padding:5px 12px;font-size:.75rem}
+ .x{min-width:36px;min-height:36px;font-size:1.1rem}
+ details.intro>summary,.notesD>summary,.nsec>summary{padding-block:8px}
+}
+@media (min-width:901px){.result{margin-top:11px}}
+.summary.party div{display:flex;flex-direction:column;justify-content:flex-start}
+.summary.party span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.45}
+.summary.party div.m0{border-top:2px solid var(--m0)}.summary.party div.m1{border-top:2px solid var(--m1)}.summary.party div.m2{border-top:2px solid var(--m2)}
+.tab b em.rl{font-size:.64rem;padding:0 5px}
+.tab{padding-left:8px;padding-right:8px}.tab b{gap:4px 5px}:root .tab b .nm{font-size:.82rem}
+input,select,button,textarea{font-family:inherit}
+.hint{font-size:.78rem;color:#a9c0de}
+.xlink{display:inline-block;padding:4px 12px;border:1px solid rgba(110,190,255,.4);border-radius:999px;font-size:.8rem;color:var(--ink);text-decoration:none;background:linear-gradient(180deg,rgba(40,70,110,.55),rgba(12,24,44,.75))}.xlink:hover{border-color:var(--accent);box-shadow:0 0 10px rgba(98,214,255,.35)}
+.legal{text-align:center;font-size:.72rem}
 </style>
 </head>
 <body>
@@ -158,12 +262,16 @@ details[open] summary .nm::before{content:"▾ "}
 
 <div class="wrap">
 <header>
-  <h1>FFXIII チェーンボーナス計算機</h1>
+  <h1>⛓️ FF13 チェーンボーナス計算機</h1>
   <p>パーティ3人のATBにコマンドを並べると、1ターンでチェーンボーナスが合計いくつ上がるかを計算します。式は『ファイナルファンタジーXIII バトルアルティマニア』によります。</p>
 </header>
-<p class="note" style="margin:0 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px"><b>チェーンボーナスだけ知りたいときに必要な入力</b>：戦闘モード／各メンバーのキャラ・ロール・ロールレベル（ブラスター／アタッカー）・ATBゲージ数・HP・コマンド（とロールのアビリティ）／敵のチェーン耐性・ブレイク値・物理耐性・魔法耐性・属性耐性／現在のチェーンボーナス。<br>「ダメージ用」の項目（攻撃力・補正）と敵の最大HP、召喚獣ランクは、ダメージと残りHPを出したいときだけ入れてください。</p>
-<div class="qtools" style="margin:0 0 8px;gap:8px;align-items:center"><button class="lbtn" type="button" id="stReset">入力を初期値に戻す</button><span class="note">入力した内容はこのブラウザに自動で保存され、次に開いたときもそのまま残ります（初期値に戻しても、登録したオプティマと敵は消えません）。</span></div>
+<details class="intro"><summary>使い方・必要な入力・計算式・出典</summary>
+<p class="note"><b>チェーンボーナスだけ知りたいときに必要な入力</b>：戦闘モード／各メンバーのキャラ・ロール・ロールレベル（ブラスター／アタッカー）・ATBゲージ数・HP・コマンド（とロールのアビリティ）／敵のチェーン耐性・ブレイク値・物理耐性・魔法耐性・属性耐性／現在のチェーンボーナス。<br>「ダメージ用」の項目（攻撃力・補正）と敵の最大HP、召喚獣ランクは、ダメージと残りHPを出したいときだけ入れてください。</p>
+<p class="note">入力した内容はこのブラウザに自動で保存され、次に開いたときもそのまま残ります（初期値に戻しても、登録したオプティマと敵は消えません）。</p>
 <div class="formula">1ヒットの上昇量 = [ (スキル基本値 + 基本値補正) × (100 − チェーン耐性)/100 + 条件補正 ] × 属性補正</div>
+<p class="note">出典：『ファイナルファンタジーXIII バトルアルティマニア』。非公式のファンメイドツールです。ファイナルファンタジーは株式会社スクウェア・エニックスの商標または登録商標です。</p>
+</details>
+<div class="qtools" style="margin:0;gap:8px;align-items:center"><button class="lbtn" type="button" id="stReset">入力を初期値に戻す</button><span class="note">入力は自動で保存されます</span><a class="xlink" href="https://ossy3126.github.io/ff13-damage-calc/" target="_blank" rel="noopener">⚔️ ダメージ計算機へ</a></div>
 
 <div class="grid">
 <div class="inputs">
@@ -172,7 +280,8 @@ details[open] summary .nm::before{content:"▾ "}
   <legend>パーティ</legend>
   <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
     <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
-  <label class="chk full" id="preWrap"><input type="checkbox" id="preOpt">2章まで（オプティマ解禁前）で計算する（リーダー＝メンバー1と、AIの組み合わせ：ライトニング＋サッズ（2人以上。1度だけスノウも）／スノウ＋ガドー（＋レブロ）／ヴァニラ＋ホープの2人）</label>
+  <label class="chk full" id="preWrap"><input type="checkbox" id="preOpt">2章まで（オプティマ解禁前）で計算する</label>
+  <p class="hint xh">リーダー＝メンバー1と、AIの組み合わせ：ライトニング＋サッズ（2人以上。1度だけスノウも）／スノウ＋ガドー（＋レブロ）／ヴァニラ＋ホープの2人</p>
   <div class="full" id="optWrap" style="display:grid;grid-template-columns:1fr;gap:6px">
     <label id="ch3W" hidden>3章のパーティ<select id="ch3P"><option value="light,snow,vanille">ライトニング・スノウ・ヴァニラ</option><option value="light,vanille,sazh">ライトニング・ヴァニラ・サッズ</option><option value="snow">スノウ（1人）</option></select></label>
     <label id="ch9W" hidden>9章の場面<select id="ch9P"><option value="L">合流前：ライトニング・ホープ・ファング</option><option value="S">合流前：サッズ・ヴァニラ</option><option value="A">6人合流後</option></select></label>
@@ -276,14 +385,14 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="full">オプティマチェンジのタイミング<select id="shiftAt"><option value="0">しない（このターンはオプティマを変えない）</option><option value="999">全員の行動が当たってからチェンジ（次のターンから新しいオプティマ）</option><option value="1">内訳の1番目が当たる前にチェンジ（1番目から新しいロール）</option><option value="2">内訳の2番目が当たる前にチェンジ（2番目から新しいロール）</option><option value="3">内訳の3番目が当たる前にチェンジ（3番目から新しいロール）</option><option value="4">内訳の4番目が当たる前にチェンジ（4番目から新しいロール）</option><option value="5">内訳の5番目が当たる前にチェンジ（5番目から新しいロール）</option><option value="6">内訳の6番目が当たる前にチェンジ（6番目から新しいロール）</option><option value="7">内訳の7番目が当たる前にチェンジ（7番目から新しいロール）</option><option value="8">内訳の8番目が当たる前にチェンジ（8番目から新しいロール）</option><option value="9">内訳の9番目が当たる前にチェンジ（9番目から新しいロール）</option><option value="10">内訳の10番目が当たる前にチェンジ（10番目から新しいロール）</option><option value="11">内訳の11番目が当たる前にチェンジ（11番目から新しいロール）</option><option value="12">内訳の12番目が当たる前にチェンジ（12番目から新しいロール）</option><option value="13">内訳の13番目が当たる前にチェンジ（13番目から新しいロール）</option><option value="14">内訳の14番目が当たる前にチェンジ（14番目から新しいロール）</option><option value="15">内訳の15番目が当たる前にチェンジ（15番目から新しいロール）</option><option value="16">内訳の16番目が当たる前にチェンジ（16番目から新しいロール）</option><option value="17">内訳の17番目が当たる前にチェンジ（17番目から新しいロール）</option><option value="18">内訳の18番目が当たる前にチェンジ（18番目から新しいロール）</option><option value="19">内訳の19番目が当たる前にチェンジ（19番目から新しいロール）</option><option value="20">内訳の20番目が当たる前にチェンジ（20番目から新しいロール）</option><option value="21">内訳の21番目が当たる前にチェンジ（21番目から新しいロール）</option><option value="22">内訳の22番目が当たる前にチェンジ（22番目から新しいロール）</option><option value="23">内訳の23番目が当たる前にチェンジ（23番目から新しいロール）</option><option value="24">内訳の24番目が当たる前にチェンジ（24番目から新しいロール）</option><option value="25">内訳の25番目が当たる前にチェンジ（25番目から新しいロール）</option><option value="26">内訳の26番目が当たる前にチェンジ（26番目から新しいロール）</option><option value="27">内訳の27番目が当たる前にチェンジ（27番目から新しいロール）</option><option value="28">内訳の28番目が当たる前にチェンジ（28番目から新しいロール）</option><option value="29">内訳の29番目が当たる前にチェンジ（29番目から新しいロール）</option><option value="30">内訳の30番目が当たる前にチェンジ（30番目から新しいロール）</option><option value="31">内訳の31番目が当たる前にチェンジ（31番目から新しいロール）</option></select></label>
   <label class="full" id="shiftToWrap">オプティマチェンジ先<select id="shiftTo"></select></label>
   <label class="full" id="shiftToArrW" hidden>チェンジ先で誰がどのロールか<select id="shiftToArr"></select></label>
-  <p class="hint" id="shiftHint">ATBを使い切る前でも、行動の途中でもオプティマは変えられます。ここでは「内訳の○番目の行動が当たる前」に変えた場合を計算します（その行動から新しいロール。全部当たってから変えるなら、次の行動の番号を選びます）（行動の途中で変える場合は、ATBの行の「○hit目から」「当たる時のロール」を使います）。オプティマチェンジのあとに当たるヒットは、各メンバーの「オプティマチェンジ後のロール」で計算します（チェンジの時点で実行中だった1発だけが出て、そのあとのATBの行動は取り消しになります（チェンジする行動は実行中として扱います）。出た1発のロールボーナス・条件補正・ジョイントレイドの人数は当たった時点のロールで決まります）。</p>
-  <p class="hint">M1〜M3はパーティのタブの順（召喚中はM1＝召喚者、M2・M3＝召喚獣）です。</p>
-  <p class="hint">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
+  <p class="hint xh" id="shiftHint">ATBを使い切る前でも、行動の途中でもオプティマは変えられます。ここでは「内訳の○番目の行動が当たる前」に変えた場合を計算します（その行動から新しいロール。全部当たってから変えるなら、次の行動の番号を選びます）（行動の途中で変える場合は、ATBの行の「○hit目から」「当たる時のロール」を使います）。オプティマチェンジのあとに当たるヒットは、各メンバーの「オプティマチェンジ後のロール」で計算します（チェンジの時点で実行中だった1発だけが出て、そのあとのATBの行動は取り消しになります（チェンジする行動は実行中として扱います）。出た1発のロールボーナス・条件補正・ジョイントレイドの人数は当たった時点のロールで決まります）。</p>
+  <p class="hint xh">M1〜M3はパーティのタブの順（召喚中はM1＝召喚者、M2・M3＝召喚獣）です。</p>
+  <p class="hint xh">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
   <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
   <label>クエイクの回数<select id="tpQ"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
   <label>使うタイミング<select id="tpWhen"><option value="before">全員のコマンドの前</option><option value="after">全員のコマンドの後</option></select></label>
   <label>クエイクの基本値<input type="number" id="tpBase" step="0.1" min="0" value="10"></label>
-  <p class="hint" id="tpHint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
+  <p class="hint xh" id="tpHint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
 </fieldset>
 
 <fieldset>
@@ -307,17 +416,18 @@ details[open] summary .nm::before{content:"▾ "}
   <label>ダメージの見積もり<select id="dmgV"><option value="min">最小（ばらつき下限）</option><option value="avg" selected>平均</option><option value="max">最大</option></select></label>
   <label class="chk"><input type="checkbox" id="capUp">メンバーのダメージ限界突破（上限999,999）</label>
   </div></details>
+  <details class="full enRes" id="enRes" open><summary><span id="enResSum">耐性（物理・魔法・属性）</span></summary><div class="rgrid">
   <label>物理耐性<select id="tresP">
     <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
   <label>魔法耐性<select id="tresM">
     <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
-  <div class="sub">属性耐性</div>
   <label>火<select class="eres" data-e="F"></select></label>
   <label>氷<select class="eres" data-e="I"></select></label>
   <label>雷<select class="eres" data-e="T"></select></label>
   <label>水<select class="eres" data-e="W"></select></label>
   <label>風<select class="eres" data-e="A"></select></label>
   <label>土<select class="eres" data-e="E"></select></label>
+  </div></details>
   <div class="sub">状態</div>
   <label>現在の弱体数（挑発も1つと数える）<input type="number" id="eneg" min="0" max="8" step="1" value="0"></label>
   <label class="chk"><input type="checkbox" id="imp">ウィークが入っている</label>
@@ -326,7 +436,7 @@ details[open] summary .nm::before{content:"▾ "}
   <label class="chk" id="guardW" hidden><input type="checkbox" id="guard">ガード中（受けるダメージが90%減る。チェーンと耐性は変わらない）</label>
   <label class="chk"><input type="checkbox" id="epos">敵に強化がかかっている</label>
   <label class="chk"><input type="checkbox" id="noLaunch">打ち上げられない敵</label>
-  <p class="hint">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
+  <p class="hint xh">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
 </fieldset>
 
 <fieldset>
@@ -335,13 +445,14 @@ details[open] summary .nm::before{content:"▾ "}
   <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999.9" step="0.1" value="200"></label>
   <label>ブレイク予兆の位置<select id="omen"><option value="0.90" selected>必要上昇量の0.90倍</option><option value="0.91">0.91倍</option><option value="0.92">0.92倍</option></select></label>
   <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンゲージが空の状態から始める（100.0%なら自動でチェック）</label>
-  <p class="hint">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
-  <p class="hint">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
+  <p class="hint xh">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
+  <p class="hint xh">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
 </fieldset>
 
 </div>
 
-<aside class="result" aria-live="polite">
+<div class="mbar" id="mbar" aria-hidden="true"><div class="mb1"><span class="mbt" id="mbT">+0.00%</span><span class="mbg" id="mbG"></span></div><div class="mb2" id="mbB"></div><button type="button" class="lbtn" id="mbGo">結果を見る</button></div>
+<aside class="result" id="resultBox" aria-live="polite">
   <div>
     <div class="cap" id="totalCap">このターンの合計上昇量（パーティ全員）</div>
     <div class="big"><span class="n" id="rTotal">0</span><span class="u">%</span> <span class="pill" id="rState" hidden></span></div>
@@ -377,10 +488,9 @@ details[open] summary .nm::before{content:"▾ "}
 </div>
 
 <footer class="notes" aria-label="計算の前提">
-  <h2>計算の前提</h2>
+  <details class="notesD"><summary>計算の前提（詳しい仕様）</summary>
   <div class="ngrid">
-    <section>
-      <h3>基本の計算</h3>
+    <details class="nsec"><summary>基本の計算</summary>
       <ul>
         <li>多段ヒットは、1ヒットごとに条件補正を含む式全体を計算して合計します。</li>
         <li>「1つ目のストックコマンド」は各キャラのATBの先頭のコマンド、「違うコマンド」はそのキャラ自身の直前の行動と比べて判定します。</li>
@@ -394,9 +504,8 @@ details[open] summary .nm::before{content:"▾ "}
         <li>サッズのエリアブラストは、距離や敵の大きさで全弾当たるとは限りません。初期値は7ヒットで、ATB欄の行ごとに当たった数（1〜7）を入れられます。途中でブラスターにシフトした場合は「□hit目からブラスター」で指定します。</li>
         <li>ファングのたたかうは、ATB4本以上のとき最後の枠だけ連撃（0.0×2＋0.25×2）になります。</li>
       </ul>
-    </section>
-    <section>
-      <h3>ブラスターのボーナス</h3>
+    </details>
+    <details class="nsec"><summary>ブラスターのボーナス</summary>
       <ul>
         <li>自分がブラスターなら自分のロールレベル分（+1.0〜+3.0）。</li>
         <li>ほかのブラスターのメンバーから1人あたり <b>+0.1〜+0.3</b>。受け取る側もブラスターのときだけ付きます（アタッカーには付きません）。</li>
@@ -404,9 +513,8 @@ details[open] summary .nm::before{content:"▾ "}
         <li>ダメージは、FF13 ダメージ計算機と同じ式で計算します（攻撃力×技の倍率×ばらつき×ヒット時点のチェーンボーナス×アタッカーのロールボーナス×物理/魔法耐性・属性耐性、デプロテ/デシェル）。敵の最大HPを入れると、行動ごとの残りHPと撃破のタイミングを出します。エンハンサー以外の強化・装備のアビリティ、ジャマーの弱体魔法・ディフェンダーの技のダメージは含めていません。技のヒット数とダメージの倍率のヒット数が合わない技は、合計の倍率を最後のヒットでまとめて計算します。</li>
         <li>戦闘不能になった味方は、ジョイントレイドの人数にもブラスターのパーティボーナスにも数えません。</li>
       </ul>
-    </section>
-    <section>
-      <h3>属性耐性・弱体・ウィーク</h3>
+    </details>
+    <details class="nsec"><summary>属性耐性・弱体・ウィーク</summary>
       <ul>
         <li>属性補正：吸収・無効 ×0.25、耐久・半減 ×0.5、標準・弱点 ×1。物理/魔法耐性はチェーンの倍率には影響しません。</li>
         <li>「弱点」の補正は、物理/魔法耐性と属性耐性を掛け合わせたダメージ倍率が1倍を超えるときだけ付きます。例：魔法半減×氷弱点＝1倍なので付かない。召喚獣のドライビング技は物理/魔法耐性を無視するので、属性の弱点だけで判定します。</li>
@@ -415,23 +523,20 @@ details[open] summary .nm::before{content:"▾ "}
         <li>「ウィークが入っている」にチェックするときは、「現在の弱体数」にも1つ含めてください。</li>
         <li>弱体が成功すると敵の弱体数が1つ増えます（デスペルは除く）。同じ弱体（単体版とガ版を含む）が入っていれば付与されず、+5.0も付きません。</li>
       </ul>
-    </section>
-    <section>
-      <h3>行動の順番</h3>
+    </details>
+    <details class="nsec"><summary>行動の順番</summary>
       <ul>
         <li>モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初です。</li>
         <li>ゲームで見た順に、内訳の ▲▼ で並べ替えてください。</li>
       </ul>
-    </section>
-    <section>
-      <h3>召喚中（ドライビング前）</h3>
+    </details>
+    <details class="nsec"><summary>召喚中（ドライビング前）</summary>
       <ul>
         <li>召喚獣用の条件補正は本の値です（ブレイク予兆 +0.5、ブレイク中 +0.1、打ち上げられている敵 +0.5）。「違うコマンド」とロールボーナスは付きません。3つとも実測で確認済みです。打ち上げは、打ち上げる技（天臨・烈破・サンダガなど）の1ヒット目には付かず、打ち上げた後のヒットから付きます。</li>
         <li>召喚者は自分のロールボーナスで計算します。</li>
       </ul>
-    </section>
-    <section>
-      <h3>ドライビングモード</h3>
+    </details>
+    <details class="nsec"><summary>ドライビングモード</summary>
       <ul>
         <li>召喚獣用の条件補正は、本の値の<b>2倍</b>になります（「違うコマンド」は付かない。弱点は本どおり +0.1）：ブレイク中 +0.2、<b>打ち上げた後のヒット +1.0</b>（天鳴万雷・バスターフォース・フィニッシュ技などで打ち上げた後。打ち上げる技の1ヒット目には付かず、打ち上げない技はその前の打ち上げ状態を引き継ぐ）、ブレイク予兆 +1.0。</li>
         <li>ブラスターのロールボーナスは、召喚獣には付きません。</li>
@@ -444,9 +549,11 @@ details[open] summary .nm::before{content:"▾ "}
         <li>ゲージが残り2以上ならどの技も使え、残りは1で止まります。終了後はチェーンがリセットされます。</li>
         <li>幅のあるヒット数は最大値が初期値です（行ごとに変更可）。ブリュンヒルデのジェットは含めていません。</li>
       </ul>
-    </section>
+    </details>
   </div>
+</details>
 </footer>
+<p class="note legal">非公式のファンメイドツールです。ファイナルファンタジーは株式会社スクウェア・エニックスの商標または登録商標です。</p>
 </div>
 
 <script>
@@ -666,7 +773,11 @@ function renderTabs(){
     const b=document.createElement("button");b.type="button";b.className="tab"+(a.on?"":" off");b.setAttribute("role","tab");b.setAttribute("aria-selected",a===A());
     const cmds=a.on&&a.ko===-1?"戦闘不能":a.on?(a.queue.length?a.queue.map(q=>q.name).join("・"):"コマンドなし"):"パーティにいない";
     const title=a.kind==="member"?`${a.label}${mode==="summon"?"（召喚者）":""}・${CHR_JP[a.chr]}・${a.role==="PRE"?(M.indexOf(a)===0?"リーダー":"AI"):ROLE_JP[a.role]}`:a.label;
-    b.innerHTML=`<b></b><span></span>`;b.querySelector("b").textContent=title;b.querySelector("span").textContent=cmds;
+    b.innerHTML=`<b></b><span></span>`;b.querySelector("span").textContent=cmds;
+    if(a.kind==="member"){const k=M.indexOf(a),bb=b.querySelector("b");b.classList.add("m"+k);
+      const w=document.createElement("i");w.className="who m"+k;w.textContent="M"+(k+1);const nm=document.createElement("span");nm.className="nm";nm.textContent=CHR_JP[a.chr]+(mode==="summon"?"（召喚者）":"");bb.append(w,nm);
+      const r=document.createElement("em");r.className="rl";r.textContent=a.role==="PRE"?(k===0?"リーダー":"AI"):ROLE_JP[a.role];bb.append(r);b.title=title}
+    else b.querySelector("b").textContent=title;
     b.onclick=()=>{cur=i;loadActor();render()};
     t.append(b);
   });
@@ -848,7 +959,15 @@ function fixDrive(a){
   }
   a.queue=keep;
 }
-function render(){if(cur>=actors().length)cur=0;setTimeout(dmgBoxSync,0);if(mode==="drive")fixDrive(DR[$("eid").value]);syncVis();renderPalette();renderQueue();calc();renderTabs()}
+// スマホの要約バー
+function mbarSync(){const b=$("mbar");if(!b)return;$("mbT").textContent="+"+$("rTotal").textContent+"%"+($("rState").hidden?"":" "+$("rState").textContent);$("mbG").textContent=$("gFrom").textContent;
+  const t=($("toBreak").textContent||"").split("\n")[0];$("mbB").textContent=t}
+// 耐性の要約（たたんだときに見える）
+function enResSync(){const J={weak:"弱点",norm:"標準",half:"半減",res:"耐久",null:"無効",abs:"吸収"},EJ={F:"火",I:"氷",T:"雷",W:"水",A:"風",E:"土"};
+  const g={};document.querySelectorAll(".eres").forEach(x=>{(g[x.value]=g[x.value]||[]).push(EJ[x.dataset.e])});
+  const el=Object.keys(g).length===1?"全属性"+J[Object.keys(g)[0]]:Object.entries(g).filter(([k])=>k!=="norm").map(([k,v])=>v.join("")+J[k]).join("・");
+  $("enResSum").textContent="耐性：物理"+J[$("tresP").value]+"・魔法"+J[$("tresM").value]+"／"+el}
+function render(){if(cur>=actors().length)cur=0;setTimeout(dmgBoxSync,0);if(mode==="drive")fixDrive(DR[$("eid").value]);syncVis();renderPalette();renderQueue();calc();renderTabs();mbarSync();enResSync()}
 
 const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.kind!=="member"&&key!=="diff")return;const el=$(id);
   if(key==="chr"){const other=M.find(o=>o!==a&&o.on&&o.chr===el.value);
@@ -1238,7 +1357,8 @@ function calc(){
   pm.style.gridTemplateColumns=`repeat(${list.length},1fr)`;
   list.forEach((a,i)=>{const d=document.createElement("div");
     const capTxt=!a.on?"パーティにいない":nonAtk(a.role)?"攻撃しない":a.kind==="drive"?`ゲージ ${used(a)}/${cap(a)}`:`ATB ${used(a)}/${cap(a)}`;
-    d.innerHTML=`<b>+${f(per.get(a))}</b><span></span>`;d.querySelector("span").textContent=`${a.label}・${capTxt}${a===M[0]&&qn?"＋クエイク":""}`;pm.append(d)});
+    d.innerHTML=`<b>+${f(per.get(a))}</b><span class="l1"></span><span class="l2"></span>`;const k=M.indexOf(a);if(a.kind==="member"&&k>=0)d.classList.add("m"+k);
+    d.querySelector(".l1").textContent=a.label;d.querySelector(".l2").textContent=`${capTxt}${a===M[0]&&qn?"＋クエイク":""}`;pm.append(d)});
 
   const box=$("cmds");box.innerHTML="";
   if(!out.length)box.innerHTML='<span class="empty">コマンドを追加すると表示されます。</span>';
@@ -1585,8 +1705,8 @@ const chName=c=>c?(CH_JP[c]||c+"章"):"章なし（自分で登録）";
 const ER_JP={abs:"吸収",null:"無効",res:"耐久",half:"半減",weak:"弱点"},TR_JP={weak:"弱点",half:"半減",res:"耐久",null:"無効"};
 const enDesc=v=>{const t=[`チェーン耐性${v.cres}`];if(v.lim)t.push(`ブレイク値${v.lim}%`);if(v.ehp)t.push(`HP${(+v.ehp).toLocaleString("ja-JP")}`);if(TR_JP[v.tresP])t.push("物理"+TR_JP[v.tresP]);if(TR_JP[v.tresM])t.push("魔法"+TR_JP[v.tresM]);Object.entries(v.er||{}).forEach(([e,r])=>{if(ER_JP[r])t.push(EN[e]+ER_JP[r])});if(v.noLaunch)t.push("打ち上げ不可");return t.join("・")};
 // 敵の説明・ブレイク後の切り替え・状態の切り替えボタンを表示
-function enNoteSet(o){const gw=$("guardW");if(gw){gw.hidden=!(o&&o.guard);if(gw.hidden)$("guard").checked=false}const bo=o&&o.brk?ENM.find(y=>y.en===o.brk):null;const nt=(o&&o.note||"")+(bo?(o.note?"／":"")+"ブレイクした行動から先は「"+bo.n+"」の耐性で計算します":"");$("enNote").textContent=nt;$("enNote").hidden=!nt;enNxRender(o)}
-function enApply(i){const o=ENM[i];if(!o)return;enNoteSet(o);const v=o.v;EN_F.forEach(id=>{if(v[id]===undefined)return;const el=$(id);if(el.type==="checkbox")el.checked=!!v[id];else el.value=v[id]});document.querySelectorAll(".eres").forEach(el=>{if(v.er&&v.er[el.dataset.e])el.value=v.er[el.dataset.e]});if(v.ehp){$("ehpCur").value=""}calc();stSaveSoon()}
+let enResLast;function enNoteSet(o){const er=$("enRes");if(er&&o!==enResLast){er.open=!o;enResLast=o}const gw=$("guardW");if(gw){gw.hidden=!(o&&o.guard);if(gw.hidden)$("guard").checked=false}const bo=o&&o.brk?ENM.find(y=>y.en===o.brk):null;const nt=(o&&o.note||"")+(bo?(o.note?"／":"")+"ブレイクした行動から先は「"+bo.n+"」の耐性で計算します":"");$("enNote").textContent=nt;$("enNote").hidden=!nt;enNxRender(o)}
+function enApply(i){const o=ENM[i];if(!o)return;enNoteSet(o);setTimeout(enResSync,0);const v=o.v;EN_F.forEach(id=>{if(v[id]===undefined)return;const el=$(id);if(el.type==="checkbox")el.checked=!!v[id];else el.value=v[id]});document.querySelectorAll(".eres").forEach(el=>{if(v.er&&v.er[el.dataset.e])el.value=v.er[el.dataset.e]});if(v.ehp){$("ehpCur").value=""}calc();stSaveSoon()}
 function enRenderSel(){const sel=$("enSel"),keep=sel.value;sel.innerHTML='<option value="">選ばない（手で入力）</option>';
   const chs=[...new Set(ENM.flatMap(chOf))].sort((a,b)=>(a||99)-(b||99));
   // 同じ種類の敵は並べて表示（例：9章のプリン衛生兵とプリン電機兵）
@@ -1807,6 +1927,12 @@ function fancySelect(sel){if(sel.dataset.fs)return;sel.dataset.fs="1";
   new MutationObserver(txt).observe(sel,{childList:true,subtree:true,attributes:true,characterData:true});
   w._fsSync=()=>{txt();w.hidden=sel.hidden;btn.disabled=sel.disabled;btn.style.opacity=sel.disabled?.5:1;btn.style.cursor=sel.disabled?"not-allowed":"pointer";if(sel.disabled)close()};txt();
 }
+
+// 説明の表示切り替え（欄ごと）
+document.querySelectorAll(".inputs fieldset").forEach(fs=>{if(!fs.querySelector(".xh"))return;const lg=fs.querySelector("legend");const b=document.createElement("button");b.type="button";b.className="hbtn";b.textContent="？ 説明";b.setAttribute("aria-expanded","false");
+  b.onclick=()=>{const on=fs.classList.toggle("help");b.setAttribute("aria-expanded",on?"true":"false");b.textContent=on?"説明を閉じる":"？ 説明"};lg.append(b)});
+["tresP","tresM"].forEach(id=>$(id).addEventListener("input",enResSync));document.querySelectorAll(".eres").forEach(x=>x.addEventListener("input",enResSync));
+$("mbGo").onclick=()=>$("resultBox").scrollIntoView({behavior:"smooth",block:"start"});
 const FS_IDS=["optNow","optNowArr","shiftTo","shiftToArr","enSel","ch3P","ch9P"];
 FS_IDS.forEach(id=>fancySelect($(id)));
 setInterval(()=>FS_IDS.forEach(id=>{const w=$(id).parentNode;if(w._fsSync)w._fsSync()}),250);
