@@ -277,11 +277,49 @@ input,select,button,textarea{font-family:inherit}
 <div class="inputs">
 
 <fieldset>
+  <legend>敵</legend>
+  <div class="full" style="display:grid;gap:6px">
+    <label>戦う敵<select id="enSel" data-search="1"></select></label>
+    <p class="hint xh">敵を選ぶと、その章のパーティ・ロール・ロールレベル・ATBゲージ数と、敵の耐性が自動で入ります。値は「敵のデータ」で確認・変更でき、「敵を登録・編集」で名前を付けて保存できます。ターンごとに変わる弱体・ブレイク中などは下の「敵の状態」で入れます。</p>
+    <label class="chk" id="postClrW" hidden><input type="checkbox" id="postClr">クリア後に戦う（ロールレベル・ATBゲージ数をクリア後の上限にする）</label>
+    <p class="hint" id="enNote" hidden></p>
+    <div class="enNx" id="enNx" hidden></div>
+    <details class="full dbox" id="enData"><summary><span class="nm" id="enDataT">敵のデータ（チェーン耐性・ブレイク値・HP・耐性）</span></summary><div class="dgrid">
+  <label>チェーン耐性<input type="number" id="cres" min="0" max="100" step="1" value="50"></label>
+  <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999.9" step="0.1" value="200"></label>
+  <label>ブレイク予兆の位置<select id="omen"><option value="0.90" selected>必要上昇量の0.90倍</option><option value="0.91">0.91倍</option><option value="0.92">0.92倍</option></select></label>
+  <label>敵の最大HP（ダメージ計算用・任意）<input type="number" id="ehp" min="0" step="1" placeholder="例：9660"></label>
+  <label class="chk"><input type="checkbox" id="noLaunch">打ち上げられない敵</label>
+  </div>
+  <details class="full enRes" id="enRes" open style="margin-top:8px"><summary><span id="enResSum">耐性（物理・魔法・属性）</span></summary><div class="rgrid">
+  <label>物理耐性<select id="tresP">
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
+  <label>魔法耐性<select id="tresM">
+    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
+  <label>火<select class="eres" data-e="F"></select></label>
+  <label>氷<select class="eres" data-e="I"></select></label>
+  <label>雷<select class="eres" data-e="T"></select></label>
+  <label>水<select class="eres" data-e="W"></select></label>
+  <label>風<select class="eres" data-e="A"></select></label>
+  <label>土<select class="eres" data-e="E"></select></label>
+  </div></details>
+    </details>
+    <details id="enEd"><summary class="lbtn" id="enEdSum" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;list-style:none">✎ 敵を登録・編集</summary>
+      <p class="hint">今の「チェーン耐性・ブレイク値・ブレイク予兆の位置・敵の最大HP・物理耐性・魔法耐性・属性耐性・打ち上げられない敵」を、名前を付けて保存します。上の「戦う敵」で選ぶと、まとめて入ります。このブラウザに保存されます。</p>
+      <p class="hint">1・2章の一覧から選ぶと、「2章まで（オプティマ解禁前）で計算する」に自動でチェックが入り、3章以降の一覧から選ぶと自動で外れます。3章の一覧から選ぶと、パーティが3章の編成（ライトニング・スノウ・ヴァニラ／ライトニング・ヴァニラ・サッズ／スノウ1人）になり、「3章のパーティ」で切り替えられます（シヴァ・ニクスはスノウ1人、重攻撃騎マナスヴィン（3回目）はライトニング・スノウ・ヴァニラ、ベヒーモス剛と戦闘爆撃騎カルラはライトニング・ヴァニラ・サッズ）。4章の一覧から選ぶと、4章に参加できるキャラ（ライトニング・サッズ・ヴァニラ・ホープ）とロールだけになります（ドレッドノートはサッズ・ライトニング・ヴァニラ、オーディンはライトニング・ホープ）。5章の一覧から選ぶと、ライトニングとホープの2人になります（リーダーはどちらでも可）。6章の一覧から選ぶと、ヴァニラ（リーダー）とサッズの2人になります。7章の一覧から選ぶと、ライトニング・スノウ・ホープ・ファングだけになり、リーダーによって組める相手が決まります。</p>
+      <p class="hint">1〜13章の敵は最初から入っています（値は『ファイナルファンタジーXIII バトルアルティマニア』参照。HP・チェーン耐性・ブレイク値・物理/魔法耐性・属性耐性）。名前は日本語版の名前です（Final Fantasy Wiki の対訳表による）。英語名は説明に出ます。名前は下の欄で変えられます。召喚獣（シヴァ・ニクス、オーディン、ブリュンヒルデ、バハムート、アレキサンダー、ヘカトンケイル）はブレイク値の代わりにゲージがあるため、ブレイク値と最大HPは入りません。</p>
+      <div class="qtools" style="gap:6px"><input type="text" id="enName" placeholder="敵の名前（例：ベヒーモス改）" style="flex:1 1 12em;min-width:8em"><select id="enCh" style="width:auto" aria-label="章"><option value="">章なし</option><option value="1">1章</option><option value="2">2章</option><option value="3">3章</option><option value="4">4章</option><option value="5">5章</option><option value="6">6章</option><option value="7">7章</option><option value="8">8章</option><option value="9">9章</option><option value="10">10章</option><option value="11">11章</option><option value="12">12章</option><option value="13">13章</option></select><button class="lbtn" type="button" id="enAdd">今の設定で登録</button></div>
+      <div id="enList" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+    </details>
+  </div>
+</fieldset>
+
+<fieldset>
   <legend>パーティ</legend>
   <div class="seg full" id="modeSeg" role="group" aria-label="戦闘モード">
     <button type="button" data-m="normal">通常バトル</button><button type="button" data-m="summon">召喚中</button><button type="button" data-m="drive">ドライビングモード</button></div>
   <label class="chk full" id="preWrap"><input type="checkbox" id="preOpt">2章まで（オプティマ解禁前）で計算する</label>
-  <p class="hint xh">リーダー＝メンバー1と、AIの組み合わせ：ライトニング＋サッズ（2人以上。1度だけスノウも）／スノウ＋ガドー（＋レブロ）／ヴァニラ＋ホープの2人</p>
+  <p class="hint xh">リーダー＝メンバー1と、AIの組み合わせ：ライトニング＋サッズ（2人以上。1度だけスノウも）／スノウ＋ガドー（＋レブロ）。ガドー・レブロは1章だけで、2章のスノウは1人か、1回だけホープ・ヴァニラとの3人（グール×3）／ヴァニラ＋ホープの2人</p>
   <div class="full" id="optWrap" style="display:grid;grid-template-columns:1fr;gap:6px">
     <label id="ch3W" hidden>3章のパーティ<select id="ch3P"><option value="light,snow,vanille">ライトニング・スノウ・ヴァニラ</option><option value="light,vanille,sazh">ライトニング・ヴァニラ・サッズ</option><option value="snow">スノウ（1人）</option></select></label>
     <label id="ch9W" hidden>9章の場面<select id="ch9P"><option value="L">合流前：ライトニング・ホープ・ファング</option><option value="S">合流前：サッズ・ヴァニラ</option><option value="A">6人合流後</option></select></label>
@@ -314,14 +352,14 @@ input,select,button,textarea{font-family:inherit}
     <option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option>
     <option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
   <label class="mo" id="rlvWrap"><span id="rlvTx">ブラスターのロールレベル</span><select id="rlv"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-  <label class="mo">ATBゲージ数<select id="atb"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+  <label class="mo"><span id="atbTx">ATBゲージ数</span><select id="atb"><option>2</option><option>3</option><option value="3.5">3.5</option><option>4</option><option>5</option><option>6</option></select></label>
   <label class="mo">HP<select id="hp">
     <option value="full">満タン (100%)</option><option value="high">70%超</option>
     <option value="mid">30〜70%</option><option value="low">30%未満</option></select></label>
   <label class="mo">自分の強化数<input type="number" id="cpos" min="0" max="8" step="1"></label>
   <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
   <label class="mo">戦闘不能になるタイミング<select id="ko"><option value="0">ならない</option><option value="-1">最初から戦闘不能</option><option value="1">内訳の1番目の行動の後</option><option value="2">内訳の2番目の行動の後</option><option value="3">内訳の3番目の行動の後</option><option value="4">内訳の4番目の行動の後</option><option value="5">内訳の5番目の行動の後</option><option value="6">内訳の6番目の行動の後</option><option value="7">内訳の7番目の行動の後</option><option value="8">内訳の8番目の行動の後</option><option value="9">内訳の9番目の行動の後</option><option value="10">内訳の10番目の行動の後</option><option value="11">内訳の11番目の行動の後</option><option value="12">内訳の12番目の行動の後</option><option value="13">内訳の13番目の行動の後</option><option value="14">内訳の14番目の行動の後</option><option value="15">内訳の15番目の行動の後</option><option value="16">内訳の16番目の行動の後</option><option value="17">内訳の17番目の行動の後</option><option value="18">内訳の18番目の行動の後</option><option value="19">内訳の19番目の行動の後</option><option value="20">内訳の20番目の行動の後</option><option value="21">内訳の21番目の行動の後</option><option value="22">内訳の22番目の行動の後</option><option value="23">内訳の23番目の行動の後</option><option value="24">内訳の24番目の行動の後</option></select></label>
-  <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド（戦闘の最初のターンはオフ）</label>
+  <label class="chk"><input type="checkbox" id="diff">ターンの1つ目にも「違うコマンド」を付ける（通常はオフ。実測では付かない）</label>
   <label id="shComWrap">オプティマチェンジの時点で<select id="shCom"><option value="auto">自動（チェンジ前に動いていれば、実行中の1発だけ出る）</option><option value="yes">実行中（次の1発だけ出る）</option><option value="no">未実行（何も出ない）</option></select></label>
   <label id="shRoleWrap">オプティマチェンジ後のロール<select id="shRole"><option value="">変えない（同じロール）</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
   <div class="sub mo" id="abSub">ロールのアビリティ（クリスタリウムで習得）</div>
@@ -397,53 +435,23 @@ input,select,button,textarea{font-family:inherit}
 
 <fieldset>
   <legend>敵の状態</legend>
-  <div class="full" style="display:grid;gap:6px">
-    <label>登録した敵<select id="enSel" data-search="1"></select></label>
-    <p class="hint" id="enNote" hidden></p>
-    <div class="enNx" id="enNx" hidden></div>
-    <details id="enEd"><summary class="lbtn" id="enEdSum" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;list-style:none">✎ 敵を登録・編集</summary>
-      <p class="hint">今の「チェーン耐性・ブレイク値・ブレイク予兆の位置・敵の最大HP・物理耐性・魔法耐性・属性耐性・打ち上げられない敵」を、名前を付けて保存します。「登録した敵」で選ぶと、まとめて入ります。このブラウザに保存されます。</p>
-      <p class="hint">1・2章の一覧から選ぶと、「2章まで（オプティマ解禁前）で計算する」に自動でチェックが入り、3章以降の一覧から選ぶと自動で外れます。3章の一覧から選ぶと、パーティが3章の編成（ライトニング・スノウ・ヴァニラ／ライトニング・ヴァニラ・サッズ／スノウ1人）になり、「3章のパーティ」で切り替えられます（シヴァ・ニクスはスノウ1人、重攻撃騎マナスヴィン（3回目）はライトニング・スノウ・ヴァニラ、ベヒーモス剛と戦闘爆撃騎カルラはライトニング・ヴァニラ・サッズ）。4章の一覧から選ぶと、4章に参加できるキャラ（ライトニング・サッズ・ヴァニラ・ホープ）とロールだけになります（ドレッドノートはサッズ・ライトニング・ヴァニラ、オーディンはライトニング・ホープ）。5章の一覧から選ぶと、ライトニングとホープの2人になります（リーダーはどちらでも可）。6章の一覧から選ぶと、ヴァニラ（リーダー）とサッズの2人になります。7章の一覧から選ぶと、ライトニング・スノウ・ホープ・ファングだけになり、リーダーによって組める相手が決まります。</p>
-      <p class="hint">1〜13章の敵は最初から入っています（値は『ファイナルファンタジーXIII バトルアルティマニア』参照。HP・チェーン耐性・ブレイク値・物理/魔法耐性・属性耐性）。名前は日本語版の名前です（Final Fantasy Wiki の対訳表による）。英語名は説明に出ます。名前は下の欄で変えられます。召喚獣（シヴァ・ニクス、オーディン、ブリュンヒルデ、バハムート、アレキサンダー、ヘカトンケイル）はブレイク値の代わりにゲージがあるため、ブレイク値と最大HPは入りません。</p>
-      <div class="qtools" style="gap:6px"><input type="text" id="enName" placeholder="敵の名前（例：ベヒーモス改）" style="flex:1 1 12em;min-width:8em"><select id="enCh" style="width:auto" aria-label="章"><option value="">章なし</option><option value="1">1章</option><option value="2">2章</option><option value="3">3章</option><option value="4">4章</option><option value="5">5章</option><option value="6">6章</option><option value="7">7章</option><option value="8">8章</option><option value="9">9章</option><option value="10">10章</option><option value="11">11章</option><option value="12">12章</option><option value="13">13章</option></select><button class="lbtn" type="button" id="enAdd">今の設定で登録</button></div>
-      <div id="enList" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
-    </details>
-  </div>
-  <label>チェーン耐性<input type="number" id="cres" min="0" max="100" step="1" value="50"></label>
-  <details class="full dbox" id="dmgBoxE"><summary><span class="nm" id="dmgBoxET">ダメージ用（敵の最大HP・残りHP・見積もり）</span></summary><div class="dgrid">
-  <label>敵の最大HP（ダメージ計算用・任意）<input type="number" id="ehp" min="0" step="1" placeholder="例：9660"></label>
+  <details class="full dbox" id="dmgBoxE"><summary><span class="nm" id="dmgBoxET">ダメージ用（残りHP・見積もり）</span></summary><div class="dgrid">
   <label>このターン開始時の残りHP（空なら最大HP）<input type="number" id="ehpCur" min="0" step="1"></label>
   <label>ダメージの見積もり<select id="dmgV"><option value="min">最小（ばらつき下限）</option><option value="avg" selected>平均</option><option value="max">最大</option></select></label>
   <label class="chk"><input type="checkbox" id="capUp">メンバーのダメージ限界突破（上限999,999）</label>
   </div></details>
-  <details class="full enRes" id="enRes" open><summary><span id="enResSum">耐性（物理・魔法・属性）</span></summary><div class="rgrid">
-  <label>物理耐性<select id="tresP">
-    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
-  <label>魔法耐性<select id="tresM">
-    <option value="weak">弱点</option><option value="norm" selected>標準</option><option value="half">半減</option><option value="res">耐久</option><option value="null">無効</option></select></label>
-  <label>火<select class="eres" data-e="F"></select></label>
-  <label>氷<select class="eres" data-e="I"></select></label>
-  <label>雷<select class="eres" data-e="T"></select></label>
-  <label>水<select class="eres" data-e="W"></select></label>
-  <label>風<select class="eres" data-e="A"></select></label>
-  <label>土<select class="eres" data-e="E"></select></label>
-  </div></details>
-  <div class="sub">状態</div>
-  <label>現在の弱体数（挑発も1つと数える）<input type="number" id="eneg" min="0" max="8" step="1" value="0"></label>
+    <label>現在の弱体数（挑発も1つと数える）<input type="number" id="eneg" min="0" max="8" step="1" value="0"></label>
   <label class="chk"><input type="checkbox" id="imp">ウィークが入っている</label>
   <label class="chk"><input type="checkbox" id="stag">ブレイク中</label>
   <label class="chk"><input type="checkbox" id="launched">打ち上げ中</label>
   <label class="chk" id="guardW" hidden><input type="checkbox" id="guard">ガード中（受けるダメージが90%減る。チェーンと耐性は変わらない）</label>
   <label class="chk"><input type="checkbox" id="epos">敵に強化がかかっている</label>
-  <label class="chk"><input type="checkbox" id="noLaunch">打ち上げられない敵</label>
   <p class="hint xh">この敵を狙う味方の数（ジョイントレイド、アタッカーの「他に狙う味方なし」）は、コマンドを入れているメンバーの人数から自動で判定します。</p>
 </fieldset>
 
 <fieldset>
   <legend>ゲージ</legend>
   <label>現在のチェーンボーナス (%)<input type="number" id="cur" min="100" max="999.9" step="0.1" value="100"></label>
-  <label>ブレイク値 (%)<input type="number" id="lim" min="100" max="999.9" step="0.1" value="200"></label>
-  <label>ブレイク予兆の位置<select id="omen"><option value="0.90" selected>必要上昇量の0.90倍</option><option value="0.91">0.91倍</option><option value="0.92">0.92倍</option></select></label>
   <label class="chk full"><input type="checkbox" id="chainEmpty" checked>チェーンゲージが空の状態から始める（100.0%なら自動でチェック）</label>
   <p class="hint xh">現在のチェーンボーナスが100.0%のときだけ使います（100%より上ならゲージは残っているので関係ありません）。チェーンゲージが空のとき、最初に当たった1ヒットはチェーン持続が始まるだけで、%は上がりません。</p>
   <p class="hint xh">ブレイク前はブレイク値を超えて上がりません。途中でブレイクした場合、以降のヒットはブレイク中として計算します（チェーン耐性0、ブレイク中の基本値と条件補正）。ブレイク予兆は、100%からブレイク値までに必要な上昇量の0.90〜0.92倍を超えたときに起こります（敵ごとに異なる）。</p>
@@ -699,6 +707,24 @@ const $=id=>document.getElementById(id);
 // ゲーム画面と同じく、小数第1位の表示は切り捨て
 const f=(n,d=2)=>d===1?(Math.floor(n*10+1e-6)/10).toFixed(1):(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
 const RAV_SELF=[0,1.0,1.5,2.0,2.5,3.0], RAV_PARTY=[0,0.1,0.1,0.2,0.2,0.3];
+// ロールレベルが上がるクリスタリウムのステージ（Lv2〜5）。アタッカーとブラスターだけ（チェーンボーナスに関係するロール）
+const RLV_ST={light:{COM:[3,6,8,10],RAV:[3,6,8,10]},sazh:{COM:[6,6,8,10],RAV:[4,6,8,10]},snow:{COM:[5,6,8,10],RAV:[5,6,8,10]},
+  hope:{COM:[9,10,10,10],RAV:[3,6,8,10]},vanille:{COM:[9,10,10,10],RAV:[4,6,8,10]},fang:{COM:[4,6,8,10],RAV:[9,10,10,10]}};
+// 章ごとに使えるクリスタリウムのステージ（その章のボス戦の時点）。ステージは3章カルラ・4章ドレッドノート・5章ユイジンシャン・6章エンキとエンリル・7章グライフ・9章バルトアンデルス・10章シド・レインズ・11章バルトアンデルス2回目・13章オーファンの撃破後に広がる
+const CH_ST={1:0,2:0,3:1,4:2,5:3,6:4,7:5,8:6,9:6,10:7,11:8,12:9,13:9},ST_AFTER={"Odin":3,"Bahamut":8};
+// 11章のミッションはクリア後にも戦えるので、チェックでクリア後の上限（ステージ10・ATB6本）にする
+const postClr=()=>enCh===11&&$("postClr").checked;
+function stageNow(){if(!enCh)return null;if(postClr())return 10;const o=ENM[+$("enSel").value];if(o&&ST_AFTER[o.en]!=null&&chOf(o).includes(enCh))return ST_AFTER[o.en];return CH_ST[enCh]}
+function rlvMax(chr,role){const st=stageNow();if(st==null)return 5;const t=RLV_ST[chr]&&RLV_ST[chr][role];if(!t)return 1;return 1+t.filter(x=>x<=st).length}
+// ATBゲージ数：最初は2本。ルシになって+1（ヴァニラ・ファングは最初からルシ、ほかは3章から）、召喚獣を手に入れて+1、クリスタリウムのステージ8で+1、11章から最強武器で+1。ガドー・レブロは3.5本（アルティマニア）
+const EIDO={snow:[3,"Nix",null],light:[4,"Odin",null],sazh:[8,"Brynhildr",null],fang:[10,"Bahamut",null],hope:[11,"Alexander",/./],vanille:[11,"Hecatoncheir",/./]};
+function atbMax(chr){if(!enCh&&!PRE())return null;const o=ENM[+$("enSel").value],en=o?o.en:"",ch=PRE()?2:enCh;
+  if(chr==="gadot"||chr==="lebreau")return 3.5;if(PRE())return PRE_ATB[chr]||2;let n=2;if(chr==="vanille"||chr==="fang"||ch>=3)n++;
+  const e=EIDO[chr];if(postClr())n++;else if(e&&(ch>e[0]||(ch===e[0]&&en!==e[1]&&e[2]&&e[2].test(en))))n++;
+  const st=stageNow();if(st!=null&&st>=8)n++;if(ch>=11)n++;return Math.min(6,n)}
+function atbAuto(a){if(!a||a.kind!=="member")return;const mx=atbMax(a.chr);if(mx!=null)a.atb=mx}
+// 敵（章）・キャラ・ロールを変えたら、その章で上げられる最大のロールレベルにする
+function rlvAuto(a){atbAuto(a);if(!a||a.kind!=="member")return;if(a.role!=="COM"&&a.role!=="RAV"){a.rlv=Math.min(a.rlv,Math.max(rlvMax(a.chr,"COM"),rlvMax(a.chr,"RAV")));return}a.rlv=rlvMax(a.chr,a.role)}
 const EL_MOD={abs:0.25,null:0.25,res:0.5,half:0.5,norm:1,weak:1};
 const RAV_CPOS=[0,.2,.3,.4,.5,.7,.8,.9,1.0], RAV_ENEG=[0,.3,.4,.5,.6,.7,.8,.9,1.0], SAB_ENEG=[.2,.3,.4,.5,.8,1.0,1.5,2.0,2.5];
 
@@ -726,7 +752,9 @@ const PRE_ATB={vanille:3,gadot:3.5,lebreau:3.5};const PRE_LEAD=["light","snow","
 // AIメンバーはリーダーで決まる：ライトニング＝サッズ（1度だけスノウも）、スノウ＝ガドー・レブロ、ヴァニラ＝ホープ
 const PRE_PARTY={light:["sazh","snow"],snow:["gadot","lebreau"],vanille:["hope"]};
 // スノウのパーティは、スノウ1人／スノウ・ガドー／スノウ・ガドー・レブロ（メンバー2はガドー、メンバー3はレブロ）
-const preOkFor=k=>k===0?PRE_LEAD:M[0].chr==="snow"?[k===1?"gadot":"lebreau"]:(PRE_PARTY[M[0].chr]||[]);
+// ガドー・レブロは1章だけ。2章のスノウは1人か、1回だけホープ・ヴァニラとの3人（グール×3）
+const prePartyOf=c=>enCh===2&&c==="snow"?["hope","vanille"]:(PRE_PARTY[c]||[]);
+const preOkFor=k=>k===0?PRE_LEAD:M[0].chr==="snow"?(enCh===2?[k===1?"hope":"vanille"]:[k===1?"gadot":"lebreau"]):prePartyOf(M[0].chr);
 // リーダーが変わったら、選べなくなったAIメンバーを入れ替える（入れ替える相手がいなければパーティから外す）
 const preFixAI=()=>{M.forEach((m,k)=>{if(k===0)return;const ok=preOkFor(k);if(ok.includes(m.chr)&&!M.some(o=>o!==m&&o.on&&m.on&&o.chr===m.chr))return;
   const free=ok.find(c=>!M.some(o=>o!==m&&o.chr===c));if(free){m.chr=free;m.atb=PRE_ATB[free]||2;m.queue=[]}else{m.on=false;m.queue=[]}})};
@@ -800,7 +828,7 @@ function syncVis(){
     $("onWrap").hidden=M.indexOf(a)===0;
     // 同じキャラは2人選べない（パーティにいる他のメンバーのキャラは選択不可）
     [...$("chr").options].forEach(op=>{const used=M.find(o=>o!==a&&o.on&&o.chr===op.value);op.disabled=false;op.textContent=CHR_JP[op.value]+(used?`（${used.label}と設定ごと入れ替え）`:"")});
-    $("rlvWrap").hidden=a.role!=="RAV"&&a.role!=="COM";$("rlvTx").textContent=(a.role==="COM"?"アタッカー":"ブラスター")+"のロールレベル";$("jeoWrap").hidden=a.role!=="COM";$("hvWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";$("cbbSub").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
+    $("rlvWrap").hidden=a.role!=="RAV"&&a.role!=="COM";$("rlvTx").textContent=(a.role==="COM"?"アタッカー":"ブラスター")+"のロールレベル";if(a.kind==="member"&&(a.role==="COM"||a.role==="RAV")){const mx=rlvMax(a.chr,a.role);if(a.rlv>mx)a.rlv=mx;[...$("rlv").options].forEach(o=>{const h=+o.value>mx;o.hidden=h;o.disabled=h});$("rlv").value=a.rlv;const st=stageNow();$("rlvTx").textContent+=st==null?"":"（"+(postClr()?"クリア後":enCh+"章")+"はLv"+mx+"まで）"}if(a.kind==="member"){const mx=atbMax(a.chr);const mn=enCh>=3&&!PRE()?Math.min(3,mx==null?3:mx):2;[...$("atb").options].forEach(o=>{const h=(mx!=null&&+o.value>mx)||+o.value<mn||(o.value==="3.5")!==(mx===3.5);o.hidden=h;o.disabled=h});if(mx!=null&&a.atb>mx)a.atb=mx;if(a.atb<mn)a.atb=mn;$("atb").value=a.atb;$("atbTx").textContent="ATBゲージ数"+(mx==null?"":"（"+(PRE()?"2章まで":postClr()?"クリア後":enCh+"章")+"は"+mx+"本まで）")}$("jeoWrap").hidden=a.role!=="COM";$("hvWrap").hidden=a.role!=="COM";$("ovwWrap").hidden=a.role!=="RAV"&&a.chr!=="sazh";$("cbbWrap").hidden=a.chr!=="sazh";$("cbbSub").hidden=a.chr!=="sazh";if(a.chr!=="sazh"){a.cbb=0;$("cbb").value=0}
     $("vigWrap").hidden=(a.role!=="RAV"&&a.chr!=="sazh")||!canLearn("ハイテンション",a.chr);if(!canLearn("ハイテンション",a.chr))a.vigor=false;
   }
   $("eidWrap").hidden=mode==="normal";$("eid").value=EID_OF[M[0].chr];$("gcWrap").hidden=mode!=="drive";$("flWrap").hidden=mode!=="drive";$("paWrap").hidden=mode==="normal";$("optWrap").hidden=mode!=="normal";
@@ -985,6 +1013,10 @@ const bind=(id,key,conv)=>$(id).addEventListener("input",()=>{const a=A();if(a.k
   render()});
 bind("mOn","on");bind("chr","chr");bind("role","role");bind("rlv","rlv",Number);bind("atb","atb",Number);bind("hp","hp");
 bind("cpos","cpos",v=>Math.min(8,Math.max(0,+v|0)));bind("cneg","cneg");bind("shRole","shRole");bind("shCom","shCom");bind("mpa","pa",v=>Math.max(0,+v||0));bind("mma","ma",v=>Math.max(0,+v||0));bind("mbr","br",Number);bind("mfa","fa",Number);bind("mpp","pp",Number);bind("mak","ak",Number);bind("mgen","gen");bind("mkiki","kiki");bind("med","ed",Number);bind("medE","edE");bind("mdn","dn");bind("men","en");bind("mab1","ab1");bind("mab2","ab2");bind("mab3","ab3");bind("mab4","ab4");bind("mdb","db");bind("ko","ko",Number);bind("diff","diff");
+$("postClr").addEventListener("input",()=>{M.forEach(rlvAuto);loadActor();render()});
+// キャラを変えたらロールレベルとATBを、ロールを変えたらロールレベルだけを、その章の最大にする（手で下げたATBはロールを変えても残す）
+$("chr").addEventListener("input",()=>{const a=A();if(a.kind!=="member")return;rlvAuto(a);loadActor();render()});
+$("role").addEventListener("input",()=>{const a=A();if(a.kind!=="member")return;const k=a.atb;rlvAuto(a);a.atb=k;loadActor();render()});
 bind("jeo","jeo");bind("hv","hv");bind("ovwOn","ovwOn");bind("vigor","vigor");bind("cbb","cbb",Number);
 $("eid").addEventListener("input",()=>{cur=0;loadActor();render()});
 $("finLvSel").addEventListener("input",()=>{const a=DR[$("eid").value];a.queue.forEach(q=>{if(q.sk.fin)q.name=q.sk.n+" Lv"+finLv()});render()});
@@ -1158,7 +1190,8 @@ function calc(){
   const qs=[...Array(qn)].map(()=>({it:{sk:QK,e:"E",name:"クエイク（TP）",cost:0,tp:true,land:true},a:M[0],first:false}));
   seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
 
-  const lastBy=new Map(list.map(a=>[a,a.last]));
+  // メンバーの「違うコマンド」は同じターンの中だけで比べる（ターンの1つ目には付かない。ホープのファイア→次のターンのファイラが補正なしだったのを実測）
+  const lastBy=new Map(list.map(a=>[a,a.kind==="member"?null:a.last]));
   const ehpMax=Math.max(0,+$("ehp").value||0);let hpRem=ehpMax?Math.min(ehpMax,$("ehpCur").value===""?ehpMax:Math.max(0,+$("ehpCur").value||0)):0;const hpStart=hpRem;
   const dV=$("dmgV").value;let dmgTotal=0,killAt=null;
   const deps=()=>st.applied.has("デプロテ"),desh=()=>st.applied.has("デシェル");
@@ -1231,6 +1264,10 @@ function calc(){
         // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（実測：アタッカーのサッズには付かない）
         if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
         if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
+        // アタッカーの物理攻撃は、ブラスターの仲間がいるとそのパーティボーナス分（Lv1で+0.1）上がる（基本値に足すのでチェーン耐性がかかる。魔法のルインには付かない）
+        // 実測：ブレイク中…シルバリオ・ユイジンシャン（ブラスターあり）はたたかう+0.9→+0.6、バルバロイ（ブラスターなし）は+0.8→+0.5
+        //       ブレイク前…ミーラン（チェーン耐性50%）でたたかう+0.3ずつ。ユイジンシャンのルインは+0.1ずつで付かない
+        if(role==="COM"&&t==="P"&&mode==="normal")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`アタッカーの物理＋ブラスターの仲間（${o.label} Lv${o.rlv}・実測）`,v])}});
         if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
         if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
         if(a.cbb&&role!=="PRE")mods.push(["チェーンボーナス強化",a.cbb]);
@@ -1256,8 +1293,6 @@ function calc(){
         add(hp==="low","HP30%未満で攻撃",0.3);
         add(stag&&hp==="low","ブレイク中の敵＋HP30%未満",0.9);
         add(first&&stag&&t==="P","ブレイク中に1つ目＋物理",0.3);
-        // ブレイク中の敵への物理攻撃は毎ヒット+0.1（実測：シルバリオでたたかう+0.9→+0.6→+0.6。ユイジンシャンは敵に強化ありで1つ目+1.4）
-        add(stag&&t==="P","ブレイク中の敵に物理攻撃（実測）",0.1);
         add(launched,"打ち上げ中の敵",0.1);
         add(diff&&launched,"違うコマンド＋打ち上げ中",0.3);
         add(first&&$("epos").checked,"1つ目＋敵に強化",0.5);
@@ -1427,7 +1462,7 @@ function calc(){
    if(mode==="drive"){const rv=M.filter(o=>o.on&&o.role==="RAV");const tot=rv.reduce((s2,o)=>s2+RAV_PARTY[o.rlv],0);
     bh.textContent=`召喚獣に付くブラスターボーナス：+${f(tot,1)}（${rv.length?rv.map(o=>o.label+" Lv"+o.rlv).join("・"):"ブラスターなし"}）。変えるときは「通常バトル」の各メンバーで設定してください。`}}
   endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy,koed:new Set(M.filter(m=>m.ko>0&&m.ko<=seq.length))};
-  $("diff").disabled=!!A().last;
+  $("diff").disabled=A().kind==="member"?false:!!A().last;
   $("carryNote").textContent=PRE()?"":list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
   $("nextTurn").disabled=!seq.length;
   const tb=$("toBreak");
@@ -1759,6 +1794,7 @@ $("enSel").addEventListener("input",()=>{if($("enSel").value==="")return;
   // 守護騎アナヴァタプタは、ライトニングとオーディンのドライビングモード（フィニッシュ技Lv3）で戦闘開始
   if(o0&&o0.en==="Anavatapta Warmech"){if(M[0].chr!=="light"){const o=M.find(m=>m!==M[0]&&m.chr==="light");if(o)o.chr=M[0].chr;M[0].chr="light";M[0].queue=[];M[0].last=null}
     $("gc").value="30";$("gc").dispatchEvent(new Event("input"));const b=$("modeSeg").querySelector('[data-m="drive"]');if(b&&mode!=="drive")b.click();else{loadActor();render()}}
+  $("postClrW").hidden=enCh!==11;M.forEach(rlvAuto);loadActor();render();
   enApply(+$("enSel").value)});
 $("enEd").addEventListener("toggle",enRenderList);
 [...EN_F,"ehpCur"].forEach(id=>$(id).addEventListener("input",()=>setTimeout(enSync,0)));document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",()=>setTimeout(enSync,0)));
@@ -1819,7 +1855,8 @@ const ch3Fixed=()=>{const F=FIXP[CK()];if(!F)return"";const v=$("enSel").value;c
 const partyNow=()=>M.filter(m=>m.on).map(m=>m.chr).join(",");
 const ch3Cur=()=>{const on=partyNow();return [...$("ch3P").options].some(o=>o.value===on)?on:""};
 let ch3Busy=false;
-function partyApply(list){const cs=list.split(",");
+function partyApply(list){partyApply0(list);M.forEach(rlvAuto);loadActor();render()}
+function partyApply0(list){const cs=list.split(",");
   M.forEach((m,k)=>{const want=cs[k];if(want){if(m.chr!==want){const other=M.find(o=>o!==m&&o.chr===want);if(other)other.chr=m.chr;m.chr=want;m.queue=[];m.last=null}m.on=true}else{m.on=false}});
   M.forEach((m,k)=>{if(!m.on)return;if(M.some(o=>o!==m&&o.on&&o.chr===m.chr)){const free=CHR_OK(m).find(c=>!M.some(o=>o!==m&&o.chr===c));if(free)m.chr=free}});
   cur=0;loadActor();pCountSync();optSync();render();ch3Vis()}
@@ -1871,8 +1908,8 @@ function preVis(){const pre=PRE(),a=A(),isM=a.kind==="member";
   if(pre){
     // ライトニング・ヴァニラがリーダーのときは2人以上（1人パーティはない。ヴァニラはホープとの2人だけ）
     const minN=M[0].chr==="light"||M[0].chr==="vanille"?2:1;if(M.filter(m=>m.on).length<minN)M[1].on=true;
-    preFixAI();if(typeof pCountSync==="function")pCountSync();const n=1+(PRE_PARTY[M[0].chr]||[]).length;
-    [...$("pCount").options].forEach(o=>{const d=+o.value>n||+o.value<minN;o.hidden=d;o.disabled=d});
+    preFixAI();if(typeof pCountSync==="function")pCountSync();const n=1+prePartyOf(M[0].chr).length;
+    [...$("pCount").options].forEach(o=>{const d=+o.value>n||+o.value<minN||(enCh===2&&M[0].chr==="snow"&&+o.value===2);o.hidden=d;o.disabled=d});
     $("onWrap").hidden=true}else [...$("pCount").options].forEach(o=>{o.hidden=false;o.disabled=false});
   $("preWrap").hidden=mode!=="normal";
   [...$("chr").options].forEach(op=>{const ok=pre?(isM&&preOkFor(M.indexOf(a)).includes(op.value)):!PRE_ONLY.includes(op.value);op.hidden=!ok;op.disabled=!ok});
@@ -1900,7 +1937,9 @@ function fancySelect(sel){if(sel.dataset.fs)return;sel.dataset.fs="1";
   const lab=sel.closest("label");if(lab)btn.setAttribute("aria-label",(lab.firstChild&&lab.firstChild.textContent||"").trim());w.append(btn);
   let pop=null,items=[],hl=-1;
   const txt=()=>{const o=sel.options[sel.selectedIndex];btn.textContent=o?o.textContent:""};
-  const close=()=>{if(pop){pop.remove();pop=null}btn.setAttribute("aria-expanded","false")};
+  // 欄（fieldset）はぼかし効果で重なり順が分かれるので、一覧を開いている間は欄ごと前に出す
+  const lift=on=>{const f=w.closest("fieldset");if(f){f.style.position=on?"relative":"";f.style.zIndex=on?"60":""}};
+  const close=()=>{if(pop){pop.remove();pop=null}lift(false);btn.setAttribute("aria-expanded","false")};
   const pick=i=>{sel.selectedIndex=i;close();txt();sel.dispatchEvent(new Event("input",{bubbles:true}));sel.dispatchEvent(new Event("change",{bubbles:true}));btn.focus()};
   const setHl=k=>{items.forEach(x=>x.el.classList.remove("hl"));hl=k;if(items[k]){items[k].el.classList.add("hl");items[k].el.scrollIntoView({block:"nearest"})}};
   // 検索欄つき（敵の一覧）：入れた文字を名前に含むものだけ出す。ひらがなはカタカナとしても探す
@@ -1916,7 +1955,7 @@ function fancySelect(sel){if(sel.dataset.fs)return;sel.dataset.fs="1";
     if(SRCH){const qw=document.createElement("div");qw.className="fs-q";qi=document.createElement("input");qi.type="search";qi.placeholder="名前で探す（例：ベヒーモス、かるら）";qi.setAttribute("aria-label","敵を名前で探す");
       qi.oninput=()=>{q=qi.value.trim();fill();setHl(items.length?0:-1);pop.scrollTop=0};qi.onkeydown=e=>keys(e);qw.append(qi);pop.append(qw)}
     fill();
-    w.append(pop);btn.setAttribute("aria-expanded","true");const k=items.findIndex(x=>x.i===sel.selectedIndex);setHl(k);
+    w.append(pop);lift(true);btn.setAttribute("aria-expanded","true");const k=items.findIndex(x=>x.i===sel.selectedIndex);setHl(k);
     if(k>=0){const el=items[k].el;pop.scrollTop=el.offsetTop-pop.clientHeight/3}
     if(SRCH&&qi)qi.focus({preventScroll:true})};
   btn.onclick=()=>pop?close():open();
@@ -1951,7 +1990,7 @@ const allActors=()=>[...M,...Object.keys(EA).flatMap(k=>EA[k]),...Object.keys(DR
 const skRef=sk=>sk.id==="custom"?{c:sk}:sk.id==="fin"?{fin:1}:{id:sk.id};
 function skFind(a,r){if(!r)return null;if(r.c)return r.c;if(r.fin)return a.fin?{id:"fin",n:a.fin.n,fin:true,launch:true,parts:a.fin.parts}:null;
   const lists=a.kind==="member"?[SK[a.role],...Object.values(SK)]:[a.skills||[]];for(const l of lists){const s=(l||[]).find(x=>x.id===r.id);if(s)return s}return null}
-const ST_OPEN=["dmgBoxM","dmgBoxE","customBox"];
+const ST_OPEN=["dmgBoxM","dmgBoxE","customBox","enData"];
 function stSave(){if(stOff)return;try{const acts=allActors();
   const s={v:1,mode,cur,turn,exactCur,carried,enCh,f:{},er:{},open:{},
     act:acts.map(a=>{const o={};Object.keys(a).forEach(k=>{if(k==="queue")o.queue=a.queue.map(q=>{const x={};Object.keys(q).forEach(kk=>{if(kk!=="sk")x[kk]=q[kk]});x.sk=skRef(q.sk);return x});else if(!["skills","fin","label","kind"].includes(k))o[k]=a[k]});return o}),
@@ -1978,8 +2017,8 @@ $("stReset").onclick=()=>{const b=$("stReset");if(!stResetArm){stResetArm=true;b
 ["input","change"].forEach(ev=>document.addEventListener(ev,stSaveSoon,true));document.addEventListener("click",stSaveSoon,true);
 ST_OPEN.forEach(id=>$(id).addEventListener("toggle",stSaveSoon));
 window.addEventListener("pagehide",stSave);
-function dmgBoxSync(){const a=A();const m=a.kind==="member"&&(a.pa||a.ma);$("dmgBoxMT").textContent="ダメージ用（チェーンボーナスだけなら入力不要）"+(m?"・入力あり":"");$("dmgBoxET").textContent="ダメージ用（敵の最大HP・残りHP・見積もり）"+(+$("ehp").value?"・入力あり":"")}
-$("ehp").addEventListener("input",dmgBoxSync);["mpa","mma"].forEach(id=>$(id).addEventListener("input",dmgBoxSync));
+function dmgBoxSync(){const a=A();const m=a.kind==="member"&&(a.pa||a.ma);$("dmgBoxMT").textContent="ダメージ用（チェーンボーナスだけなら入力不要）"+(m?"・入力あり":"");$("dmgBoxET").textContent="ダメージ用（残りHP・見積もり）"+(+$("ehpCur").value?"・入力あり":"")}
+["ehp","ehpCur"].forEach(id=>$(id).addEventListener("input",dmgBoxSync));["mpa","mma"].forEach(id=>$(id).addEventListener("input",dmgBoxSync));
 const stLoaded=stLoad();
 pCountSync();optRenderSelects();optRenderList();enRenderSel();enRenderList();
 loadActor();render();if(stLoaded)optSync();dmgBoxSync();
