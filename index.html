@@ -321,7 +321,7 @@ input,select,button,textarea{font-family:inherit}
   <label class="mo">自分の強化数<input type="number" id="cpos" min="0" max="8" step="1"></label>
   <label class="chk mo"><input type="checkbox" id="cneg">自分に弱体がかかっている</label>
   <label class="mo">戦闘不能になるタイミング<select id="ko"><option value="0">ならない</option><option value="-1">最初から戦闘不能</option><option value="1">内訳の1番目の行動の後</option><option value="2">内訳の2番目の行動の後</option><option value="3">内訳の3番目の行動の後</option><option value="4">内訳の4番目の行動の後</option><option value="5">内訳の5番目の行動の後</option><option value="6">内訳の6番目の行動の後</option><option value="7">内訳の7番目の行動の後</option><option value="8">内訳の8番目の行動の後</option><option value="9">内訳の9番目の行動の後</option><option value="10">内訳の10番目の行動の後</option><option value="11">内訳の11番目の行動の後</option><option value="12">内訳の12番目の行動の後</option><option value="13">内訳の13番目の行動の後</option><option value="14">内訳の14番目の行動の後</option><option value="15">内訳の15番目の行動の後</option><option value="16">内訳の16番目の行動の後</option><option value="17">内訳の17番目の行動の後</option><option value="18">内訳の18番目の行動の後</option><option value="19">内訳の19番目の行動の後</option><option value="20">内訳の20番目の行動の後</option><option value="21">内訳の21番目の行動の後</option><option value="22">内訳の22番目の行動の後</option><option value="23">内訳の23番目の行動の後</option><option value="24">内訳の24番目の行動の後</option></select></label>
-  <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド</label>
+  <label class="chk"><input type="checkbox" id="diff">最初の行動は前ターンと違うコマンド（戦闘の最初のターンはオフ）</label>
   <label id="shComWrap">オプティマチェンジの時点で<select id="shCom"><option value="auto">自動（チェンジ前に動いていれば、実行中の1発だけ出る）</option><option value="yes">実行中（次の1発だけ出る）</option><option value="no">未実行（何も出ない）</option></select></label>
   <label id="shRoleWrap">オプティマチェンジ後のロール<select id="shRole"><option value="">変えない（同じロール）</option><option value="COM">アタッカー</option><option value="RAV">ブラスター</option><option value="SEN">ディフェンダー</option><option value="SAB">ジャマー</option><option value="SYN">エンハンサー</option><option value="MED">ヒーラー</option></select></label>
   <div class="sub mo" id="abSub">ロールのアビリティ（クリスタリウムで習得）</div>
@@ -717,7 +717,7 @@ const CH1={l:"light",s:"sazh",n:"snow",v:"vanille",h:"hope",f:"fang"};
 const canLearn=(name,chr)=>{const src=LEARN_SRC[name];if(!src)return true;return [...src].some(c=>CH1[c]===chr)};
 const nameOf=(sk,e)=>typeof sk.n==="string"?sk.n:sk.n[e];
 
-const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:true,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,shRole:"",shCom:"auto",ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
+const mk=(o)=>Object.assign({kind:"member",on:true,role:"RAV",rlv:5,atb:3,hp:"full",cpos:0,cneg:false,diff:false,jeo:false,ovwOn:false,vigor:false,cbb:0,hv:false,shRole:"",shCom:"auto",ko:0,pa:0,ma:0,br:1,fa:1,pp:0,ak:0,gen:false,kiki:false,ed:0,edE:"F",dn:"0",en:"",ab1:false,ab2:false,ab3:false,ab4:"0",db:false,elem:"F",queue:[],last:null},o);
 const M=[mk({role:"RAV",chr:"light"}),mk({role:"COM",chr:"sazh"}),mk({role:"RAV",elem:"I",chr:"snow"})];
 const CHR_JP={light:"ライトニング",sazh:"サッズ",snow:"スノウ",hope:"ホープ",vanille:"ヴァニラ",fang:"ファング",gadot:"ガドー",lebreau:"レブロ"};
 const PRE_ONLY=["gadot","lebreau"];
