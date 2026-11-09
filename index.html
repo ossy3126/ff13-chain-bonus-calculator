@@ -269,7 +269,7 @@ input,select,button,textarea{font-family:inherit}
 <p class="note"><b>チェーンボーナスだけ知りたいときに必要な入力</b>：戦闘モード／各メンバーのキャラ・ロール・ロールレベル（ブラスター／アタッカー）・ATBゲージ数・HP・コマンド（とロールのアビリティ）／敵のチェーン耐性・ブレイク値・物理耐性・魔法耐性・属性耐性／現在のチェーンボーナス。<br>「ダメージ用」の項目（攻撃力・補正）と敵の最大HP、召喚獣ランクは、ダメージと残りHPを出したいときだけ入れてください。</p>
 <p class="note">入力した内容はこのブラウザに自動で保存され、次に開いたときもそのまま残ります（初期値に戻しても、登録したオプティマと敵は消えません）。</p>
 <div class="formula">1ヒットの上昇量 = [ (スキル基本値 + 基本値補正) × (100 − チェーン耐性)/100 + 条件補正 ] × 属性補正</div>
-<p class="note">出典：『ファイナルファンタジーXIII バトルアルティマニア』。非公式のファンメイドツールです。ファイナルファンタジーは株式会社スクウェア・エニックスの商標または登録商標です。</p>
+<p class="note">出典：『ファイナルファンタジーXIII バトルアルティマニア』。バトルアルティマニアはPS3の発売当初の版のデータです。Steam版で実測して違っていたもの（例：ブレイク中などのアタッカーに付くブラスターの仲間の上乗せ、ターンの1つ目に「違うコマンド」が付かないこと）は、実測に合わせています。非公式のファンメイドツールです。ファイナルファンタジーは株式会社スクウェア・エニックスの商標または登録商標です。</p>
 </details>
 <div class="qtools" style="margin:0;gap:8px;align-items:center"><button class="lbtn" type="button" id="stReset">入力を初期値に戻す</button><span class="note">入力は自動で保存されます</span><a class="xlink" href="https://ossy3126.github.io/ff13-damage-calc/" target="_blank" rel="noopener">⚔️ ダメージ計算機へ</a></div>
 
@@ -502,6 +502,7 @@ input,select,button,textarea{font-family:inherit}
       <ul>
         <li>多段ヒットは、1ヒットごとに条件補正を含む式全体を計算して合計します。</li>
         <li>「1つ目のストックコマンド」は各キャラのATBの先頭のコマンド、「違うコマンド」はそのキャラ自身の直前の行動と比べて判定します。</li>
+        <li>チェーンゲージが途中で切れることは計算しません（行動の時間がわからないため）。チェーン耐性が高い敵などで、ターンの途中でゲージが切れて100%に戻った場合は、切れたあとの行動から新しいターンとして入力してください（ゲージが切れると、次の行動はチェーンを始めるだけで、そのあとの「1つ目」「違うコマンド」も仕切り直しになります。ウシュムガルで実測）。</li>
         <li>ブレイクした瞬間にチェーンが <b>+100%</b> されます。合計とゲージに含め、内訳ではブレイクした行動の詳細に出ます。</li>
         <li>ブレイク前はブレイク値で止まり、超えた分は無駄になります。</li>
         <li>チェーンが途切れている（チェーンゲージが空）ときは、最初の1ヒットで持続が始まるだけで%は上がりません。シーンドライブ・デスペラード・ラストリゾートなど持続0秒の技は、チェーンが途切れていると始めることもできず、まったく上がりません。</li>
@@ -717,7 +718,7 @@ const postClr=()=>enCh===11&&$("postClr").checked;
 function stageNow(){if(!enCh)return null;if(postClr())return 10;const o=ENM[+$("enSel").value];if(o&&ST_AFTER[o.en]!=null&&chOf(o).includes(enCh))return ST_AFTER[o.en];return CH_ST[enCh]}
 function rlvMax(chr,role){const st=stageNow();if(st==null)return 5;const t=RLV_ST[chr]&&RLV_ST[chr][role];if(!t)return 1;return 1+t.filter(x=>x<=st).length}
 // ATBゲージ数：最初は2本。ルシになって+1（ヴァニラ・ファングは最初からルシ、ほかは3章から）、召喚獣を手に入れて+1、クリスタリウムのステージ8で+1、11章から最強武器で+1。ガドー・レブロは3.5本（アルティマニア）
-const EIDO={snow:[3,"Nix",null],light:[4,"Odin",null],sazh:[8,"Brynhildr",null],fang:[10,"Bahamut",null],hope:[11,"Alexander",/./],vanille:[11,"Hecatoncheir",/./]};
+const EIDO={snow:[3,"Nix",null],light:[4,"Odin",/^(?!Dreadnought)/],sazh:[8,"Brynhildr",null],fang:[10,"Bahamut",null],hope:[11,"Alexander",/./],vanille:[11,"Hecatoncheir",/./]};
 function atbMax(chr){if(!enCh&&!PRE())return null;const o=ENM[+$("enSel").value],en=o?o.en:"",ch=PRE()?2:enCh;
   if(chr==="gadot"||chr==="lebreau")return 3.5;if(PRE())return PRE_ATB[chr]||2;let n=2;if(chr==="vanille"||chr==="fang"||ch>=3)n++;
   const e=EIDO[chr];if(postClr())n++;else if(e&&(ch>e[0]||(ch===e[0]&&en!==e[1]&&e[2]&&e[2].test(en))))n++;
@@ -1261,13 +1262,13 @@ function calc(){
       const mods=[];
       if(isM){
         if(role==="RAV"){const v=RAV_SELF[rlvH];if(v)mods.push([`ブラスターロールボーナス（自分 Lv${rlvH}）`,v])}
-        // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（実測：アタッカーのサッズには付かない）
+        // ブラスターのパーティボーナスは、受け取る側もブラスターのときだけ（アタッカーへの上乗せは下の「アタッカー＋ブラスターの仲間」で別に計算）
         if(mode==="normal"&&role==="RAV")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`ブラスターロールボーナス（${o.label} Lv${o.rlv}）`,v])}});
         if(role==="COM"&&a.jeo&&stag)mods.push(["ブレイクチェーン",1]);
-        // アタッカーの物理攻撃は、ブラスターの仲間がいるとそのパーティボーナス分（Lv1で+0.1）上がる（基本値に足すのでチェーン耐性がかかる。魔法のルインには付かない）
+        // アタッカーの物理攻撃は、ブラスターの仲間がいるとそのパーティボーナス分（Lv1で+0.1）上がる（基本値に足すのでチェーン耐性がかかる。魔法のルインはブレイク中だけ付く：バルバロイでサッズのルイン+0.6、ブレイク前のユイジンシャンでは付かない）
         // 実測：ブレイク中…シルバリオ・ユイジンシャン（ブラスターあり）はたたかう+0.9→+0.6、バルバロイ（ブラスターなし）は+0.8→+0.5
         //       ブレイク前…ミーラン（チェーン耐性50%）でたたかう+0.3ずつ。ユイジンシャンのルインは+0.1ずつで付かない
-        if(role==="COM"&&t==="P"&&mode==="normal")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`アタッカーの物理＋ブラスターの仲間（${o.label} Lv${o.rlv}・実測）`,v])}});
+        if(role==="COM"&&(t==="P"||stag)&&mode==="normal")M.forEach(o=>{if(o!==a&&alive(o,idx)&&roleOf(o,idx)==="RAV"){const v=RAV_PARTY[o.rlv];if(v)mods.push([`アタッカー＋ブラスターの仲間（${o.label} Lv${o.rlv}・実測）`,v])}});
         if(role==="RAV"&&a.ovwOn&&others)mods.push(["ジョイントレイド ×"+others,others]);
         if(role==="RAV"&&a.vigor&&(hp==="full"||hp==="high"))mods.push(["ハイテンション",1]);
         if(a.cbb&&role!=="PRE")mods.push(["チェーンボーナス強化",a.cbb]);
@@ -1299,10 +1300,9 @@ function calc(){
         add(diff&&partyOthers===0,"違うコマンド＋同じ敵を狙う仲間なし",0.3);
       }
       if(role==="RAV"){
-        // ブレイク中の敵への攻撃は毎ヒット+0.1（実測：シルバリオでファイラ+26.3・ファイア+12.6、ユイジンシャンでファイラ+26.2）
-        add(stag,"ブレイク中の敵に攻撃（実測）",0.1);
         add(first&&hp==="full","1つ目＋HP満タン",0.3);
-        add(diff&&!a.cneg,"違うコマンド＋自分に弱体なし",0.1);
+        // バトルアルティマニア：「自分に弱体・妨害系や死の宣告がないとき、ATBゲージの先頭にストックしたコマンド」（違うコマンドではなく1つ目の条件）
+        add(first&&!a.cneg,"1つ目＋自分に弱体なし",0.1);
         add(diff&&cpos>0,"違うコマンド＋自分の強化"+cpos+"個",RAV_CPOS[cpos]);
         add(diff&&eneg>0,"違うコマンド＋敵の弱体"+eneg+"個",RAV_ENEG[eneg]);
         add(first&&near&&weak,"ブレイク予兆＋1つ目＋弱点",1.0);
