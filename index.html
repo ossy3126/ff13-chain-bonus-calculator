@@ -428,9 +428,9 @@ input,select,button,textarea{font-family:inherit}
   <p class="hint xh">実際の行動順は、モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初になります。ゲームで見た順に、内訳の ▲▼ で並べ替えてください。新しく追加したコマンドは、交互の順で後ろに入ります。</p>
   <div class="sub" id="tpLabel">TPアビリティ（リーダー＝メンバー1が使う。通常バトルのみ）</div>
   <label>クエイクの回数<select id="tpQ"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-  <label>使うタイミング<select id="tpWhen"><option value="before">全員のコマンドの前</option><option value="after">全員のコマンドの後</option></select></label>
+  <label>使うタイミング<select id="tpWhen"><option value="before">全員のコマンドの前</option><option value="leader">使う人（メンバー1）の最初のコマンドの直前</option><option value="after">全員のコマンドの後</option></select></label>
   <label>クエイクの基本値<input type="number" id="tpBase" step="0.1" min="0" value="10"></label>
-  <p class="hint xh" id="tpHint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。</p>
+  <p class="hint xh" id="tpHint">クエイクは魔法・土属性・敵全体。チェーンボーナスの基本値は10.0です（召喚獣ヘカトンケイルのクエイクは16.0）。条件補正はメンバー1のロールで計算します。「使うタイミング」で、全員の前・後のほか、使う人の最初のコマンドの直前や、内訳の○番目の行動の直前も選べます（番号はクエイクを除いた行動の順）。</p>
 </fieldset>
 
 <fieldset>
@@ -1189,7 +1189,16 @@ function calc(){
     if(A().kind==="member")$("ko").value=String(A().ko||0);}
   const qn=mode==="normal"?+$("tpQ").value:0,QK={id:"quake",n:"クエイク",b:+$("tpBase").value||0,t:"M",e:"E"};
   const qs=[...Array(qn)].map(()=>({it:{sk:QK,e:"E",name:"クエイク（TP）",cost:0,tp:true,land:true},a:M[0],first:false}));
-  seq=$("tpWhen").value==="before"?qs.concat(seq):seq.concat(qs);
+  // クエイクを使うタイミング：全員の前／使う人（メンバー1）の最初のコマンドの直前／内訳（クエイクを除く）の○番目の直前／全員の後
+  if(SIM==null){const el=$("tpWhen"),want=el.dataset.want||el.value,n=seq.length;
+    if(el.dataset.n!==String(n)||el.dataset.sig!==seq.map(x=>x.it.name).join("|")){
+      el.innerHTML='<option value="before">全員のコマンドの前</option><option value="leader">使う人（メンバー1）の最初のコマンドの直前</option>'
+        +seq.slice(1).map((x,i)=>`<option value="${i+2}">${i+2}番目（${x.a.label}：${x.it.name}）の直前</option>`).join("")
+        +'<option value="after">全員のコマンドの後</option>';el.dataset.n=String(n);el.dataset.sig=seq.map(x=>x.it.name).join("|")}
+    el.value=[...el.options].some(o=>o.value===want)?want:"before";delete el.dataset.want}
+  const tw=$("tpWhen").value;let qPos=tw==="before"?0:tw==="after"?seq.length:tw==="leader"?seq.findIndex(x=>x.a===M[0]):Math.min(seq.length,(+tw||1)-1);
+  if(qPos<0)qPos=seq.length;
+  seq=seq.slice(0,qPos).concat(qs,seq.slice(qPos));
 
   // メンバーの「違うコマンド」は同じターンの中だけで比べる（ターンの1つ目には付かない。ホープのファイア→次のターンのファイラが補正なしだったのを実測）
   const lastBy=new Map(list.map(a=>[a,a.kind==="member"?null:a.last]));
@@ -2004,7 +2013,7 @@ function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}c
   try{const acts=allActors();
     (s.act||[]).forEach((o,i)=>{const a=acts[i];if(!a)return;Object.keys(o).forEach(k=>{if(k!=="queue")a[k]=o[k]});
       a.queue=(o.queue||[]).map(x=>{const sk=skFind(a,x.sk);return sk?Object.assign({},x,{sk}):null}).filter(Boolean)});
-    Object.entries(s.f||{}).forEach(([id,v])=>{const el=$(id);if(!el||ST_SKIP.has(id))return;if(el.type==="checkbox")el.checked=!!v;else el.value=v});
+    Object.entries(s.f||{}).forEach(([id,v])=>{const el=$(id);if(!el||ST_SKIP.has(id))return;if(id==="tpWhen")el.dataset.want=v;if(el.type==="checkbox")el.checked=!!v;else el.value=v});
     document.querySelectorAll(".eres").forEach(el=>{if(s.er&&s.er[el.dataset.e])el.value=s.er[el.dataset.e]});
     Object.entries(s.open||{}).forEach(([id,v])=>{if($(id))$(id).open=!!v});
     enCh=+s.enCh||0;
