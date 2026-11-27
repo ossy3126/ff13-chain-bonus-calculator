@@ -124,6 +124,8 @@ details.enRes{border-top:1px dashed var(--line);padding-top:8px}details.enRes>su
 .gline{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .drv{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .drvg .cur,.drvg .add{background:var(--accent)}
+.drvHit{display:grid;grid-template-columns:1fr 5em;gap:4px 8px;align-items:center;margin-top:4px;font-size:.8rem}
+.drvHit input{width:100%}
 .cmds small.dv{color:var(--accent)}
 .pill{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--gauge-hot);color:#fff}
 .carry{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:8px}
@@ -480,6 +482,7 @@ input,select,button,textarea{font-family:inherit}
     <div class="gauge drvg"><div class="cur" id="drvGCur"></div><div class="add" id="drvGAdd"></div></div>
     <div class="gline"><span id="drvFrom"></span><span>満タン 100%</span></div>
     <label>ターン開始時のドライブゲージ (%)<input type="number" id="drvCur" min="0" max="100" step="0.01" value="0"></label>
+    <div id="drvHitW" hidden><div class="cap">リーダー（ディフェンダー）が狙われて受けた攻撃の回数</div><div id="drvHit" class="drvHit"></div></div>
     <label class="chk"><input type="checkbox" id="drvUp">TP・ドライブUPあり（たまる量が2倍）</label>
     <p class="note" id="drvNote"></p>
   </div>
@@ -559,7 +562,8 @@ input,select,button,textarea{font-family:inherit}
         <li>式はバトルアルティマニア（Ver.1.00）の「ドライブゲージのためかた」です。リーダー：アタッカー＝上昇量×0.6×7.5、ブラスター＝上昇量×0.6×1.5、ディフェンダー＝上昇量×0.6、ジャマー＝（上昇量×0.6＋ATBコスト×1.5）、エンハンサー＝2、ヒーラー＝ATBコスト×0.75。リーダー以外はロールに関係なく上昇量×0.6。最後に召喚獣ごとの補正（シヴァ1倍・オーディン1.45倍・ブリュンヒルデ0.6倍・バハムート1.4倍・アレキサンダー0.84倍・ヘカトンケイル0.9倍）を掛けます。掛け算・割り算のたびに小数第3位以下を切り捨てます。</li>
         <li>「TP・ドライブUP」をパーティの誰かが持っていると、誰の行動でもたまる量が2倍です。</li>
         <li>上昇量は、ブレイク値で止まった分を除いた実際の上昇です。まだ実測で確かめていない点：ヒットごとに計算して足すこと、ブレイク時の+100%を含めないこと、TPのクエイクを含めないこと、弱体が効かなかったジャマーにもATBコスト分を足すこと。</li>
-        <li>含めていないもの：ディフェンダーのリーダーが攻撃を受けたときにたまる分。オプティマチェンジの演出中はたまりません。</li>
+        <li>リーダーがディフェンダーのときは、自分を狙った攻撃を受けた回数を入れると足します（本の表の値：シヴァのダンシングホイール・トルネードレイヴ18.31%、それ以外0.49%／バハムートのイグニス4.15%、それ以外1.38%など。死の宣告・ケアルガ・カウンターは0%）。範囲攻撃の巻き込みは入れない前提です（未確認）。回数は「次のターンへ」で0に戻ります。実際の召喚獣戦でリーダーがディフェンダーになれるのは、シヴァ（スノウ）とバハムート（ファング）です。</li>
+        <li>リーダー以外のディフェンダーは、攻撃を受けてもたまりません（挑発・カウンターなどでチェーンボーナスを上げた分だけ）。オプティマチェンジの演出中はたまりません。</li>
       </ul>
     </details>
     <details class="nsec"><summary>召喚中（ドライビング前）</summary>
@@ -1078,6 +1082,7 @@ $("nextTurn").onclick=()=>{
   if(mode!=="drive"&&endState.stag){const b=enBrkO();if(b){$("enSel").value=String(ENM.indexOf(b));enApply(ENM.indexOf(b))}}
   if(endState.hp!=null)$("ehpCur").value=Math.floor(endState.hp);
   if(endState.drv!=null)$("drvCur").value=f(endState.drv);
+  drvHits={};$("drvHit").dataset.sig="";
   $("imp").checked=endState.applied.includes("ウィーク");
   carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
   endState.last.forEach((v,a)=>a.last=v);
@@ -1175,7 +1180,13 @@ function quickTable(lim){
 // バトルアルティマニア（Ver.1.00）の「ドライブゲージのためかた」。値は満タンを100%とした量
 const DRV_K={"Nix":1,"Odin":1.45,"Brynhildr":0.6,"Bahamut":1.4,"Alexander":0.84,"Hecatoncheir":0.9};
 const DRV_JP={"Nix":"シヴァ","Odin":"オーディン","Brynhildr":"ブリュンヒルデ","Bahamut":"バハムート","Alexander":"アレキサンダー","Hecatoncheir":"ヘカトンケイル"};
-const drvK=()=>{if(mode!=="normal"||PRE())return null;const o=enCurO();return o&&DRV_K[o.en]!=null?{k:DRV_K[o.en],jp:DRV_JP[o.en]}:null};
+// リーダーがディフェンダーで、自分を狙った攻撃を受けたときの量（バトルアルティマニアの表の値。0%の攻撃は省略）
+const DRV_HIT={"Nix":[["ダンシングホイール・トルネードレイヴ",18.31],["それ以外（ケアルガ・死の宣告は0）",0.49]],
+  "Bahamut":[["イグニス",4.15],["それ以外（死の宣告は0）",1.38]],
+  "Alexander":[["爆轟の鉄拳",2.49],["それ以外（死の宣告は0）",0.83]],
+  "Hecatoncheir":[["クエイク",3.56],["それ以外（カウンター・死の宣告は0）",0.89]]};
+let drvHits={};
+const drvK=()=>{if(mode!=="normal"||PRE())return null;const o=enCurO();return o&&DRV_K[o.en]!=null?{k:DRV_K[o.en],jp:DRV_JP[o.en],en:o.en}:null};
 // 1つの行動でたまる量。掛け算・割り算のたびに小数第3位以下を切り捨て。チェーンボーナスの上昇はヒットごとに計算して足す
 function drvOf(o,k,up){
   if(o.it.tp||o.cancel||o.ko||o.a.kind!=="member")return null;
@@ -1198,6 +1209,13 @@ function drvRender(out){
   let extra="";const L=M[0],tt=x=>Math.floor(x*100+1e-6)/100;
   if(L.on&&L.ko!==-1&&nonAtk(L.role)&&L.queue.length){let g=0;L.queue.forEach(q=>{const c=+q.cost||0,x=L.role==="SYN"?tt(2*K.k):tt(tt(c*0.75)*K.k);g+=up?tt(x*2):x});add+=g;
     extra=`リーダー（${ROLE_JP[L.role]}）のコマンド${L.queue.length}つで +${f(g)}%（${L.role==="SYN"?"1回につき2×"+K.k:"ATBコスト×0.75×"+K.k}${up?"×2":""}。内訳には出ません）。`}
+  // リーダーがディフェンダー：受けた攻撃の回数から足す
+  const HT=DRV_HIT[K.en],senL=L.on&&L.ko!==-1&&L.role==="SEN"&&!!HT;$("drvHitW").hidden=!senL;
+  if(senL){const w=$("drvHit"),sig=K.en;if(w.dataset.sig!==sig){w.dataset.sig=sig;w.innerHTML="";const cnt=drvHits[K.en]||(drvHits[K.en]=HT.map(()=>0));
+      HT.forEach(([nm,v],i)=>{const l=document.createElement("span");l.textContent=`${nm}（${v}%）`;const inp=document.createElement("input");inp.type="number";inp.min="0";inp.step="1";inp.value=cnt[i]||0;
+        inp.addEventListener("input",()=>{cnt[i]=Math.max(0,Math.floor(+inp.value||0));calc()});w.append(l,inp)})}
+    const cnt=drvHits[K.en]||[];let g=0,n=0;HT.forEach(([nm,v],i)=>{const c=cnt[i]||0;n+=c;g+=c*(up?tt(v*2):v)});
+    if(n){add+=g;extra+=`受けた攻撃${n}回で +${f(g)}%${up?"（×2）":""}。`}}
   add=tt(add);
   const s0=Math.min(100,Math.max(0,+$("drvCur").value||0)),s1=Math.min(100,s0+add);
   $("drvCap").textContent=`このターンのドライブゲージ（${K.jp}戦・補正${K.k}倍）`;
@@ -2073,7 +2091,7 @@ function stSave(){if(stOff)return;try{const acts=allActors();
   stFields().forEach(el=>s.f[el.id]=el.type==="checkbox"?el.checked:el.value);
   document.querySelectorAll(".eres").forEach(el=>s.er[el.dataset.e]=el.value);
   ST_OPEN.forEach(id=>s.open[id]=$(id).open);
-  s.drv={c:$("drvCur").value,u:$("drvUp").checked};
+  s.drv={c:$("drvCur").value,u:$("drvUp").checked,h:drvHits};
   localStorage.setItem(ST_KEY,JSON.stringify(s))}catch(e){}}
 const stSaveSoon=()=>{clearTimeout(stT);stT=setTimeout(stSave,300)};
 function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}catch(e){return false}if(!s||s.v!==1)return false;
@@ -2083,7 +2101,7 @@ function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}c
     Object.entries(s.f||{}).forEach(([id,v])=>{const el=$(id);if(!el||ST_SKIP.has(id))return;if(id==="tpWhen")el.dataset.want=v;if(el.type==="checkbox")el.checked=!!v;else el.value=v});
     document.querySelectorAll(".eres").forEach(el=>{if(s.er&&s.er[el.dataset.e])el.value=s.er[el.dataset.e]});
     Object.entries(s.open||{}).forEach(([id,v])=>{if($(id))$(id).open=!!v});
-    if(s.drv){$("drvCur").value=s.drv.c;$("drvUp").checked=!!s.drv.u}
+    if(s.drv){$("drvCur").value=s.drv.c;$("drvUp").checked=!!s.drv.u;if(s.drv.h&&typeof s.drv.h==="object")drvHits=s.drv.h}
     enCh=+s.enCh||0;
     if(["normal","summon","drive"].includes(s.mode))mode=s.mode;cur=+s.cur||0;turn=+s.turn||1;exactCur=typeof s.exactCur==="number"?s.exactCur:null;if(s.carried&&Array.isArray(s.carried.applied))carried=s.carried;
     manualOrder=(s.ord||[]).map(([i,j])=>acts[i]&&acts[i].queue[j]).filter(Boolean);
