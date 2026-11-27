@@ -2013,7 +2013,9 @@ function preVis(){const pre=PRE(),a=A(),isM=a.kind==="member";
   ["optNowArrW","optEd","rlvWrap","jeoWrap","hvWrap","ovwWrap","vigWrap","cbbWrap","cbbSub","abSub","shRoleWrap","shComWrap","dmgBoxM","dmgBoxE","tpLabel","tpHint","shiftHint","shiftToWrap","shiftToArrW"].forEach(id=>hide($(id)));
   ["optNow","role","atb","cpos","cneg","diff","shiftAt","tpQ","tpWhen","tpBase"].forEach(id=>hide($(id).closest("label")));
   $("modeSeg").querySelectorAll("button").forEach(b=>{b.hidden=b.dataset.m!=="normal"});}
-{const _sv=syncVis;syncVis=function(){_sv();$("modeSeg").querySelectorAll("button").forEach(b=>b.hidden=false);preVis();ch3Vis()}}
+{const _sv=syncVis;syncVis=function(){_sv();$("modeSeg").querySelectorAll("button").forEach(b=>b.hidden=false);preVis();ch3Vis();
+  // 召喚獣と戦うときは召喚できないので、「召喚中」「ドライビングモード」を出さない
+  if(isEidFoe()){$("modeSeg").querySelectorAll("button").forEach(b=>{if(b.dataset.m!=="normal")b.hidden=true});if(mode!=="normal")setTimeout(()=>$("modeSeg").querySelector('[data-m="normal"]').click(),0)}}}
 $("preOpt").addEventListener("input",()=>{const on=$("preOpt").checked;
   if(on){mode="normal";
     if(!PRE_LEAD.includes(M[0].chr))M[0].chr="light";
