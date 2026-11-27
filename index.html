@@ -122,6 +122,9 @@ details.enRes{border-top:1px dashed var(--line);padding-top:8px}details.enRes>su
 .gauge.hot .add{background:var(--gauge-hot)}
 .gauge .mark{width:1px;background:var(--panel);opacity:.9}
 .gline{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.drv{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.drvg .cur,.drvg .add{background:var(--accent)}
+.cmds small.dv{color:var(--accent)}
 .pill{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--gauge-hot);color:#fff}
 .carry{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:8px}
 .lbtn.primary{background:var(--accent);color:var(--panel);border-color:var(--accent)}
@@ -184,6 +187,8 @@ details[open] summary .nm::before{content:"▾ "}
 :root[data-skin="ff13"] .gauge .add{background:linear-gradient(90deg,#ffb23f,#ff5a36);box-shadow:0 0 10px rgba(255,120,50,.8)}
 :root[data-skin="ff13"] .atbbar .slot{background:rgba(0,0,0,.45);border-color:rgba(77,166,255,.35)}
 :root[data-skin="ff13"] .atbbar .slot.on{background:linear-gradient(180deg,#7cc8ff,#2f7fe0);color:#03101f;border-color:#a8dcff;box-shadow:0 0 8px rgba(77,166,255,.7)}
+:root[data-skin="ff13"] .drvg .cur{background:linear-gradient(90deg,#1b6f7c,#3fc3d3);opacity:.55;box-shadow:none}
+:root[data-skin="ff13"] .drvg .add{background:linear-gradient(90deg,#3fc3d3,#9ff0f7);box-shadow:0 0 10px rgba(80,210,230,.7)}
 :root[data-skin="ff13"] .pill{background:linear-gradient(180deg,#ff8a4a,#e2341c);box-shadow:0 0 10px rgba(255,90,54,.7)}
 :root[data-skin="ff13"] .cap,:root[data-skin="ff13"] .sub{color:#9fd8ff;letter-spacing:.08em}
 :root[data-skin="ff13"] .mbar{background:linear-gradient(180deg,#0e2038,#060d1a);border-top-color:var(--accent);box-shadow:0 -4px 18px rgba(0,0,0,.6),0 -1px 10px rgba(98,214,255,.3)}
@@ -469,6 +474,15 @@ input,select,button,textarea{font-family:inherit}
     <div class="gauge" id="gauge"><div class="cur" id="gCur"></div><div class="add" id="gAdd"></div></div>
     <div class="gline"><span id="gFrom"></span><span id="gTo"></span></div>
   </div>
+  <div class="drv" id="drvBox" hidden>
+    <div class="cap" id="drvCap">ドライブゲージ</div>
+    <div class="big"><span class="n" id="drvAdd">0</span><span class="u">%</span> <span class="pill" id="drvFull" hidden>満タン</span></div>
+    <div class="gauge drvg"><div class="cur" id="drvGCur"></div><div class="add" id="drvGAdd"></div></div>
+    <div class="gline"><span id="drvFrom"></span><span>満タン 100%</span></div>
+    <label>ターン開始時のドライブゲージ (%)<input type="number" id="drvCur" min="0" max="100" step="0.01" value="0"></label>
+    <label class="chk"><input type="checkbox" id="drvUp">TP・ドライブUPあり（たまる量が2倍）</label>
+    <p class="note" id="drvNote"></p>
+  </div>
   <div class="summary party" id="perMember"></div>
   <div class="carry">
     <div class="cap" id="turnLabel">1ターン目</div>
@@ -537,6 +551,15 @@ input,select,button,textarea{font-family:inherit}
       <ul>
         <li>モーションの短いキャラが先に動くことが多く、12秒ルールで連続行動するキャラがいればそれが最初です。</li>
         <li>ゲームで見た順に、内訳の ▲▼ で並べ替えてください。</li>
+      </ul>
+    </details>
+    <details class="nsec"><summary>ドライブゲージ（召喚獣戦）</summary>
+      <ul>
+        <li>通常バトルで戦う敵に召喚獣（シヴァ・オーディン・ブリュンヒルデ・バハムート・アレキサンダー・ヘカトンケイル）を選ぶと、結果にドライブゲージ（満タン100%）を出します。リーダーはメンバー1です。</li>
+        <li>式はバトルアルティマニア（Ver.1.00）の「ドライブゲージのためかた」です。リーダー：アタッカー＝上昇量×0.6×7.5、ブラスター＝上昇量×0.6×1.5、ディフェンダー＝上昇量×0.6、ジャマー＝（上昇量×0.6＋ATBコスト×1.5）、エンハンサー＝2、ヒーラー＝ATBコスト×0.75。リーダー以外はロールに関係なく上昇量×0.6。最後に召喚獣ごとの補正（シヴァ1倍・オーディン1.45倍・ブリュンヒルデ0.6倍・バハムート1.4倍・アレキサンダー0.84倍・ヘカトンケイル0.9倍）を掛けます。掛け算・割り算のたびに小数第3位以下を切り捨てます。</li>
+        <li>「TP・ドライブUP」をパーティの誰かが持っていると、誰の行動でもたまる量が2倍です。</li>
+        <li>上昇量は、ブレイク値で止まった分を除いた実際の上昇です。まだ実測で確かめていない点：ヒットごとに計算して足すこと、ブレイク時の+100%を含めないこと、TPのクエイクを含めないこと、弱体が効かなかったジャマーにもATBコスト分を足すこと。</li>
+        <li>含めていないもの：ディフェンダーのリーダーが攻撃を受けたときにたまる分。オプティマチェンジの演出中はたまりません。</li>
       </ul>
     </details>
     <details class="nsec"><summary>召喚中（ドライビング前）</summary>
@@ -860,7 +883,7 @@ function renderPalette(){
   $("elemSeg").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.e===a.elem));
   const p=$("palette");p.innerHTML="";
   const finDone=a.queue.some(q=>q.sk.fin);
-  $("palLabel").textContent=nonAtk(a.role)?"エンハンサー/ヒーラーのコマンドは敵のチェーンゲージを上げません（ATBの確認用）":a.kind==="drive"?"技を押すとゲージを消費して追加（連続使用でコストが下がる技あり）":"コマンドを押すとATBに追加";
+  $("palLabel").textContent=nonAtk(a.role)?"エンハンサー/ヒーラーのコマンドは敵のチェーンゲージを上げません（ATBの確認用）"+(a===M[0]&&drvK()?"。リーダーなのでドライブゲージには入ります":""):a.kind==="drive"?"技を押すとゲージを消費して追加（連続使用でコストが下がる技あり）":"コマンドを押すとATBに追加";
   // 「全」：使えるコマンドを属性ごとに並べる（属性つきコマンドは火・氷・雷・水すべて）
   const showAll=a.kind==="member"&&a.elem==="ALL";
   const items=[];list.forEach(sk=>{
@@ -1054,6 +1077,7 @@ $("nextTurn").onclick=()=>{
   $("eneg").value=endState.eneg;
   if(mode!=="drive"&&endState.stag){const b=enBrkO();if(b){$("enSel").value=String(ENM.indexOf(b));enApply(ENM.indexOf(b))}}
   if(endState.hp!=null)$("ehpCur").value=Math.floor(endState.hp);
+  if(endState.drv!=null)$("drvCur").value=f(endState.drv);
   $("imp").checked=endState.applied.includes("ウィーク");
   carried={applied:endState.applied.filter(x=>x!=="ウィーク")};
   endState.last.forEach((v,a)=>a.last=v);
@@ -1146,6 +1170,44 @@ function quickTable(lim){
     const txt=early.label;
     const act=early.key===-1?"—":`${early.label.replace(/「.*」/,"")}が当たるまでに`;
     tr.innerHTML="<td></td><td></td><td></td>";tr.children[0].textContent=rng+(r.ambD?`（${r.ambD.map(x=>f(x,1)).join("・")}は1発早くブレイクして演出で止まることあり）`:"")+(r.noneD?`（${r.noneD.map(x=>f(x,1)).join("・")}はこのターンでブレイクしないこともある）`:"");tr.children[1].textContent=txt;tr.children[2].textContent=act;tb.append(tr)});
+}
+// ===== ドライブゲージ（召喚獣戦）=====
+// バトルアルティマニア（Ver.1.00）の「ドライブゲージのためかた」。値は満タンを100%とした量
+const DRV_K={"Nix":1,"Odin":1.45,"Brynhildr":0.6,"Bahamut":1.4,"Alexander":0.84,"Hecatoncheir":0.9};
+const DRV_JP={"Nix":"シヴァ","Odin":"オーディン","Brynhildr":"ブリュンヒルデ","Bahamut":"バハムート","Alexander":"アレキサンダー","Hecatoncheir":"ヘカトンケイル"};
+const drvK=()=>{if(mode!=="normal"||PRE())return null;const o=enCurO();return o&&DRV_K[o.en]!=null?{k:DRV_K[o.en],jp:DRV_JP[o.en]}:null};
+// 1つの行動でたまる量。掛け算・割り算のたびに小数第3位以下を切り捨て。チェーンボーナスの上昇はヒットごとに計算して足す
+function drvOf(o,k,up){
+  if(o.it.tp||o.cancel||o.ko||o.a.kind!=="member")return null;
+  const t=x=>Math.floor(x*100+1e-6)/100,u=x=>up?t(x*2):x,lead=o.a===M[0],hr=o.hitR||[],cost=+o.it.cost||0,kk=String(k);
+  const R0=o.shRoleNow;let v=0,how;
+  if(!lead){hr.forEach(([r])=>v+=u(t(t(r*0.6)*k)));how=`リーダー以外：上昇量×0.6×${kk}`}
+  else if(R0==="SYN"){v=u(t(2*k));how=`リーダー・エンハンサー：2×${kk}`}
+  else if(R0==="MED"){v=u(t(t(cost*0.75)*k));how=`リーダー・ヒーラー：ATBコスト${cost}×0.75×${kk}`}
+  else{const F={COM:r=>t(t(t(r*0.6)*7.5)*k),RAV:r=>t(t(t(r*0.6)*1.5)*k),SEN:r=>t(t(r*0.6)*k)};
+    hr.forEach(([r,ro],i)=>{if(ro==="SAB")v+=u(i===0?t((t(r*0.6)+t(cost*1.5))*k):t(t(r*0.6)*k));else if(F[ro])v+=u(F[ro](r))});
+    how={COM:`リーダー・アタッカー：上昇量×0.6×7.5×${kk}`,RAV:`リーダー・ブラスター：上昇量×0.6×1.5×${kk}`,SEN:`リーダー・ディフェンダー：上昇量×0.6×${kk}`,SAB:`リーダー・ジャマー：（上昇量×0.6＋ATBコスト${cost}×1.5）×${kk}`}[R0]||"リーダー"}
+  if(hr.length>1&&!["SYN","MED"].includes(R0)||(!lead&&hr.length>1))how+="（1ヒットごと）";
+  if(up)how+="×2";
+  return {v:t(v),how};
+}
+function drvRender(out){
+  const K=drvK(),box=$("drvBox");box.hidden=!K;out.forEach(o=>o.drv=null);if(!K)return null;
+  const up=$("drvUp").checked;let add=0;out.forEach(o=>{const d=drvOf(o,K.k,up);o.drv=d;if(d)add+=d.v});
+  // エンハンサー・ヒーラーのリーダーはチェーン計算に入らないので、ATBに入れたコマンドからここで足す
+  let extra="";const L=M[0],tt=x=>Math.floor(x*100+1e-6)/100;
+  if(L.on&&L.ko!==-1&&nonAtk(L.role)&&L.queue.length){let g=0;L.queue.forEach(q=>{const c=+q.cost||0,x=L.role==="SYN"?tt(2*K.k):tt(tt(c*0.75)*K.k);g+=up?tt(x*2):x});add+=g;
+    extra=`リーダー（${ROLE_JP[L.role]}）のコマンド${L.queue.length}つで +${f(g)}%（${L.role==="SYN"?"1回につき2×"+K.k:"ATBコスト×0.75×"+K.k}${up?"×2":""}。内訳には出ません）。`}
+  add=tt(add);
+  const s0=Math.min(100,Math.max(0,+$("drvCur").value||0)),s1=Math.min(100,s0+add);
+  $("drvCap").textContent=`このターンのドライブゲージ（${K.jp}戦・補正${K.k}倍）`;
+  $("drvAdd").textContent="+"+f(add);$("drvFull").hidden=s1<100;
+  $("drvGCur").style.width=s0+"%";$("drvGAdd").style.left=s0+"%";$("drvGAdd").style.width=(s1-s0)+"%";
+  $("drvFrom").textContent=f(s0)+"% → "+f(s1)+"%";
+  const need=100-s1;
+  $("drvNote").textContent=(s1>=100?"満タンです。":add>0?`満タンまであと ${f(need)}%。同じ並びならあと約 ${Math.ceil(need/add-1e-9)} ターン。`:"このターンはたまりません。")
+    +extra+`リーダー＝メンバー1（${CHR_JP[M[0].chr]}）。バトルアルティマニア（Ver.1.00）の式で計算しています。`;
+  return s1;
 }
 function calc(){
   const lim=Math.max(100,+$("lim").value||200);
@@ -1246,7 +1308,7 @@ function calc(){
     let dmgAct=0,zanKill=null;
     const stat=(()=>{if(!DI)return 0;const t=DI[2];if(a.kind==="member")return (t==="m"?a.ma:a.pa)*(t==="m"?(a.fa||1):(a.br||1));
       const k=$("eid").value,ai=a.kind==="eid"?Math.max(0,EA[k].indexOf(a)):0,es=eidStat(k,ai);return t==="m"?es.ma:es.pa})();
-    let sum=0,det=null,detSw=null,swFrom=0,finAdd=0,finReal=0,brkIdx=false,lost=0;const g0=st.cur;
+    let sum=0,det=null,detSw=null,swFrom=0,finAdd=0,finReal=0,brkIdx=false,lost=0;const g0=st.cur;const hitR=[];
     if(sk.fin&&!EID[$("eid").value].fin.ticks){const lv=finLv();finAdd=EID[$("eid").value].fin.lv[lv-1];const f0=st.cur;st.cur=Math.min(st.stag?999.9:lim,st.cur+finAdd);finReal=st.cur-f0;
       sum+=finReal;if(!st.stag&&st.cur>=lim){st.stag=true;onBrk();st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h:-1,hits:hl.length,a,name:it.name}}}
     // ドライビング：技ごとに打ち上げ状態を数え直す（1ヒット目は補正なし、打ち上げた後のヒットに+1.0）
@@ -1368,6 +1430,7 @@ function calc(){
         dmgAct+=d;if(ehpMax){hpRem=Math.max(0,hpRem-d);if(hpRem===0&&!killAt)killAt={idx,name:it.name,a}}}
       // 打ち上げる技（ドライビング）が当たると、次のヒットから「打ち上げられている敵」
       if((a.kind==="drive"||a.kind==="eid")&&!hit.tick&&!$("noLaunch").checked&&(sk.launch||(sk.launchStag&&stag)))airborne=true;
+      hitR.push([real,role]);
       sum+=real;if(real<v-1e-9)lost+=v-real;
       if(h===0&&!(firstPending&&dur0))it.noStart=false;
       if(starter)it.starter=true;else if(h===0)it.starter=false;
@@ -1380,13 +1443,14 @@ function calc(){
     lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
     per.set(a,per.get(a)+sum);
     dmgTotal+=dmgAct;
-    out.push({shifted:shiftOn&&idx>=shiftAt&&a.kind==="member",shRoleNow:roleOf(a,idx),it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
+    out.push({hitR,shifted:shiftOn&&idx>=shiftAt&&a.kind==="member",shRoleNow:roleOf(a,idx),it,a,sum,lost,finReal,detSw,swFrom,g0,g1:st.cur,det,hits:hl.length,provFail,finAdd,brk:brkIdx,impNote:"",dmg:DI&&stat>0?dmgAct:null,noDmg:!DI,noStat:DI&&!stat,hpAfter:ehpMax?hpRem:null,zanKill});
   });
   if(SIM!=null){let n=0;if(brokeAt)out.slice(0,brokeAt.idx+1).forEach(o=>{if(o.a===brokeAt.a&&!o.it.tp)n++});
     return brokeAt?{key:brokeAt.idx,label:`${brokeAt.a.kind==="member"?CHR_JP[brokeAt.a.chr]:brokeAt.a.label}の${n}発目「${brokeAt.name}」`}:{key:-1,label:"このターンではブレイクしない"}}
 
   const total=out.reduce((s,o)=>s+o.sum,0)+brkBonus;
   $("rTotal").textContent=f(total);
+  const drvEnd=drvRender(out);
   const pill=$("rState");
   if($("stag").checked){pill.hidden=false;pill.textContent="ブレイク中"}
   // ブレイクするのは、そのキャラの何発目のコマンドか（ブレイク直前にオプティマを変えるタイミングの目安）
@@ -1413,7 +1477,7 @@ function calc(){
   if(!out.length)box.innerHTML='<span class="empty">コマンドを追加すると表示されます。</span>';
   out.forEach((o,i)=>{
     const d=document.createElement("details"),s=document.createElement("summary");
-    s.innerHTML=`<span class="nm"></span><span class="v">+${f(o.sum)}</span><span class="g">${f(o.g0,1)}→${f(o.g1,1)}${o.dmg!=null?`<br><small style="color:var(--muted)">${o.dmg.toLocaleString("ja-JP")}ダメージ</small>`:""}</span>`;
+    s.innerHTML=`<span class="nm"></span><span class="v">+${f(o.sum)}${o.drv?`<br><small class="dv">ドライブ+${f(o.drv.v)}</small>`:""}</span><span class="g">${f(o.g0,1)}→${f(o.g1,1)}${o.dmg!=null?`<br><small style="color:var(--muted)">${o.dmg.toLocaleString("ja-JP")}ダメージ</small>`:""}</span>`;
     const nm=s.querySelector(".nm");nm.textContent="";
     if($("order").value==="manual"&&mode!=="drive"&&!o.it.tp){
       const mv=(dir)=>{const k=manualOrder.indexOf(o.it),j=k+dir;if(k<0||j<0||j>=manualOrder.length)return;[manualOrder[k],manualOrder[j]]=[manualOrder[j],manualOrder[k]];calc()};
@@ -1429,6 +1493,7 @@ function calc(){
     const t=o.det,det=document.createElement("div");det.className="det";
     const row=(x,y)=>{const r=document.createElement("div");r.className="r";r.innerHTML="<span></span><span></span>";r.children[0].textContent=x;r.children[1].textContent=y;det.append(r)};
     row("行動",`${o.a.label}（${ROLE_JP[o.a.role]}）`);
+    if(o.drv)row(`ドライブゲージ（${o.drv.how}）`,"+"+f(o.drv.v));
     if(o.it.swAt)row("途中でブラスターに切り替え",`${o.it.swAt}ヒット目から（Lv${o.it.swLv||5}）`);
     if(o.ko){row("戦闘不能のため行動しない","0.00");d.append(det);box.append(d);return}
     if(o.cancel){row("オプティマチェンジで取り消し（実行中の1発しか出ない）","0.00");d.append(det);box.append(d);return}
@@ -1471,7 +1536,7 @@ function calc(){
    if(PRE()){bh.hidden=false;bh.textContent="2章まで（オプティマ解禁前）の計算：ロールのボーナスや条件補正はなく、1ヒットごとに「チェーンボーナス×(100−チェーン耐性)/100」だけ上がります。ATBはキャラで決まります（ヴァニラ3、ガドー・レブロ3.5、ほかは2。ガドーのたたかうはATB3、レブロは2）。AIメンバー（メンバー2・3）は、ターンの1つ目のコマンドの全ヒットに+0.2、HPが満タンならさらに+0.3。リーダー（メンバー1）には付きません。ブレイク値ちょうどではブレイクせず、超えたヒットでブレイクします（いずれも実測）。"}
    if(mode==="drive"){const rv=M.filter(o=>o.on&&o.role==="RAV");const tot=rv.reduce((s2,o)=>s2+RAV_PARTY[o.rlv],0);
     bh.textContent=`召喚獣に付くブラスターボーナス：+${f(tot,1)}（${rv.length?rv.map(o=>o.label+" Lv"+o.rlv).join("・"):"ブラスターなし"}）。変えるときは「通常バトル」の各メンバーで設定してください。`}}
-  endState={cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy,koed:new Set(M.filter(m=>m.ko>0&&m.ko<=seq.length))};
+  endState={drv:drvEnd,cur:st.cur,stag:st.stag,eneg:st.eneg,applied:[...st.applied],last:lastBy,koed:new Set(M.filter(m=>m.ko>0&&m.ko<=seq.length))};
   $("diff").disabled=A().kind==="member"?false:!!A().last;
   $("carryNote").textContent=PRE()?"":list.some(x=>x.last)?"各キャラの最初の行動は、前ターンの自分の最後の行動と比べて「違うコマンド」を判定します。":"";
   $("nextTurn").disabled=!seq.length;
@@ -1490,7 +1555,7 @@ function calc(){
 
 // 現在のチェーンボーナスを変えたら、100.0%ならチェーンゲージが空（チェックを入れる）、100%より上なら外す
 $("cur").addEventListener("input",()=>{$("chainEmpty").checked=!$("stag").checked&&(+$("cur").value||100)<=100;calc()});
-["omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","guard","epos","noLaunch","lim","eRank","ehp","ehpCur","dmgV","capUp"].forEach(id=>$(id).addEventListener("input",calc));
+["drvCur","drvUp","omen","chainEmpty","order","tpQ","tpWhen","tpBase","cres","tresP","tresM","eneg","imp","stag","launched","guard","epos","noLaunch","lim","eRank","ehp","ehpCur","dmgV","capUp"].forEach(id=>$(id).addEventListener("input",calc));
 document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",calc));
 
 // 例：通常バトル＝ブラスター/アタッカー/ブラスター、召喚中＝各召喚獣のAIの基本行動、ドライビング＝空
@@ -2008,6 +2073,7 @@ function stSave(){if(stOff)return;try{const acts=allActors();
   stFields().forEach(el=>s.f[el.id]=el.type==="checkbox"?el.checked:el.value);
   document.querySelectorAll(".eres").forEach(el=>s.er[el.dataset.e]=el.value);
   ST_OPEN.forEach(id=>s.open[id]=$(id).open);
+  s.drv={c:$("drvCur").value,u:$("drvUp").checked};
   localStorage.setItem(ST_KEY,JSON.stringify(s))}catch(e){}}
 const stSaveSoon=()=>{clearTimeout(stT);stT=setTimeout(stSave,300)};
 function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}catch(e){return false}if(!s||s.v!==1)return false;
@@ -2017,6 +2083,7 @@ function stLoad(){let s;try{s=JSON.parse(localStorage.getItem(ST_KEY)||"null")}c
     Object.entries(s.f||{}).forEach(([id,v])=>{const el=$(id);if(!el||ST_SKIP.has(id))return;if(id==="tpWhen")el.dataset.want=v;if(el.type==="checkbox")el.checked=!!v;else el.value=v});
     document.querySelectorAll(".eres").forEach(el=>{if(s.er&&s.er[el.dataset.e])el.value=s.er[el.dataset.e]});
     Object.entries(s.open||{}).forEach(([id,v])=>{if($(id))$(id).open=!!v});
+    if(s.drv){$("drvCur").value=s.drv.c;$("drvUp").checked=!!s.drv.u}
     enCh=+s.enCh||0;
     if(["normal","summon","drive"].includes(s.mode))mode=s.mode;cur=+s.cur||0;turn=+s.turn||1;exactCur=typeof s.exactCur==="number"?s.exactCur:null;if(s.carried&&Array.isArray(s.carried.applied))carried=s.carried;
     manualOrder=(s.ord||[]).map(([i,j])=>acts[i]&&acts[i].queue[j]).filter(Boolean);
