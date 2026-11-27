@@ -561,7 +561,7 @@ input,select,button,textarea{font-family:inherit}
         <li>通常バトルで戦う敵に召喚獣（シヴァ・オーディン・ブリュンヒルデ・バハムート・アレキサンダー・ヘカトンケイル）を選ぶと、結果にドライブゲージ（満タン100%）を出します。リーダーはメンバー1です。</li>
         <li>式はバトルアルティマニア（Ver.1.00）の「ドライブゲージのためかた」です。リーダー：アタッカー＝上昇量×0.6×7.5、ブラスター＝上昇量×0.6×1.5、ディフェンダー＝上昇量×0.6、ジャマー＝（上昇量×0.6＋ATBコスト×1.5）、エンハンサー＝2、ヒーラー＝ATBコスト×0.75。リーダー以外はロールに関係なく上昇量×0.6。最後に召喚獣ごとの補正（シヴァ1倍・オーディン1.45倍・ブリュンヒルデ0.6倍・バハムート1.4倍・アレキサンダー0.84倍・ヘカトンケイル0.9倍）を掛けます。掛け算・割り算のたびに小数第3位以下を切り捨てます。</li>
         <li>「TP・ドライブUP」をパーティの誰かが持っていると、誰の行動でもたまる量が2倍です。</li>
-        <li>召喚獣戦はドライブゲージで勝つ戦いなので、ブレイク値・ブレイク予兆・ブレイク中、敵のHPとダメージ、召喚中・ドライビングモードは出しません。チェーンボーナスは上限999.9%まで上がるだけで、ブレイクしません。</li>
+        <li>召喚獣戦はドライブゲージで勝つ戦いなので、ブレイク値・ブレイク予兆・ブレイク中、敵のHPとダメージ、打ち上げ、召喚中・ドライビングモード、2章まで（オプティマ解禁前）の計算は出しません。チェーンボーナスは上限999.9%まで上がるだけで、ブレイクしません。</li>
         <li>上昇量は、ブレイク値で止まった分を除いた実際の上昇です。まだ実測で確かめていない点：ヒットごとに計算して足すこと、ブレイク時の+100%を含めないこと、TPのクエイクを含めないこと、弱体が効かなかったジャマーにもATBコスト分を足すこと。</li>
         <li>リーダーがディフェンダーのときは、自分を狙った攻撃を受けた回数を入れると足します（本の表の値：シヴァのダンシングホイール・トルネードレイヴ18.31%、それ以外0.49%／バハムートのイグニス4.15%、それ以外1.38%など。死の宣告・ケアルガ・カウンターは0%）。範囲攻撃の巻き込みは入れない前提です（未確認）。回数は「次のターンへ」で0に戻ります。実際の召喚獣戦でリーダーがディフェンダーになれるのは、シヴァ（スノウ）とバハムート（ファング）です。</li>
         <li>リーダー以外のディフェンダーは、攻撃を受けてもたまりません（挑発・カウンターなどでチェーンボーナスを上げた分だけ）。オプティマチェンジの演出中はたまりません。</li>
@@ -1232,7 +1232,7 @@ function drvRender(out){
 }
 function calc(){
   // 召喚獣戦はブレイクしない（ブレイク値・ブレイク予兆なし）。上限999.9%まで上がるだけ
-  const EIDF=isEidFoe();if(EIDF&&$("stag").checked)$("stag").checked=false;
+  const EIDF=isEidFoe();if(EIDF){$("stag").checked=false;$("launched").checked=false}
   const lim=EIDF?999.9:Math.max(100,+$("lim").value||200);
   // 「次のターンへ」で引き継いだときは、表示（小数第1位）ではなく内部の値（小数第2位まで）を使う
   const curIn=+$("cur").value||100;const start=SIM!=null?SIM:Math.min(999.9,Math.max(100,(exactCur!=null&&Math.floor(exactCur*10+1e-6)/10===curIn)?exactCur:curIn));
@@ -1374,7 +1374,7 @@ function calc(){
       const modSum=mods.reduce((s,x)=>s+x[1],0);
       const cres=stag?0:cres0,resK=(100-cres)/100;
       // ブレイク予兆：ブレイク値まで上げるのに必要な上昇量の0.90〜0.92倍（バトルアルティマニア）
-      const near=!EIDF&&!stag&&(st.cur-100)>=(lim-100)*(+$("omen").value),launched=$("launched").checked,eneg=st.eneg;
+      const near=!EIDF&&!stag&&(st.cur-100)>=(lim-100)*(+$("omen").value),launched=!EIDF&&$("launched").checked,eneg=st.eneg;
       const C=[];const add=(ok,tx,v)=>{if(ok)C.push([tx,v])};
       if(!sk.fin&&a.kind==="member"&&role!=="PRE"){add(diff,"違うコマンド",0.2);add(diff&&weak,"違うコマンド＋弱点",0.7);}
       // ドライビングモードの召喚獣は、召喚獣用の条件補正（ブレイク中・打ち上げ・ブレイク予兆）が本の値の2倍。弱点は本どおり+0.1（実測）
@@ -2020,7 +2020,7 @@ function preVis(){const pre=PRE(),a=A(),isM=a.kind==="member";
   // 召喚獣と戦うときは召喚できないので、「召喚中」「ドライビングモード」を出さない
   if(isEidFoe()){$("modeSeg").querySelectorAll("button").forEach(b=>{if(b.dataset.m!=="normal")b.hidden=true});if(mode!=="normal")setTimeout(()=>$("modeSeg").querySelector('[data-m="normal"]').click(),0)}
   // 召喚獣戦はHPを減らして勝つ戦いではないので、ダメージ・HPの入力を出さない
-  const eid=isEidFoe();[$("dmgBoxM"),$("dmgBoxE"),$("ehp").closest("label"),$("lim").closest("label"),$("omen").closest("label"),$("stag").closest("label"),$("toBreakW")].forEach(el=>{if(eid){if(!el.hidden){el.hidden=true;el.dataset.eh="1"}}else if(el.dataset.eh&&!PRE()){el.hidden=false;delete el.dataset.eh}})}}
+  const eid=isEidFoe();[$("dmgBoxM"),$("dmgBoxE"),$("ehp").closest("label"),$("lim").closest("label"),$("omen").closest("label"),$("stag").closest("label"),$("toBreakW"),$("preWrap"),$("noLaunch").closest("label"),$("launched").closest("label")].forEach(el=>{if(eid){if(!el.hidden){el.hidden=true;el.dataset.eh="1"}}else if(el.dataset.eh&&!PRE()){el.hidden=false;delete el.dataset.eh}})}}
 $("preOpt").addEventListener("input",()=>{const on=$("preOpt").checked;
   if(on){mode="normal";
     if(!PRE_LEAD.includes(M[0].chr))M[0].chr="light";
