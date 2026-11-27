@@ -742,7 +742,9 @@ const RLV_ST={light:{COM:[3,6,8,10],RAV:[3,6,8,10]},sazh:{COM:[6,6,8,10],RAV:[4,
 // 章ごとに使えるクリスタリウムのステージ（その章のボス戦の時点）。ステージは3章カルラ・4章ドレッドノート・5章ユイジンシャン・6章エンキとエンリル・7章グライフ・9章バルトアンデルス・10章シド・レインズ・11章バルトアンデルス2回目・13章オーファンの撃破後に広がる
 const CH_ST={1:0,2:0,3:1,4:2,5:3,6:4,7:5,8:6,9:6,10:7,11:8,12:9,13:9},ST_AFTER={"Odin":3,"Bahamut":8};
 // 11章のミッションはクリア後にも戦えるので、チェックでクリア後の上限（ステージ10・ATB6本）にする
-const postClr=()=>enCh===11&&$("postClr").checked;
+// 召喚獣戦（アレキサンダー・ヘカトンケイル）は1回しか戦えないので、クリア後の選択肢は出さない
+const isEidFoe=()=>{const o=enCurO();return !!(o&&DRV_K[o.en]!=null)};
+const postClr=()=>enCh===11&&!isEidFoe()&&$("postClr").checked;
 function stageNow(){if(!enCh)return null;if(postClr())return 10;const o=ENM[+$("enSel").value];if(o&&ST_AFTER[o.en]!=null&&chOf(o).includes(enCh))return ST_AFTER[o.en];return CH_ST[enCh]}
 function rlvMax(chr,role){const st=stageNow();if(st==null)return 5;const t=RLV_ST[chr]&&RLV_ST[chr][role];if(!t)return 1;return 1+t.filter(x=>x<=st).length}
 // ATBゲージ数：最初は2本。ルシになって+1（ヴァニラ・ファングは最初からルシ、ほかは3章から）、召喚獣を手に入れて+1、クリスタリウムのステージ8で+1、11章から最強武器で+1。ガドー・レブロは3.5本（アルティマニア）
@@ -1887,7 +1889,7 @@ $("enSel").addEventListener("input",()=>{if($("enSel").value==="")return;
   // 守護騎アナヴァタプタは、ライトニングとオーディンのドライビングモード（フィニッシュ技Lv3）で戦闘開始
   if(o0&&o0.en==="Anavatapta Warmech"){if(M[0].chr!=="light"){const o=M.find(m=>m!==M[0]&&m.chr==="light");if(o)o.chr=M[0].chr;M[0].chr="light";M[0].queue=[];M[0].last=null}
     $("gc").value="30";$("gc").dispatchEvent(new Event("input"));const b=$("modeSeg").querySelector('[data-m="drive"]');if(b&&mode!=="drive")b.click();else{loadActor();render()}}
-  $("postClrW").hidden=enCh!==11;M.forEach(rlvAuto);loadActor();render();
+  $("postClrW").hidden=enCh!==11||isEidFoe();if($("postClrW").hidden)$("postClr").checked=false;M.forEach(rlvAuto);loadActor();render();
   enApply(+$("enSel").value)});
 $("enEd").addEventListener("toggle",enRenderList);
 [...EN_F,"ehpCur"].forEach(id=>$(id).addEventListener("input",()=>setTimeout(enSync,0)));document.querySelectorAll(".eres").forEach(el=>el.addEventListener("input",()=>setTimeout(enSync,0)));
