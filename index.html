@@ -547,7 +547,8 @@ input,select,button,textarea{font-family:inherit}
         <li>召喚獣の属性攻撃は敵の属性耐性で減りません（弱点は有効）。</li>
         <li>ウィークが入ると属性耐性が1段階下がります（吸収→無効→耐久→半減→標準→弱点）。ターン中に入った場合は、その後の行動から。</li>
         <li>「ウィークが入っている」にチェックするときは、「現在の弱体数」にも1つ含めてください。</li>
-        <li>弱体が成功すると敵の弱体数が1つ増えます（デスペルは除く）。同じ弱体（単体版とガ版を含む）が入っていれば付与されず、+5.0も付きません。</li>
+        <li>弱体が成功すると敵の弱体数が1つ増えます（デスペルは除く）。同じ弱体（単体版とガ版を含む）が入っているときにかけ直すと、効けば再付与されて成功ボーナスが付きます（弱体の数は増えません）。効かなければ付きません。</li>
+        <li>弱体の成功ボーナス（基本値5.0）は、当たった分とは別の上昇として少し遅れて加算され、そこにもチェーン耐性と同じ条件補正（違うコマンド、ターン1発目の補正など）がもう一度付きます。チェーンが空の1発目でも、ボーナス分は上がります（実測：エンキ 当たった分+1.4→ボーナス+1.75、ターン1発目 +1.7→+2.05／ヘカトンケイル +0.6→+0.7）。</li>
       </ul>
     </details>
     <details class="nsec"><summary>行動の順番</summary>
@@ -945,13 +946,6 @@ function renderQueue(){
       l.innerHTML=`<input type="checkbox" ${it.land?"checked":""}><span>成功</span>`;
       l.querySelector("input").onchange=ev=>{it.land=ev.target.checked;calc()};
       extra.append(l);
-      if(it.sk.sab&&!it.sk.dispel){
-        // 付与済みの弱体が切れてから付け直した場合は、成功ボーナスがもう一度付く（実測）
-        const l2=document.createElement("label");l2.className="chk";l2.style.fontSize=".72rem";l2.title="前の効果が切れてから付け直した場合、成功ボーナス（+5.0）がもう一度付きます";
-        l2.innerHTML=`<input type="checkbox" ${it.expired?"checked":""}><span>切れて付け直し</span>`;
-        l2.querySelector("input").onchange=ev=>{it.expired=ev.target.checked;calc()};
-        extra.append(l2);
-      }
     }
     // 複数ヒットの技：ヒットの途中でオプティマチェンジ（○hit目から別のロール）。例：デスペラードの途中でサッズがアタッカーに
     {const nh=it.sk.parts?it.sk.parts.reduce((x,p)=>x+p.h,0):it.sk.bs?it.sk.bs.length:(it.sk.h||1);
@@ -1319,8 +1313,9 @@ function calc(){
     // ドライビングモードの最初の技には「違うコマンド」が付かない（動画で確認）
     const diff=prev?!(prev.id===sk.id&&prev.e===it.e&&prev.name===it.name):(a.kind==="drive"?false:a.diff);
     const provFail=(sk.prov&&!it.land)||!!sk.noHit;
-    it.dup=!!(sk.sab&&!sk.dispel&&st.applied.has(sk.st)&&!it.expired);const reapply=!!(it.expired&&st.applied.has(sk.st));
-    const landed=it.land&&!it.dup;
+    // 同じ弱体が入っていても、かけ直しが効けば再付与されて成功ボーナス（+5.0）が付く（ヘカトンケイルで実測：効いた+1.3／効かない+0.6）。弱体の数は増えない
+    it.dup=!!(sk.sab&&!sk.dispel&&st.applied.has(sk.st));
+    const landed=it.land;
     // 同じ敵を狙う味方：攻撃ロール（エンハンサー/ヒーラー以外）でパーティにいるメンバー。そのターンに行動しなくても数える
     // 同じ敵を狙う味方：攻撃ロールのメンバー＋召喚中の召喚獣（シヴァは2体）。召喚獣が別の敵を狙うと数えない（実測）
     const others=list.filter(x=>x!==a&&alive(x,idx)&&((x.kind==="member"&&!nonAtk(roleOf(x,idx)))||x.kind==="eid")).length;
@@ -1350,7 +1345,7 @@ function calc(){
       const role=swRav?"RAV":hsOn?it.hsRole:roleOf(a,idx), rlvH=swRav?(it.swLv||5):a.rlv;
       const stag=st.stag;
       let b=stag&&hit.sb!=null?hit.sb:hit.b;
-      if(sk.sab&&landed)b+=5;
+      // 弱体の成功ボーナス（+5.0）は、当たった分とは別の上昇として、少し遅れて加算される（下で計算）
       const e=hit.e, t=hit.t;
       // 弱点判定（バトルアルティマニアの耐性掛け合わせ表）：属性が弱点なら物理/魔法耐性に関係なく「増加」、物理/魔法が弱点でも「増加」
       // 弱点判定（実測）：物理/魔法耐性×属性耐性のダメージ倍率が1倍を超えるときだけ「弱点」
@@ -1462,6 +1457,13 @@ function calc(){
       if((a.kind==="drive"||a.kind==="eid")&&!hit.tick&&!$("noLaunch").checked&&(sk.launch||(sk.launchStag&&stag)))airborne=true;
       hitR.push([real,role]);
       sum+=real;if(real<v-1e-9)lost+=v-real;
+      // 弱体が効いたとき：成功ボーナス5.0は別の上昇として加算され、チェーン耐性と同じ条件補正がもう一度付く（実測：エンキ 1.4→+1.75、1発目 1.7→+2.05／ヘカトンケイル 0.6→+0.7）。チェーンが空の1発目でもボーナス分は上がる
+      if(sk.sab&&landed&&h===hl.length-1){
+        const v2=Math.max(0,tr2((tr2((5+modSum)*resK)+condSum)*elK));
+        const b0=st.cur;const over2=b0+v2>lim+1e-9;st.cur=Math.min(stag||st.stag?999.9:lim,st.cur+v2);const real2=st.cur-b0;
+        if(!EIDF&&!st.stag&&(PRE()?over2:st.cur>=lim)){st.stag=true;onBrk();st.cur=Math.min(999.9,st.cur+100);brkBonus=100;brkIdx=true;if(!brokeAt)brokeAt={idx,h,hits:hl.length,a,name:it.name}}
+        hitR.push([real2,role]);sum+=real2;if(real2<v2-1e-9)lost+=v2-real2;it.sabBonus=v2;
+      }else if(h===hl.length-1)it.sabBonus=0;
       if(h===0&&!(firstPending&&dur0))it.noStart=false;
       if(starter)it.starter=true;else if(h===0)it.starter=false;
       if(!det)det={b,mods,resK,C,elK,v,stag,eidEl:!isM&&e&&resOf[e]!=="weak"};
@@ -1469,7 +1471,7 @@ function calc(){
     });
     // ルーラーフィスト・ハイウィンド：チェーンボーナスを100.0%にもどす
     if(sk.reset){st.cur=100;st.stag=false;offBrk();it.resetDone=true}
-    if(sk.sab&&!sk.dispel&&landed){st.applied.add(sk.st);if(!reapply)st.eneg=Math.min(8,st.eneg+1)}
+    if(sk.sab&&!sk.dispel&&landed&&!it.dup){st.applied.add(sk.st);st.eneg=Math.min(8,st.eneg+1)}
     lastBy.set(a,{id:sk.id,e:it.e,name:it.name});
     per.set(a,per.get(a)+sum);
     dmgTotal+=dmgAct;
@@ -1538,8 +1540,8 @@ function calc(){
     if(o.it.resetDone)row("チェーンボーナスを100.0%にもどす","（ブレイクも終了）");
     if(o.it.sk.fin&&$("eid").value==="odin"&&o.it.preHit){const c=o.it.preHit/100,pa=eidStat("odin",0).pa;row("一撃判定に使うチェーンボーナス（斬鉄剣のヒット自身の上昇を含む）",f(o.it.preHit,1)+"%");if(pa)row("一撃で倒せる敵の残りHP（3.0×物理攻撃力×倍率²）",Math.floor(3*pa*c*c)+" 未満");}
     if(o.finAdd)row("フィニッシュの加算（Lv"+finLv()+"）","+"+f(o.finAdd));
-    if(o.it.dup)row("同じ弱体が付与済み","成功ボーナス(+5.0)なし");
-    if(o.it.sk.sab&&!o.it.dup&&o.it.land)row("弱体成功ボーナス","基本値に+5.0");
+    if(o.it.dup)row("同じ弱体が付与済み（かけ直し）",o.it.land?"再付与：成功ボーナス(+5.0)あり・弱体の数は増えない":"効かない：成功ボーナス(+5.0)なし");
+    if(o.it.sk.sab&&o.it.land&&o.it.sabBonus!=null)row("弱体成功ボーナス（別に加算：5.0×チェーン耐性＋条件補正）","+"+f(o.it.sabBonus));
     if(o.provFail)row(o.it.sk.noHit?"敵に攻撃しない行動":"挑発が失敗","上昇なし");
     else if(t){
       row("（1ヒット目）スキル基本値",f(t.b));
@@ -1560,7 +1562,7 @@ function calc(){
   });
 
   [...$("queue").querySelectorAll(".qrow")].forEach((r,i)=>{const it=A().queue[i];if(!it)return;const cb=r.querySelector("input[type=checkbox]");if(!cb)return;
-    cb.disabled=!!it.dup;const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"付与済み":"成功";lab.style.opacity=it.dup?.55:1;const ex=r.querySelectorAll("input[type=checkbox]")[1];if(ex&&it.sk.sab&&!it.sk.dispel)ex.parentNode.hidden=!(it.dup||it.expired)});
+    const lab=cb.parentNode;const sp=lab.querySelector("span");if(sp)sp.textContent=it.dup?"成功（再付与）":"成功"});
 
   {const bh=$("bonusHint");bh.hidden=true;
    if(PRE()){bh.hidden=false;bh.textContent="2章まで（オプティマ解禁前）の計算：ロールのボーナスや条件補正はなく、1ヒットごとに「チェーンボーナス×(100−チェーン耐性)/100」だけ上がります。ATBはキャラで決まります（ヴァニラ3、ガドー・レブロ3.5、ほかは2。ガドーのたたかうはATB3、レブロは2）。AIメンバー（メンバー2・3）は、ターンの1つ目のコマンドの全ヒットに+0.2、HPが満タンならさらに+0.3。リーダー（メンバー1）には付きません。ブレイク値ちょうどではブレイクせず、超えたヒットでブレイクします（いずれも実測）。"}
